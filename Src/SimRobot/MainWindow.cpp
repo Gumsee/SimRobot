@@ -114,7 +114,9 @@ MainWindow::MainWindow(int, char* argv[]) :
   fileOpenAct->setStatusTip(tr("Open an existing scene file"));
   connect(fileOpenAct, &QAction::triggered, this, &MainWindow::open);
 
-  fileCloseAct = new QAction(tr("&Close"), this);
+  QIcon fileCloseIcon(":/Icons/icons8-delete-view-50.png");
+  fileCloseIcon.setIsMask(true);
+  fileCloseAct = new QAction(fileCloseIcon, tr("&Close"), this);
   fileCloseAct->setStatusTip(tr("Close the scene"));
   fileCloseAct->setEnabled(false);
   connect(fileCloseAct, &QAction::triggered, this, &MainWindow::closeFile);
@@ -207,9 +209,6 @@ MainWindow::MainWindow(int, char* argv[]) :
   menuBar()->addMenu(helpMenu);
 
 #ifdef MACOS
-  QPalette pal = palette();
-  pal.setBrush(QPalette::Window, QBrush(QColor(0, 0, 0, 0)));
-  setPalette(pal);
   connect(qApp, &QGuiApplication::applicationStateChanged, this, &MainWindow::applicationStateChanged);
 #else
   updateMenuAndToolBar();
@@ -693,7 +692,7 @@ void MainWindow::updateMenuAndToolBar()
                                    "border-bottom: 1px solid " + pressed.name(QColor::HexArgb) + ";"
                                    "background-color: " + title.name(QColor::HexArgb) + "}"
                          "QToolBar::separator {background-color: transparent; width: 12px}"
-                         "QToolButton {background-color: transparent; padding: 3px 8px 3px 8px; border-width: 0px; border-radius: 4px}"
+                         "QToolButton {background-color: transparent; padding: 3px 8px 3px 9px; border-width: 0px; border-radius: 12px}"
                          "QToolButton::menu-button {background-color: transparent}"
                          "QToolButton::menu-indicator {width: 0px}"
                          "QToolButton:checked {background-color: " + pressed.name(QColor::HexArgb) + "}"
@@ -940,7 +939,7 @@ void MainWindow::setGuiUpdateRate(int rate)
 void MainWindow::open()
 {
   QString fileName = QFileDialog::getOpenFileName(this,
-    tr("Open File"), settings.value("OpenDirectory", "").toString(), tr("Robot Simulation Files (*.ros2 *.ros2d)")
+    tr("Open File"), settings.value("OpenDirectory", "").toString(), tr("Robot Simulation Files (*.ros3 *.ros2d)")
 #if defined LINUX && defined QT_VERSION && QT_VERSION < QT_VERSION_CHECK(6, 6, 0)
                                                   , nullptr, QFileDialog::DontUseNativeDialog
 #endif
@@ -1009,7 +1008,7 @@ void MainWindow::openFile(const QString& fileName)
 
   // load core module
   Q_ASSERT(!compiled);
-  loadModule(fileInfo.suffix() == "ros2d" ? "SimRobotCore2D" : "SimRobotCore2");
+  loadModule(fileInfo.suffix() == "ros2d" ? "SimRobotCore2D" : "SimRobotCore3");
 
   for(int i = 0; i < manuallyLoadedModules.size();)
     if(loadModule(manuallyLoadedModules[i]))

@@ -1,7 +1,7 @@
 /**
  * @file Parser.cpp
  *
- * This file implements a class that parses .ros2(d) scene description files.
+ * This file implements a class that parses .ros3/.ros2d scene description files.
  *
  * @author Colin Graf
  * @author Arne Hasselbring
@@ -15,6 +15,7 @@
 #include <cstring>
 #include <limits>
 #include <sstream>
+#include <iostream>
 
 Parser::~Parser()
 {
@@ -71,6 +72,7 @@ void Parser::handleError(const std::string& msg, const Location& location)
       errorMessage << ":" << location.column;
   }
   errorMessage << ": error: " << msg;
+  std::cout << errorMessage.str() << std::endl;
   errors->push_back(errorMessage.str());
 }
 
@@ -466,6 +468,7 @@ void Parser::parseMacroElement(ElementData& elementData)
     // Create the new element and set it as current.
     Element* const parentElement = element;
     Element* const childElement = elementData.info->startElementProc();
+    elementData.returnedElement = childElement;
     element = childElement;
     // Check that all attributes have been used during creation of the element.
     checkAttributes();
@@ -563,6 +566,7 @@ void Parser::parseMacroElement(ElementData& elementData)
     // Create the new element and set it as current.
     Element* const parentElement = element;
     Element* const childElement = elementData.info->startElementProc();
+    elementData.returnedElement = childElement;
     element = childElement;
     // Check that all attributes have been used during creation of the element.
     checkAttributes();

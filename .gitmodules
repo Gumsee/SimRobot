@@ -1,0 +1,27 @@
+[submodule "Util/gum-engine"]
+	path = Util/gum-engine
+	url = git@github.com:Gumsee/gum-engine.git
+[submodule "Util/gum-graphics"]
+	path = Util/gum-graphics
+	url = git@github.com:Gumsee/gum-graphics.git
+[submodule "Util/gum-opengl"]
+	path = Util/gum-opengl
+	url = git@github.com:Gumsee/gum-opengl.git
+[submodule "Util/gum-primitives"]
+	path = Util/gum-primitives
+	url = git@github.com:Gumsee/gum-primitives.git
+[submodule "Util/gum-maths"]
+	path = Util/gum-maths
+	url = git@github.com:Gumsee/gum-maths.git
+[submodule "Util/gum-essentials"]
+	path = Util/gum-essentials
+	url = git@github.com:Gumsee/gum-essentials.git
+[submodule "Util/gum-system"]
+	path = Util/gum-system
+	url = git@github.com:Gumsee/gum-system.git
+[submodule "Util/gum-codecs"]
+	path = Util/gum-codecs
+	url = git@github.com:Gumsee/gum-codecs.git
+[submodule "Util/gum-desktop"]
+	path = Util/gum-desktop
+	url = git@github.com:Gumsee/gum-desktop.git

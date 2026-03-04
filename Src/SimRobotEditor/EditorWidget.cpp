@@ -43,11 +43,16 @@ SimRobotEditor::Editor* EditorObject::addEditor(const QString& filePath, const Q
       editor->persistent = true;
     return editor;
   }
-  editor = new FileEditorObject(filePath, subFileRegExpPattern, persistent, this);
-  editors.append(editor);
-  EditorModule::module->registerEditor(editor);
-  EditorModule::application->registerObject(*EditorModule::module, *editor, this);
-  return editor;
+  else if(QFileInfo(filePath).exists())
+  {
+    editor = new FileEditorObject(filePath, subFileRegExpPattern, persistent, this);
+    editors.append(editor);
+    EditorModule::module->registerEditor(editor);
+    EditorModule::application->registerObject(*EditorModule::module, *editor, this);
+    return editor;
+  }
+  else
+    return nullptr;
 }
 
 SimRobotEditor::Editor* EditorObject::addFolder(const QString& name)
@@ -99,7 +104,9 @@ void EditorObject::loadFromSettings()
     {
       QString subFileRegExpPattern = settings.value("subFileRegExpPattern").toString();
       settings.endArray();
-      static_cast<EditorObject*>(addEditor(filePath, subFileRegExpPattern, false))->loadFromSettings();
+      EditorObject* editor = static_cast<EditorObject*>(addEditor(filePath, subFileRegExpPattern, false));
+      if(editor)
+        editor->loadFromSettings();
     }
   }
 }
@@ -151,8 +158,8 @@ SimRobot::Widget* FileEditorObject::createWidget()
 EditorWidget::EditorWidget(FileEditorObject* editorObject, const QString& fileContent) :
   editorObject(editorObject)
 {
-  if(editorObject->filePath.endsWith(".ros2") || editorObject->filePath.endsWith(".ros2d") ||
-     editorObject->filePath.endsWith(".rsi2") || editorObject->filePath.endsWith(".rsi2d"))
+  if(editorObject->filePath.endsWith(".ros3") || editorObject->filePath.endsWith(".ros2d") ||
+     editorObject->filePath.endsWith(".rsi3") || editorObject->filePath.endsWith(".rsi2d"))
     highlighter = new SyntaxHighlighter(document(), this);
   setFrameStyle(QFrame::NoFrame);
 
@@ -311,7 +318,9 @@ void EditorWidget::updateEditMenu(QMenu* menu, bool aboutToShow) const
   connect(action, &QAction::triggered, this, &EditorWidget::paste);
   connect(this, &EditorWidget::pasteAvailable, action, &QAction::setEnabled);
 
-  action = menu->addAction(tr("&Delete"));
+  icon = QIcon(":/Icons/icons8-fail-50.png");
+  icon.setIsMask(true);
+  action = menu->addAction(icon, tr("&Delete"));
   action->setShortcut(QKeySequence(QKeySequence::Delete));
   action->setStatusTip(tr("Delete the currently selected content"));
   action->setEnabled(canCopy);

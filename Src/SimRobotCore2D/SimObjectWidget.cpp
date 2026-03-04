@@ -63,12 +63,12 @@ void SimObjectWidget::update()
 
 QMenu* SimObjectWidget::createUserMenu() const
 {
-  auto* const menu = new QMenu(tr(&object == Simulation::simulation->scene ? "S&cene" : "&Object")); // cspell:disable-line
+  auto* const menu = new QMenu(tr(&object == Simulation::simulation->scene ? "&Scene" : "&Object")); // cspell:disable-line
 
   {
     QMenu* const subMenu = menu->addMenu(tr("&Drag and Drop"));
     QAction* const action = subMenu->menuAction();
-    QIcon icon(":/Icons/icons8-coordinate-system-50.png");
+    QIcon icon(":/Icons/icons8-drag-and-drop-50.png");
     icon.setIsMask(true);
     action->setIcon(icon);
     action->setStatusTip(tr("Select the drag and drop dynamics mode"));

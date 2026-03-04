@@ -52,4 +52,22 @@ else
   for CONFIG in Debug Develop Release; do
     cmake -DCMAKE_BUILD_TYPE=$CONFIG -G Ninja -S . -B ../../Build/Linux/CMake/$CONFIG
   done
+
+  UTIL_DIR="$(pwd)/../../Util"
+  INCLUDE_DIRS=""
+  INCLUDE_DIRS="$INCLUDE_DIRS -I$UTIL_DIR/gum-graphics/src"
+  INCLUDE_DIRS="$INCLUDE_DIRS -I$UTIL_DIR/gum-primitives/src"
+  INCLUDE_DIRS="$INCLUDE_DIRS -I$UTIL_DIR/gum-maths/src"
+  INCLUDE_DIRS="$INCLUDE_DIRS -I$UTIL_DIR/gum-essentials/src"
+  INCLUDE_DIRS="$INCLUDE_DIRS -I$UTIL_DIR/gum-system/src"
+  INCLUDE_DIRS="$INCLUDE_DIRS -I$UTIL_DIR/gum-codecs/src"
+  INCLUDE_DIRS="$INCLUDE_DIRS -I$UTIL_DIR/gum-desktop/src"
+  INCLUDE_DIRS="$INCLUDE_DIRS -I$UTIL_DIR/gum-engine/src"
+  DEFINES="-DGUM_PRIMITIVES_MESH_UP_Z=ON"
+  for LIB in MATHS SYSTEM ESSENTIALS PRIMITIVES CODECS GRAPHICS OPENGL DESKTOP GLFW ; do
+    DEFINES="$DEFINES -DGUM${LIB}_BUILD_EXAMPLES=OFF -DGUM${LIB}_FOUND=YES"
+  done
+  for LIB in gum-maths gum-system gum-essentials gum-primitives gum-codecs gum-graphics gum-opengl gum-desktop ; do
+    cmake $DEFINES -DCMAKE_CXX_FLAGS="$INCLUDE_DIRS" -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -G Ninja -S ../../Util/$LIB -B ../../Build/Linux/$LIB
+  done
 fi

@@ -8,10 +8,6 @@
 #include <QLocale>
 #include <QSurfaceFormat>
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 4, 0)
-extern void qt_registerDefaultPlatformBackingStoreOpenGLSupport();
-#endif
-
 #ifdef WINDOWS
 #include <crtdbg.h>
 #else
@@ -19,6 +15,10 @@ extern void qt_registerDefaultPlatformBackingStoreOpenGLSupport();
 #endif
 
 #include "MainWindow.h"
+#include <System/Output.h>
+#include <Engine/3D/Object/ObjectManager.h>
+#include <gum-engine.h>
+#include <Desktop/Window.h>
 
 #ifdef MACOS
 #include <QFileOpenEvent>
@@ -56,6 +56,10 @@ protected:
 
 int main(int argc, char* argv[])
 {
+    Gum::Output::init();
+    ObjectManager::MODEL_ASSETS_PATH = Gum::File("/home/gumse/Projects/gumengine/gum-engine/examples/assets/objects/", Gum::Filesystem::DIRECTORY);;
+
+    //Gum::MaterialManager::MATERIAL_ASSETS_PATH = Examples::assetPath + Gum::File("/materials/", Gum::Filesystem::DIRECTORY);
 #ifdef WINDOWS
   _CrtSetDbgFlag(_CRTDBG_LEAK_CHECK_DF | _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG));
   //_CrtSetBreakAlloc(18969); // Use to track down memory leaks
@@ -65,30 +69,24 @@ int main(int argc, char* argv[])
   QLocale::setDefault(QLocale::C);
 
   QApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
-#ifdef MACOS
-  QApplication::setAttribute(Qt::AA_DontShowIconsInMenus);
-#endif
-  QSurfaceFormat format;
-  format.setVersion(3, 3);
-  format.setProfile(QSurfaceFormat::CoreProfile);
-  format.setSamples(1);
-  format.setStencilBufferSize(0);
-  QSurfaceFormat::setDefaultFormat(format);
-
-#if QT_VERSION < QT_VERSION_CHECK(6, 4, 0)
-  // Workaround: For OpenGL to be used in windows, support must be registered before the window is created.
-  // The following function is declared as a constructor in QtOpenGL (i.e. executed at library loading time),
-  // but since the SimRobot application doesn't reference QtOpenGL it isn't sufficient to link QtOpenGL
-  // due to lazy loading. Therefore, we call this function here (probably resulting in the function being
-  // called twice, but this is handled by the function).
-  qt_registerDefaultPlatformBackingStoreOpenGLSupport();
-#endif
-
   QApplication app(argc, argv);
 #ifndef WINDOWS
   setlocale(LC_NUMERIC, "C");
 #endif
   MainWindow mainWindow(argc, argv);
+  Gum::Window* gumWindow = new Gum::Window(
+    "SimRobot", ivec2(1920, 1080), 
+    GUM_WINDOW_DEFAULTS, 
+    nullptr, Gum::DefaultContextConfig, nullptr, 
+    &mainWindow
+  );
+
+
+  Gum::Engine::init();
+  gumWindow->getContext()->initOpenGL();
+  gumWindow->getContext()->setDefaults();
+  gumWindow->getContext()->printInfo();
+  Lightning::initShader();
 
 #ifdef WINDOWS
   app.setStyle("fusion");
@@ -120,5 +118,10 @@ int main(int argc, char* argv[])
     mainWindow.show();
 #endif
 
-  return app.exec();
+  int ret = app.exec();
+  
+  Gum::_delete(gumWindow);
+  Gum::Engine::cleanup();
+
+  return ret;
 }

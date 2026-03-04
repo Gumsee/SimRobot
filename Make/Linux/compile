@@ -16,4 +16,8 @@ if [ $# -gt 0 ]; then
   TARGETS="--target $@"
 fi
 
+for LIB in gum-maths gum-system gum-essentials gum-primitives gum-codecs gum-graphics gum-opengl gum-desktop ; do
+  cmake --build ../../Build/Linux/$LIB $TARGETS
+done
+
 cmake --build ../../Build/Linux/CMake/$CONFIG --config $CONFIG $TARGETS
