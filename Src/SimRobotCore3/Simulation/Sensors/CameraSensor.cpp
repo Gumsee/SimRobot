@@ -6,7 +6,6 @@
 
 #include "CameraSensor.h"
 #include "CoreModule.h"
-#include "Graphics/Primitives.h"
 #include "Platform/Assert.h"
 #include "Simulation/Body.h"
 #include "Simulation/Scene.h"
@@ -53,7 +52,7 @@ void CameraSensor::createPhysics(bGraphicsContext& graphicsContext)
   OpenGLTools::computePerspective(angleY, aspect, 0.01f, 500.f, sensor.projection);
 
   ASSERT(!pyramid);
-  pyramid = Primitives::createPyramid(graphicsContext, std::tan(angleX * 0.5f) * 2.f, std::tan(angleY * 0.5f) * 2.f, 1.f);
+  pyramid = new Object3D(Mesh::generatePyramid(vec2(std::tan(angleX * 0.5f) * 2.f, std::tan(angleY * 0.5f) * 2.f), 1.f), "CameraSensor");
 
   ASSERT(!surface);
   static const float color[] = {0.f, 0.f, 0.5f, 1.f};
@@ -93,14 +92,7 @@ void CameraSensor::Sensor::updateValue()
   Simulation::simulation->scene->updateTransformations();
 
   //// setup camera position
-  Pose3f pose = physicalObject->poseInWorld;
-  pose.conc(offset);
-  static const RotationMatrix cameraRotation = (Matrix3f() << Vector3f(0.f, -1.f, 0.f), Vector3f(0.f, 0.f, 1.f), Vector3f(-1.f, 0.f, 0.f)).finished();
-  pose.rotate(cameraRotation);
-
-  Vector3f rot = pose.rotation.eulerAngles(0,1,2);
-  camera->camera3d->setPosition(vec3(pose.translation.x(), pose.translation.y(), pose.translation.z()));
-  camera->camera3d->setRotation(vec3(rot.x(), rot.y(), rot.z()));
+  camera->camera3d->setMatrix(physicalObject->poseInWorld.getMatrix());
 
   //graphicsContext.startColorRendering(projection, transformation, 0, 0, imageWidth, imageHeight, true);
 
@@ -192,8 +184,7 @@ bool CameraSensor::Sensor::renderCameraImages(SimRobotCore3::SensorPort** camera
 
 void CameraSensor::drawPhysics(bGraphicsContext& graphicsContext, unsigned int flags) const
 {
-  if(flags & SimRobotCore3::Renderer::showSensors)
-    graphicsContext.draw(pyramid, modelMatrix, surface);
+  pyramid->render();
 
   ::Sensor::drawPhysics(graphicsContext, flags);
 }

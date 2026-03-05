@@ -40,5 +40,5 @@ private:
    */
   void drawPhysics(bGraphicsContext& graphicsContext, unsigned int flags) const override;
 
-  bGraphicsContext::Mesh* sphere = nullptr; /**< The sphere mesh */
+  Object3D* sphere = nullptr; /**< The sphere mesh */
 };

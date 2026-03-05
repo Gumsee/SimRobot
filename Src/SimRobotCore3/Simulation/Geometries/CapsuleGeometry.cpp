@@ -5,10 +5,10 @@
  */
 
 #include "CapsuleGeometry.h"
-#include "Graphics/Primitives.h"
 #include "Platform/Assert.h"
 #include <mujoco/mujoco.h>
 #include <algorithm>
+#include "Simulation/Simulation.h"
 
 mjsGeom* CapsuleGeometry::assembleGeometry(mjsBody* body)
 {
@@ -28,13 +28,12 @@ void CapsuleGeometry::createPhysics(bGraphicsContext& graphicsContext)
   Geometry::createPhysics(graphicsContext);
 
   ASSERT(!capsule);
-  //capsule = Primitives::createCapsule(graphicsContext, radius, height, 16, 17);
+  capsule = new Object3D(Mesh::generateCapsule(radius, height, 16, 17), "CapsuleGeometry");
 }
 
 void CapsuleGeometry::drawPhysics(bGraphicsContext& graphicsContext, unsigned int flags) const
 {
-  if(flags & SimRobotCore3::Renderer::showPhysics)
-    graphicsContext.draw(capsule, modelMatrix, surface);
+  capsule->render();
 
   Geometry::drawPhysics(graphicsContext, flags);
 }

@@ -9,6 +9,7 @@
 #include "SimRobotCore3.h"
 #include "Simulation/PhysicalObject.h"
 #include <QString>
+#include <Graphics/Object3D.h>
 
 /**
  * @class Actuator

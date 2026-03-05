@@ -15,11 +15,12 @@ void Sensor::createPhysics(bGraphicsContext& graphicsContext)
 {
   OpenGLTools::convertTransformation(rotation, translation, poseInParent);
 
-  graphicsContext.pushModelMatrix(poseInParent);
-  ASSERT(!modelMatrix);
-  modelMatrix = graphicsContext.requestModelMatrix(bGraphicsContext::ModelMatrix::sensorDrawing);
-  ::PhysicalObject::createPhysics(graphicsContext);
-  graphicsContext.popModelMatrix();
+  //TODO
+  //graphicsContext.pushModelMatrix(poseInParent);
+  //ASSERT(!modelMatrix);
+  //modelMatrix = graphicsContext.requestModelMatrix(bGraphicsContext::ModelMatrix::sensorDrawing);
+  //::PhysicalObject::createPhysics(graphicsContext);
+  //graphicsContext.popModelMatrix();
 }
 
 const QIcon* Sensor::Port::getIcon() const

@@ -12,6 +12,7 @@
 Geometry::Geometry()
 {
   color = rgba(204,204,204, 255);
+  std::cout << "Geometry" << std::endl;
 }
 
 Geometry::~Geometry()
@@ -77,11 +78,12 @@ void Geometry::createGeometry(mjsBody* body, int collisionGroup, const Pose3f& o
 void Geometry::createPhysics(bGraphicsContext& graphicsContext)
 {
   // \c createGeometry must have been called before.
-  graphicsContext.pushModelMatrix(poseInParent);
-  ASSERT(!modelMatrix);
-  modelMatrix = graphicsContext.requestModelMatrix(bGraphicsContext::ModelMatrix::physicalDrawing);
-  ::PhysicalObject::createPhysics(graphicsContext);
-  graphicsContext.popModelMatrix();
+  //TODO
+  //graphicsContext.pushModelMatrix(poseInParent);
+  //ASSERT(!modelMatrix);
+  //modelMatrix = graphicsContext.requestModelMatrix(bGraphicsContext::ModelMatrix::physicalDrawing);
+  //::PhysicalObject::createPhysics(graphicsContext);
+  //graphicsContext.popModelMatrix();
 
   //ASSERT(!surface);
   //surface = graphicsContext.requestSurface(color, color);

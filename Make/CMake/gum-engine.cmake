@@ -12,7 +12,7 @@ add_library(gum-essentials SHARED IMPORTED)
 set_target_properties(gum-essentials PROPERTIES IMPORTED_LOCATION "${SIMROBOT_PREFIX}/Build/Linux/gum-essentials/libGumEssentials.a")
 
 add_library(gum-primitives SHARED IMPORTED)
-set_target_properties(gum-primitives PROPERTIES IMPORTED_LOCATION "${SIMROBOT_PREFIX}/Build/Linux/gum-primitives/src/libGumPrimitives.a")
+set_target_properties(gum-primitives PROPERTIES IMPORTED_LOCATION "${SIMROBOT_PREFIX}/Build/Linux/gum-primitives/libGumPrimitives.a")
 
 add_library(gum-codecs SHARED IMPORTED)
 set_target_properties(gum-codecs PROPERTIES IMPORTED_LOCATION "${SIMROBOT_PREFIX}/Build/Linux/gum-codecs/libGumCodecs.a")

@@ -182,7 +182,8 @@ void DepthImageSensor::createPhysics(bGraphicsContext& graphicsContext)
   indices.push_back(0);
   indices.push_back(4);
 
-  pyramidChain = graphicsContext.requestMesh(vertexBuffer, indexBuffer, bGraphicsContext::lineList);
+  //TODO
+  //pyramidChain = graphicsContext.requestMesh(vertexBuffer, indexBuffer, bGraphicsContext::lineList);
 
   ASSERT(!surface);
   static const float color[] = {0.f, 0.f, 0.5f, 1.f};
@@ -214,7 +215,7 @@ void DepthImageSensor::DistanceSensor::updateValue()
   graphicsContext.updateModelMatrices(bGraphicsContext::ModelMatrix::appearance, false);
 
   // setup camera position
-  Pose3f pose = physicalObject->poseInWorld;
+  /*Pose3f pose = physicalObject->poseInWorld;
   pose.conc(offset);
   static const RotationMatrix cameraRotation = (Matrix3f() << Vector3f(0.f, -1.f, 0.f), Vector3f(0.f, 0.f, 1.f), Vector3f(-1.f, 0.f, 0.f)).finished();
   pose.rotate(cameraRotation);
@@ -263,7 +264,7 @@ void DepthImageSensor::DistanceSensor::updateValue()
       widthLeft -= end;
       pose.rotate(RotationMatrix::aroundY(-renderAngleX));
     }
-  }
+  }*/
 }
 
 bool DepthImageSensor::DistanceSensor::getMinAndMax(float& min, float& max) const
@@ -275,8 +276,7 @@ bool DepthImageSensor::DistanceSensor::getMinAndMax(float& min, float& max) cons
 
 void DepthImageSensor::drawPhysics(bGraphicsContext& graphicsContext, unsigned int flags) const
 {
-  if(flags & SimRobotCore3::Renderer::showSensors)
-    graphicsContext.draw(pyramidChain, modelMatrix, surface);
+  pyramidChain->render();
 
   Sensor::drawPhysics(graphicsContext, flags);
 }

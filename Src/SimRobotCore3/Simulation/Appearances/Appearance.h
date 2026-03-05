@@ -18,6 +18,10 @@
 class Appearance : public SimObject, public GraphicalObject, public SimRobotCore3::Appearance
 {
 public:
+Appearance()
+{
+  std::cout << "Appearance" << std::endl;
+}
   class Material        : public ElementCore3, public ::Material { public:
     void addParent(Element& element) override {
       Appearance* appearance = dynamic_cast<Appearance*>(&element);

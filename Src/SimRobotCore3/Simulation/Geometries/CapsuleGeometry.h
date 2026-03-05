@@ -41,5 +41,5 @@ private:
    */
   void drawPhysics(bGraphicsContext& graphicsContext, unsigned int flags) const override;
 
-  bGraphicsContext::Mesh* capsule = nullptr; /**< The capsule mesh */
+  Object3D* capsule = nullptr; /**< The capsule mesh */
 };

@@ -41,5 +41,5 @@ private:
    */
   void drawPhysics(bGraphicsContext& graphicsContext, unsigned int flags) const override;
 
-  bGraphicsContext::Mesh* cylinder = nullptr; /**< The cylinder mesh */
+  Object3D* cylinder = nullptr; /**< The cylinder mesh */
 };

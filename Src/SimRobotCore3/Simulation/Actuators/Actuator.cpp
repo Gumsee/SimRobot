@@ -14,11 +14,12 @@ void Actuator::createPhysics(bGraphicsContext &graphicsContext)
 {
   OpenGLTools::convertTransformation(rotation, translation, poseInParent);
 
-  graphicsContext.pushModelMatrix(poseInParent);
-  ASSERT(!modelMatrix);
-  modelMatrix = graphicsContext.requestModelMatrix(bGraphicsContext::ModelMatrix::physicalDrawing);
-  ::PhysicalObject::createPhysics(graphicsContext);
-  graphicsContext.popModelMatrix();
+  //TODO
+  //graphicsContext.pushModelMatrix(poseInParent);
+  //ASSERT(!modelMatrix);
+  //modelMatrix = graphicsContext.requestModelMatrix(bGraphicsContext::ModelMatrix::physicalDrawing);
+  //::PhysicalObject::createPhysics(graphicsContext);
+  //graphicsContext.popModelMatrix();
 }
 
 void Actuator::addParent(Element& element)

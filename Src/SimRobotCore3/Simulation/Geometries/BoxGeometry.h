@@ -42,5 +42,5 @@ private:
    */
   void drawPhysics(bGraphicsContext& graphicsContext, unsigned int flags) const override;
 
-  bGraphicsContext::Mesh* box = nullptr; /**< The box mesh */
+  Object3D* box = nullptr; /**< The box mesh */
 };

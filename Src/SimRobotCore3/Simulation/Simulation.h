@@ -41,11 +41,11 @@ public:
   std::vector<Geometry*> geometryMap; /**< A map from geom index in \c data to the SimRobot object. */
 
   bGraphicsContext graphicsContext; /**< The object that does graphics. */
-  bGraphicsContext::Mesh* xAxisMesh = nullptr; /**< The mesh for the x axis in object renderers. */
-  bGraphicsContext::Mesh* yAxisMesh = nullptr; /**< The mesh for the y axis in object renderers. */
-  bGraphicsContext::Mesh* zAxisMesh = nullptr; /**< The mesh for the z axis in object renderers. */
-  bGraphicsContext::Mesh* dragPlaneMesh = nullptr; /**< The mesh for the drag plane in object renderers. */
-  bGraphicsContext::Mesh* bodyComSphereMesh = nullptr; /**< The mesh for the physical CoM drawing of bodies. */
+  Object3D* xAxisMesh = nullptr; /**< The mesh for the x axis in object renderers. */
+  Object3D* yAxisMesh = nullptr; /**< The mesh for the y axis in object renderers. */
+  Object3D* zAxisMesh = nullptr; /**< The mesh for the z axis in object renderers. */
+  Object3D* dragPlaneMesh = nullptr; /**< The mesh for the drag plane in object renderers. */
+  Object3D* bodyComSphereMesh = nullptr; /**< The mesh for the physical CoM drawing of bodies. */
   bGraphicsContext::Surface* xAxisSurface = nullptr; /**< The surface for the x axis in object renderers. */
   bGraphicsContext::Surface* yAxisSurface = nullptr; /**< The surface for the y axis in object renderers. */
   bGraphicsContext::Surface* zAxisSurface = nullptr; /**< The surface for the z axis in object renderers. */

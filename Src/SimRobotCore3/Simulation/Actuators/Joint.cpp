@@ -8,7 +8,6 @@
  */
 
 #include "Joint.h"
-#include "Graphics/Primitives.h"
 #include "Platform/Assert.h"
 #include "SimRobotCore3.h"
 #include "Simulation/Axis.h"
@@ -20,10 +19,10 @@ void Joint::createPhysics(bGraphicsContext& graphicsContext)
   Actuator::createPhysics(graphicsContext);
 
   ASSERT(!axisLine);
-  axisLine = Primitives::createLine(graphicsContext, -0.05f * Vector3f(axis->x, axis->y, axis->z), 0.05f * Vector3f(axis->x, axis->y, axis->z));
+  axisLine = new Object3D(Mesh::generateLine(vec3(axis->x, axis->y, axis->z) * -0.05f, vec3(axis->x, axis->y, axis->z) * 0.05f), "JointLine");
 
   ASSERT(!sphere);
-  //sphere = Primitives::createSphere(graphicsContext, 0.002f, 10, 10, false);
+  sphere = new Object3D(Mesh::generateSphere(0.002f, 10, 10), "JointSphere");
 
   ASSERT(!surface);
   const float color[] = {std::abs(axis->x), std::abs(axis->y), std::abs(axis->z), 1.f};
@@ -32,11 +31,8 @@ void Joint::createPhysics(bGraphicsContext& graphicsContext)
 
 void Joint::drawPhysics(bGraphicsContext& graphicsContext, unsigned int flags) const
 {
-  if(flags & SimRobotCore3::Renderer::showPhysics)
-  {
-    graphicsContext.draw(axisLine, modelMatrix, surface);
-    graphicsContext.draw(sphere, modelMatrix, surface);
-  }
+  axisLine->render();
+  sphere->render();
 
   Actuator::drawPhysics(graphicsContext, flags);
 }

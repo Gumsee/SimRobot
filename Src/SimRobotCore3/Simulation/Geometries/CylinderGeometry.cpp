@@ -5,10 +5,10 @@
  */
 
 #include "CylinderGeometry.h"
-#include "Graphics/Primitives.h"
 #include "Platform/Assert.h"
 #include <mujoco/mujoco.h>
 #include <cmath>
+#include "Simulation/Simulation.h"
 
 mjsGeom* CylinderGeometry::assembleGeometry(mjsBody* body)
 {
@@ -28,13 +28,12 @@ void CylinderGeometry::createPhysics(bGraphicsContext& graphicsContext)
   Geometry::createPhysics(graphicsContext);
 
   ASSERT(!cylinder);
-  //cylinder = Primitives::createCylinder(graphicsContext, radius, height, 16);
+  cylinder = new Object3D(Mesh::generateCylinder(radius, height, 16), "CylinderGeometry");
 }
 
 void CylinderGeometry::drawPhysics(bGraphicsContext& graphicsContext, unsigned int flags) const
 {
-  if(flags & SimRobotCore3::Renderer::showPhysics)
-    graphicsContext.draw(cylinder, modelMatrix, surface);
+  cylinder->render();
 
   Geometry::drawPhysics(graphicsContext, flags);
 }

@@ -32,7 +32,7 @@ private:
    * @param parentPose The pose of the group or geometry
    * @param geometry A geometry description
    */
-  void addGeometry(const Pose3f& parentPose, Geometry& geometry);
+  void addGeometry(const Transformable3D& parentPose, Geometry& geometry);
 
   /**
    * Creates resources to later draw the object in the given graphics context

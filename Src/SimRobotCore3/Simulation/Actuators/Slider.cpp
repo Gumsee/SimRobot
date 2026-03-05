@@ -22,8 +22,9 @@ void Slider::createPhysics(bGraphicsContext& graphicsContext)
 
   axis->create();
 
-  if(axis->deflection && axis->deflection->offset != 0.f)
-    poseInWorld.translate(Vector3f(axis->x, axis->y, axis->z) * axis->deflection->offset);
+  //TODO
+  //if(axis->deflection && axis->deflection->offset != 0.f)
+  //  poseInWorld.translate(Vector3f(axis->x, axis->y, axis->z) * axis->deflection->offset);
 
   Joint::createPhysics(graphicsContext);
 
@@ -40,10 +41,11 @@ void Slider::createPhysics(bGraphicsContext& graphicsContext)
   mjs_setName(joint->element, jointName);
   joint->type = mjJNT_SLIDE;
 
-  const Vector3f positionInChild = childBody->poseInWorld.inverse() * poseInWorld.translation;
-  mju_f2n(joint->pos, positionInChild.data(), 3);
-  const Vector3f axisInChild = childBody->poseInWorld.rotation.inverse() * poseInWorld.rotation * Vector3f(axis->x, axis->y, axis->z);
-  mju_f2n(joint->axis, axisInChild.data(), 3);
+  //TODO
+  //const Vector3f positionInChild = childBody->poseInWorld.inverse() * poseInWorld.translation;
+  //mju_f2n(joint->pos, positionInChild.data(), 3);
+  //const Vector3f axisInChild = childBody->poseInWorld.rotation.inverse() * poseInWorld.rotation * Vector3f(axis->x, axis->y, axis->z);
+  //mju_f2n(joint->axis, axisInChild.data(), 3);
 
   if(axis->deflection)
   {

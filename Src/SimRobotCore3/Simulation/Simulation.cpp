@@ -6,7 +6,6 @@
 
 #include "Simulation.h"
 #include "CoreModule.h"
-#include "Graphics/Primitives.h"
 #include "Parser/ElementCore3.h"
 #include "Parser/ParserCore3.h"
 #include "Platform/Assert.h"
@@ -131,10 +130,10 @@ bool Simulation::loadFile(const std::string& filename, std::list<std::string>& e
 
   scene->createGraphics(*Gum::Window::CurrentlyBoundWindow->getContext());
 
-  xAxisMesh = Primitives::createLine(graphicsContext, Vector3f::Zero(), Vector3f(1.f, 0.f, 0.f));
-  yAxisMesh = Primitives::createLine(graphicsContext, Vector3f::Zero(), Vector3f(0.f, 1.f, 0.f));
-  zAxisMesh = Primitives::createLine(graphicsContext, Vector3f::Zero(), Vector3f(0.f, 0.f, 1.f));
-  dragPlaneMesh = Primitives::createDisk(graphicsContext, 0.003f, 0.5f, 30);
+  xAxisMesh = new Object3D(Mesh::generateLine(vec3(0,0,0), vec3(1.f, 0.f, 0.f)), "xAxis");
+  yAxisMesh = new Object3D(Mesh::generateLine(vec3(0,0,0), vec3(0.f, 1.f, 0.f)), "yAxis");
+  zAxisMesh = new Object3D(Mesh::generateLine(vec3(0,0,0), vec3(0.f, 0.f, 1.f)), "zAxis");
+  dragPlaneMesh = new Object3D(Mesh::generateDisk(0.003f, 0.5f, 30), "dragPlane");
   //bodyComSphereMesh = Primitives::createSphere(graphicsContext, 0.003f, 10, 10, false);
   static const float redColor[] = {1.f, 0.f, 0.f, 1.f};
   static const float greenColor[] = {0.f, 1.f, 0.f, 1.f};

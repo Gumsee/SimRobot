@@ -29,11 +29,12 @@ void PhysicalObject::createPhysics(bGraphicsContext& graphicsContext)
   for(PhysicalObject* object : physicalChildren)
   {
     // compute pose of child object
-    object->poseInWorld = poseInWorld;
-    if(object->translation)
-      object->poseInWorld.translate(*object->translation);
-    if(object->rotation)
-      object->poseInWorld.rotate(*object->rotation);
+    //TODO
+    //object->poseInWorld = poseInWorld;
+    //if(object->translation)
+    //  object->poseInWorld.translate(*object->translation);
+    //if(object->rotation)
+    //  object->poseInWorld.rotate(*object->rotation);
 
     //
     object->parentBody = body;
@@ -56,10 +57,11 @@ void PhysicalObject::drawControllerDrawings() const
 
 void PhysicalObject::beforeControllerDrawings(const float* projection, const float* view) const
 {
-  ASSERT(modelMatrix);
-  for(SimRobotCore3::Controller3DDrawing* drawing : controllerDrawings)
-    drawing->beforeFrame(projection, view, modelMatrix->getPointer());
-  const_cast<PhysicalObject*>(this)->visitPhysicalControllerDrawings([projection, view](PhysicalObject& child){child.beforeControllerDrawings(projection, view);});
+  //TODO
+  //ASSERT(modelMatrix);
+  //for(SimRobotCore3::Controller3DDrawing* drawing : controllerDrawings)
+  //  drawing->beforeFrame(projection, view, modelMatrix->getPointer());
+  //const_cast<PhysicalObject*>(this)->visitPhysicalControllerDrawings([projection, view](PhysicalObject& child){child.beforeControllerDrawings(projection, view);});
 }
 
 void PhysicalObject::afterControllerDrawings() const

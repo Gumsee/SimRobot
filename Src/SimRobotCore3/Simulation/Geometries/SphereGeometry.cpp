@@ -5,9 +5,9 @@
  */
 
 #include "SphereGeometry.h"
-#include "Graphics/Primitives.h"
 #include "Platform/Assert.h"
 #include <mujoco/mujoco.h>
+#include "Simulation/Simulation.h"
 
 mjsGeom* SphereGeometry::assembleGeometry(mjsBody* body)
 {
@@ -26,13 +26,12 @@ void SphereGeometry::createPhysics(bGraphicsContext& graphicsContext)
   Geometry::createPhysics(graphicsContext);
 
   ASSERT(!sphere);
-  //sphere = Primitives::createSphere(graphicsContext, radius, 16, 16, false);
+  sphere = new Object3D(Mesh::generateSphere(radius, 16, 16), "SphereGeometry");
 }
 
 void SphereGeometry::drawPhysics(bGraphicsContext& graphicsContext, unsigned int flags) const
 {
-  if(flags & SimRobotCore3::Renderer::showPhysics)
-    graphicsContext.draw(sphere, modelMatrix, surface);
+  sphere->render();
 
   Geometry::drawPhysics(graphicsContext, flags);
 }

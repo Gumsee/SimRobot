@@ -91,6 +91,6 @@ private:
    */
   void drawPhysics(bGraphicsContext& graphicsContext, unsigned int flags) const override;
 
-  bGraphicsContext::Mesh* pyramidChain = nullptr; /**< The pyramid chain mesh for the sensor drawing. */
+  Object3D* pyramidChain = nullptr; /**< The pyramid chain mesh for the sensor drawing. */
   bGraphicsContext::Surface* surface = nullptr; /**< The surface for the sensor drawing. */
 };

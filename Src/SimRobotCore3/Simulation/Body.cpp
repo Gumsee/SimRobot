@@ -5,7 +5,6 @@
  */
 
 #include "Body.h"
-#include "Graphics/Primitives.h"
 #include "Platform/Assert.h"
 #include "Simulation/Actuators/Joint.h"
 #include "Simulation/Geometries/Geometry.h"
@@ -63,14 +62,15 @@ void Body::createPhysics(bGraphicsContext& graphicsContext)
   }
 
   // set position
-  {
+  //TODO
+  /*{
     const Pose3f poseInParentBody = parentBody ? parentBody->poseInWorld.inverse() * poseInWorld : poseInWorld;
     mju_f2n(body->pos, poseInParentBody.translation.data(), 3);
     mjtNum buf[9];
     mju_f2n(buf, poseInParentBody.rotation.data(), 9);
     mju_mat2Quat(body->quat, buf);
     mju_negQuat(body->quat, body->quat); // column major -> row major
-  }
+  }*/
 
   // add geometries
   const Pose3f geomOffset;
@@ -81,7 +81,8 @@ void Body::createPhysics(bGraphicsContext& graphicsContext)
       addGeometry(geomOffset, *geometry);
   }
 
-  poseInParent = poseInWorld;
+  //TODO
+  /*poseInParent = poseInWorld;
 
   graphicsContext.pushModelMatrixStack();
 
@@ -89,7 +90,7 @@ void Body::createPhysics(bGraphicsContext& graphicsContext)
 
   ASSERT(!::PhysicalObject::modelMatrix);
   ::PhysicalObject::modelMatrix = graphicsContext.requestModelMatrix(bGraphicsContext::ModelMatrix::controllerDrawing);
-
+*/
   const Pose3f centerOfMassPose(centerOfMass);
   graphicsContext.pushModelMatrix(centerOfMassPose);
   ASSERT(!comModelMatrix);
@@ -199,13 +200,14 @@ void Body::createGraphics(GraphicsContext& graphicsContext)
 void Body::updateTransformation()
 {
   // get pose from MuJoCo
-  mju_n2f(poseInWorld.translation.data(), Simulation::simulation->data->xpos + bodyIndex * 3, 3);
-  mju_n2f(poseInWorld.rotation.data(), Simulation::simulation->data->xmat + bodyIndex * 9, 9);
-  // from MuJoCo's row major format to column major
-  poseInWorld.rotation.transposeInPlace();
-
-  // Bodies are always relative to the world.
-  poseInParent = poseInWorld;
+  //TODO
+  //mju_n2f(poseInWorld.translation.data(), Simulation::simulation->data->xpos + bodyIndex * 3, 3);
+  //mju_n2f(poseInWorld.rotation.data(), Simulation::simulation->data->xmat + bodyIndex * 9, 9);
+  //// from MuJoCo's row major format to column major
+  //poseInWorld.rotation.transposeInPlace();
+//
+  //// Bodies are always relative to the world.
+  //poseInParent = poseInWorld;
 
   //
   for(Body* child : bodyChildren)
@@ -229,9 +231,7 @@ void Body::visitGraphicalControllerDrawings(const std::function<void(GraphicalOb
 
 void Body::drawPhysics(bGraphicsContext& graphicsContext, unsigned int flags) const
 {
-  // draw center of mass
-  if(flags & SimRobotCore3::Renderer::showPhysics)
-    graphicsContext.draw(Simulation::simulation->bodyComSphereMesh, comModelMatrix, Simulation::simulation->bodyComSphereSurface);
+  Simulation::simulation->bodyComSphereMesh->render();
 
   // draw children
   ::PhysicalObject::drawPhysics(graphicsContext, flags);
@@ -296,31 +296,34 @@ void Body::rotate(const RotationMatrix& rotation, const Vector3f& point)
 
 const float* Body::getPosition() const
 {
-  Pose3f& pose = const_cast<Body*>(this)->poseInWorld;
-  mju_n2f(pose.translation.data(), Simulation::simulation->data->xpos + bodyIndex * 3, 3);
-  return pose.translation.data();
+  //TODO
+  //Pose3f& pose = const_cast<Body*>(this)->poseInWorld;
+  //mju_n2f(pose.translation.data(), Simulation::simulation->data->xpos + bodyIndex * 3, 3);
+  //return pose.translation.data();
+  return 0;
 }
 
 bool Body::getPose(float* pos, float (*rot)[3]) const
 {
-  Pose3f& pose = const_cast<Body*>(this)->poseInWorld;
-  mju_n2f(pose.translation.data(), Simulation::simulation->data->xpos + bodyIndex * 3, 3);
-  mju_n2f(pose.rotation.data(), Simulation::simulation->data->xmat + bodyIndex * 9, 9);
-  pose.rotation.transposeInPlace();
-
-  pos[0] = pose.translation.x();
-  pos[1] = pose.translation.y();
-  pos[2] = pose.translation.z();
-
-  rot[0][0] = pose.rotation(0, 0);
-  rot[0][1] = pose.rotation(1, 0);
-  rot[0][2] = pose.rotation(2, 0);
-  rot[1][0] = pose.rotation(0, 1);
-  rot[1][1] = pose.rotation(1, 1);
-  rot[1][2] = pose.rotation(2, 1);
-  rot[2][0] = pose.rotation(0, 2);
-  rot[2][1] = pose.rotation(1, 2);
-  rot[2][2] = pose.rotation(2, 2);
+  //TODO?
+  //Pose3f& pose = const_cast<Body*>(this)->poseInWorld;
+  //mju_n2f(pose.translation.data(), Simulation::simulation->data->xpos + bodyIndex * 3, 3);
+  //mju_n2f(pose.rotation.data(), Simulation::simulation->data->xmat + bodyIndex * 9, 9);
+  //pose.rotation.transposeInPlace();
+//
+  //pos[0] = pose.translation.x();
+  //pos[1] = pose.translation.y();
+  //pos[2] = pose.translation.z();
+//
+  //rot[0][0] = pose.rotation(0, 0);
+  //rot[0][1] = pose.rotation(1, 0);
+  //rot[0][2] = pose.rotation(2, 0);
+  //rot[1][0] = pose.rotation(0, 1);
+  //rot[1][1] = pose.rotation(1, 1);
+  //rot[1][2] = pose.rotation(2, 1);
+  //rot[2][0] = pose.rotation(0, 2);
+  //rot[2][1] = pose.rotation(1, 2);
+  //rot[2][2] = pose.rotation(2, 2);
   return true;
 }
 

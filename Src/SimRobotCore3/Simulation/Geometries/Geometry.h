@@ -13,6 +13,7 @@
 #include <list>
 #include <string>
 #include <unordered_map>
+#include <Graphics/Object3D.h>
 
 /**
  * @class Geometry

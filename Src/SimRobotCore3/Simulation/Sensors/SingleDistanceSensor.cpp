@@ -6,7 +6,6 @@
 
 #include "SingleDistanceSensor.h"
 #include "CoreModule.h"
-#include "Graphics/Primitives.h"
 #include "Platform/Assert.h"
 #include <mujoco/mujoco.h>
 
@@ -28,7 +27,7 @@ void SingleDistanceSensor::createPhysics(bGraphicsContext& graphicsContext)
     sensor.offset.rotation = *rotation;
 
   ASSERT(!ray);
-  ray = Primitives::createLine(graphicsContext, Vector3f::Zero(), Vector3f(max, 0.f, 0.f));
+  ray = new Object3D(Mesh::generateLine(vec3(0,0,0), vec3(max, 0.f, 0.f)), "SingleDistanceSensor");
 
   ASSERT(!surface);
   static const float color[] = {0.5f, 0.f, 0.f, 1.f};
@@ -52,7 +51,8 @@ void SingleDistanceSensor::addParent(Element& element)
 
 void SingleDistanceSensor::DistanceSensor::updateValue()
 {
-  pose = physicalObject->poseInWorld;
+  //TODO
+  /*pose = physicalObject->poseInWorld;
   pose.conc(offset);
 
   mjtNum origin[3], dir[3];
@@ -67,7 +67,7 @@ void SingleDistanceSensor::DistanceSensor::updateValue()
   else if(dist > max)
     data.floatValue = max;
   else
-    data.floatValue = dist;
+    data.floatValue = dist;*/
 }
 
 bool SingleDistanceSensor::DistanceSensor::getMinAndMax(float& min, float& max) const
@@ -79,8 +79,7 @@ bool SingleDistanceSensor::DistanceSensor::getMinAndMax(float& min, float& max) 
 
 void SingleDistanceSensor::drawPhysics(bGraphicsContext& graphicsContext, unsigned int flags) const
 {
-  if(flags & SimRobotCore3::Renderer::showSensors)
-    graphicsContext.draw(ray, modelMatrix, surface);
+  ray->render();
 
   Sensor::drawPhysics(graphicsContext, flags);
 }

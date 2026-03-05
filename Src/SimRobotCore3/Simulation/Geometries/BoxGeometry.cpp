@@ -5,11 +5,11 @@
  */
 
 #include "BoxGeometry.h"
-#include "Graphics/Primitives.h"
 #include "Platform/Assert.h"
 #include <mujoco/mujoco.h>
 #include <algorithm>
 #include <cmath>
+#include "Simulation/Simulation.h"
 
 mjsGeom* BoxGeometry::assembleGeometry(mjsBody* body)
 {
@@ -30,13 +30,12 @@ void BoxGeometry::createPhysics(bGraphicsContext& graphicsContext)
   Geometry::createPhysics(graphicsContext);
 
   ASSERT(!box);
-  //box = Primitives::createBox(graphicsContext, width, height, depth);
+  box = new Object3D(Mesh::generateCube(vec3(width, height, depth)), "BoxGeometry");
 }
 
 void BoxGeometry::drawPhysics(bGraphicsContext& graphicsContext, unsigned int flags) const
 {
-  if(flags & SimRobotCore3::Renderer::showPhysics)
-    graphicsContext.draw(box, modelMatrix, surface);
+  box->render();
 
   Geometry::drawPhysics(graphicsContext, flags);
 }

@@ -43,7 +43,7 @@ private:
   /** Registers this object with children, actuators and sensors at SimRobot's GUI */
   void registerObjects() override;
 
-  bGraphicsContext::Mesh* axisLine = nullptr;
-  bGraphicsContext::Mesh* sphere = nullptr;
+  Object3D* axisLine = nullptr;
+  Object3D* sphere = nullptr;
   bGraphicsContext::Surface* surface = nullptr;
 };

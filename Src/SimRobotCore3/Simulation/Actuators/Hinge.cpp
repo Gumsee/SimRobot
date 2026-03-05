@@ -23,7 +23,8 @@ void Hinge::createPhysics(bGraphicsContext& graphicsContext)
 
   axis->create();
 
-  if(axis->deflection && axis->deflection->offset != 0.f)
+  //TODO
+  /*if(axis->deflection && axis->deflection->offset != 0.f)
     poseInWorld.rotate(Rotation::AngleAxis::unpack(Vector3f(axis->x, axis->y, axis->z) * axis->deflection->offset));
 
   Joint::createPhysics(graphicsContext);
@@ -62,7 +63,7 @@ void Hinge::createPhysics(bGraphicsContext& graphicsContext)
     axis->motor->create(this);
     if(!dynamic_cast<VelocityMotor*>(axis->motor) && axis->deflection) // Move setpoint to a position inside the deflection range
       axis->motor->setpoint = axis->deflection->offset;
-  }
+  }*/
 }
 
 const QIcon* Hinge::getIcon() const

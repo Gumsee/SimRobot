@@ -8,7 +8,6 @@
 
 #include "ObjectSegmentedImageSensor.h"
 #include "CoreModule.h"
-#include "Graphics/Primitives.h"
 #include "Platform/Assert.h"
 #include "Simulation/Body.h"
 #include "Simulation/Scene.h"
@@ -75,7 +74,7 @@ void ObjectSegmentedImageSensor::createPhysics(bGraphicsContext& graphicsContext
   }
 
   ASSERT(!pyramid);
-  pyramid = Primitives::createPyramid(graphicsContext, std::tan(angleX * 0.5f) * 2.f, std::tan(angleY * 0.5f) * 2.f, 1.f);
+  pyramid = new Object3D(Mesh::generatePyramid(vec2(std::tan(angleX * 0.5f) * 2.f, std::tan(angleY * 0.5f) * 2.f), 1.f), "ObjectSegmentedImageSensor");
 
   ASSERT(!surface);
   static const float color[] = {0.f, 0.f, 0.5f, 1.f};
@@ -229,8 +228,7 @@ bool ObjectSegmentedImageSensor::ObjectSegmentedImageSensorPort::renderCameraIma
 
 void ObjectSegmentedImageSensor::drawPhysics(bGraphicsContext& graphicsContext, unsigned int flags) const
 {
-  if(flags & SimRobotCore3::Renderer::showSensors)
-    graphicsContext.draw(pyramid, modelMatrix, surface);
+  pyramid->render();
 
   Sensor::drawPhysics(graphicsContext, flags);
 }

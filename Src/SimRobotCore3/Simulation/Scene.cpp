@@ -68,9 +68,11 @@ void Scene::drawAppearances(GraphicsContext& graphicsContext) const
 
 void Scene::drawPhysics(bGraphicsContext& graphicsContext, unsigned int flags) const
 {
+  Simulation::simulation->forwardRenderingShader->use();
   for(const Body* body : bodies)
     body->drawPhysics(graphicsContext, flags);
   ::PhysicalObject::drawPhysics(graphicsContext, flags);
+  Simulation::simulation->forwardRenderingShader->unuse();
 }
 
 void Scene::visitGraphicalControllerDrawings(const std::function<void(GraphicalObject&)>& accept)

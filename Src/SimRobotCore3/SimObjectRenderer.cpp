@@ -402,7 +402,7 @@ Body* SimObjectRenderer::selectObject(const Vector3f& projectedClick)
 
 bool SimObjectRenderer::startDrag(int x, int y, DragType type)
 {
-  if(dragging)
+  /*if(dragging)
     return true;
 
   // look if the user clicked on an object
@@ -442,7 +442,7 @@ bool SimObjectRenderer::startDrag(int x, int y, DragType type)
     dragging = true;
     dragType = type;
     return true;
-  }
+  }*/
   return false;
 }
 
@@ -453,7 +453,7 @@ SimRobotCore3::Object* SimObjectRenderer::getDragSelection()
 
 bool SimObjectRenderer::moveDrag(int x, int y, DragType type)
 {
-  if(!dragging)
+  /*if(!dragging)
     return false;
 
   dragType = type;
@@ -582,12 +582,13 @@ bool SimObjectRenderer::moveDrag(int x, int y, DragType type)
       }
     }
     return true;
-  }
+  }*/
+ return false;
 }
 
 bool SimObjectRenderer::releaseDrag(int x, int y)
 {
-  if(!dragging)
+  /*if(!dragging)
     return false;
 
   if(!dragSelection) // camera control
@@ -642,7 +643,8 @@ bool SimObjectRenderer::releaseDrag(int x, int y)
 
     dragging = false;
     return true;
-  }
+  }*/
+ return false;
 }
 
 void SimObjectRenderer::setCamera(const float* pos, const float* target)
