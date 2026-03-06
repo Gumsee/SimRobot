@@ -18,7 +18,7 @@ void Actuator::createPhysics(bGraphicsContext &graphicsContext)
   //graphicsContext.pushModelMatrix(poseInParent);
   //ASSERT(!modelMatrix);
   //modelMatrix = graphicsContext.requestModelMatrix(bGraphicsContext::ModelMatrix::physicalDrawing);
-  //::PhysicalObject::createPhysics(graphicsContext);
+  ::PhysicalObject::createPhysics(graphicsContext);
   //graphicsContext.popModelMatrix();
 }
 

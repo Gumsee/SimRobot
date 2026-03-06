@@ -134,7 +134,7 @@ bool Simulation::loadFile(const std::string& filename, std::list<std::string>& e
   yAxisMesh = new Object3D(Mesh::generateLine(vec3(0,0,0), vec3(0.f, 1.f, 0.f)), "yAxis");
   zAxisMesh = new Object3D(Mesh::generateLine(vec3(0,0,0), vec3(0.f, 0.f, 1.f)), "zAxis");
   dragPlaneMesh = new Object3D(Mesh::generateDisk(0.003f, 0.5f, 30), "dragPlane");
-  //bodyComSphereMesh = Primitives::createSphere(graphicsContext, 0.003f, 10, 10, false);
+  bodyComSphereMesh = new Object3D(Mesh::generateSphere(0.003f, 10, 10), "bodyComSphereMesh");
   static const float redColor[] = {1.f, 0.f, 0.f, 1.f};
   static const float greenColor[] = {0.f, 1.f, 0.f, 1.f};
   static const float blueColor[] = {0.f, 0.f, 1.f, 1.f};

@@ -27,6 +27,7 @@ ServoMotor::ServoMotor()
 
 void ServoMotor::create(Joint* joint)
 {
+  std::cout << "Creating servo motor " << joint << std::endl;
   this->joint = joint;
   positionSensor.servoMotor = velocitySensor.servoMotor = this;
   lastPos = joint->axis->deflection ? joint->axis->deflection->offset : 0.f;
@@ -197,6 +198,8 @@ bool ServoMotor::VelocitySensor::getMinAndMax(float& min, float& max) const
 
 void ServoMotor::registerObjects()
 {
+  std::cout << joint << std::endl;
+  std::cout << "index: " << joint->jointIndex << std::endl;
   if(Simulation::simulation->model->jnt_type[joint->jointIndex] == mjJNT_HINGE)
   {
     positionSensor.unit = unit = QString::fromUtf8("°");

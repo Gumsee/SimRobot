@@ -29,11 +29,11 @@ void CylinderGeometry::createPhysics(bGraphicsContext& graphicsContext)
 
   ASSERT(!cylinder);
   cylinder = new Object3D(Mesh::generateCylinder(radius, height, 16), "CylinderGeometry");
+  cylinder->addInstance()->setMatrix(getTransformationMatrix());
 }
 
-void CylinderGeometry::drawPhysics(bGraphicsContext& graphicsContext, unsigned int flags) const
+void CylinderGeometry::drawPhysics() const
 {
   cylinder->render();
-
-  Geometry::drawPhysics(graphicsContext, flags);
+  Geometry::drawPhysics();
 }

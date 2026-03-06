@@ -78,13 +78,9 @@ void Geometry::createGeometry(mjsBody* body, int collisionGroup, const Pose3f& o
 void Geometry::createPhysics(bGraphicsContext& graphicsContext)
 {
   // \c createGeometry must have been called before.
-  //TODO
-  //graphicsContext.pushModelMatrix(poseInParent);
-  //ASSERT(!modelMatrix);
-  //modelMatrix = graphicsContext.requestModelMatrix(bGraphicsContext::ModelMatrix::physicalDrawing);
-  //::PhysicalObject::createPhysics(graphicsContext);
-  //graphicsContext.popModelMatrix();
+  ::PhysicalObject::createPhysics(graphicsContext);
 
+  //TODO
   //ASSERT(!surface);
   //surface = graphicsContext.requestSurface(color, color);
 }

@@ -35,12 +35,6 @@ private:
   void addGeometry(const Transformable3D& parentPose, Geometry& geometry);
 
   /**
-   * Creates resources to later draw the object in the given graphics context
-   * @param graphicsContext The graphics context to create resources in
-   */
-  void createGraphics(GraphicsContext& graphicsContext) override;
-
-  /**
    * Registers an element as parent
    * @param element The element to register
    */

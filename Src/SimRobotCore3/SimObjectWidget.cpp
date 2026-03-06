@@ -28,6 +28,7 @@
 #include <GL/glew.h>
 #include <QOpenGLContext>
 #include <QSurface>
+#include <Graphics/Graphics.h>
 
 SimObjectWidget::SimObjectWidget(SimObject& simObject) : QOpenGLWidget(),
   object(dynamic_cast<SimRobot::Object&>(simObject)), objectRenderer(simObject), oMouse(nullptr),
@@ -179,8 +180,8 @@ void recursivelyAddObjects(World3D* world, const SimRobot::Object* object)
 void SimObjectWidget::initializeGL()
 { 
   Gum::Window::CurrentlyBoundWindow->getContext()->bind();
-  pGLContext->initOpenGL();
-  pGLContext->setDefaults();
+  Gum::Graphics::init();
+  Gum::Graphics::loadDefaults();
 
   pRenderCanvas = new Canvas(ivec2(width(), height()));
 
@@ -250,6 +251,14 @@ void SimObjectWidget::paintGL()
   pRenderCanvas->render();
   pRenderCanvas->getTexture()->unbind(0);
   pShader->unuse();
+
+  const PhysicalObject* physicalObject = dynamic_cast<const PhysicalObject*>(&object);
+  const bool drawPhysics = physicalObject && (physicsShadeMode != SimRobotCore3::Renderer::ShadeMode::noShading);
+  // draw object / scene physics
+  if(drawPhysics)// || drawSensors)
+  {
+    physicalObject->drawPhysics();
+  }
 
   oMouse.reset();
   if(isSceneWidget)

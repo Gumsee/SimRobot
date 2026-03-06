@@ -226,9 +226,8 @@ bool ObjectSegmentedImageSensor::ObjectSegmentedImageSensorPort::renderCameraIma
   return true;
 }
 
-void ObjectSegmentedImageSensor::drawPhysics(bGraphicsContext& graphicsContext, unsigned int flags) const
+void ObjectSegmentedImageSensor::drawPhysics() const
 {
   pyramid->render();
-
-  Sensor::drawPhysics(graphicsContext, flags);
+  Sensor::drawPhysics();
 }

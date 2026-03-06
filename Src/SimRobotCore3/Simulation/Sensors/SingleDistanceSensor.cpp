@@ -77,9 +77,9 @@ bool SingleDistanceSensor::DistanceSensor::getMinAndMax(float& min, float& max) 
   return true;
 }
 
-void SingleDistanceSensor::drawPhysics(bGraphicsContext& graphicsContext, unsigned int flags) const
+void SingleDistanceSensor::drawPhysics() const
 {
   ray->render();
 
-  Sensor::drawPhysics(graphicsContext, flags);
+  Sensor::drawPhysics();
 }

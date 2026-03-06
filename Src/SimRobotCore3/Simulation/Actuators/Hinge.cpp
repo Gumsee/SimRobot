@@ -27,6 +27,7 @@ void Hinge::createPhysics(bGraphicsContext& graphicsContext)
   /*if(axis->deflection && axis->deflection->offset != 0.f)
     poseInWorld.rotate(Rotation::AngleAxis::unpack(Vector3f(axis->x, axis->y, axis->z) * axis->deflection->offset));
 
+  */
   Joint::createPhysics(graphicsContext);
 
   // find bodies to connect
@@ -42,10 +43,11 @@ void Hinge::createPhysics(bGraphicsContext& graphicsContext)
   mjs_setName(joint->element, jointName);
   joint->type = mjJNT_HINGE;
 
-  const Vector3f positionInChild = childBody->poseInWorld.inverse() * poseInWorld.translation;
+  //TODO
+  /*const Vector3f positionInChild = childBody->poseInWorld.inverse() * poseInWorld.translation;
   mju_f2n(joint->pos, positionInChild.data(), 3);
   const Vector3f axisInChild = childBody->poseInWorld.rotation.inverse() * poseInWorld.rotation * Vector3f(axis->x, axis->y, axis->z);
-  mju_f2n(joint->axis, axisInChild.data(), 3);
+  mju_f2n(joint->axis, axisInChild.data(), 3);*/
 
   //joint->damping = 0.9f;
 
@@ -63,7 +65,7 @@ void Hinge::createPhysics(bGraphicsContext& graphicsContext)
     axis->motor->create(this);
     if(!dynamic_cast<VelocityMotor*>(axis->motor) && axis->deflection) // Move setpoint to a position inside the deflection range
       axis->motor->setpoint = axis->deflection->offset;
-  }*/
+  }
 }
 
 const QIcon* Hinge::getIcon() const

@@ -31,7 +31,7 @@ void Compound::createPhysics(bGraphicsContext& graphicsContext)
   //TODO
   //graphicsContext.pushModelMatrix(poseInParent);
   //::PhysicalObject::modelMatrix = graphicsContext.requestModelMatrix(bGraphicsContext::ModelMatrix::controllerDrawing);
-  //::PhysicalObject::createPhysics(graphicsContext);
+  ::PhysicalObject::createPhysics(graphicsContext);
   //graphicsContext.popModelMatrix();
 }
 
@@ -55,14 +55,4 @@ void Compound::addGeometry(const Transformable3D& parentPose, Geometry& geometry
   //  if(geometry)
   //    addGeometry(geomPose, *geometry);
   //}
-}
-
-void Compound::createGraphics(GraphicsContext& graphicsContext)
-{
-  // \c poseInParent is set by \c createPhysics which is guaranteed to be called before \c createGraphics.
-  //TODO
-  //graphicsContext.pushModelMatrix(poseInParent);
-  //GraphicalObject::modelMatrix = graphicsContext.requestModelMatrix(bGraphicsContext::ModelMatrix::controllerDrawing);
-  GraphicalObject::createGraphics(graphicsContext);
-  //graphicsContext.popModelMatrix();
 }

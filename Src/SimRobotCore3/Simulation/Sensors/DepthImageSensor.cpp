@@ -98,92 +98,85 @@ void DepthImageSensor::createPhysics(bGraphicsContext& graphicsContext)
   float aspect = std::tan(sensor.renderAngleX * 0.5f) / std::tan(angleY * 0.5f);
   OpenGLTools::computePerspective(angleY, aspect, zNear, max, sensor.projection);
 
-  ASSERT(!pyramidChain);
-  bGraphicsContext::VertexBuffer<bGraphicsContext::VertexPN>* vertexBuffer = graphicsContext.requestVertexBuffer<bGraphicsContext::VertexPN>();
-  auto& vertices = vertexBuffer->vertices;
-  Vector3f ml;
+  Mesh* mesh = new Mesh();
+  
+  vec3 ml;
   if(projection == perspectiveProjection)
-    ml = Vector3f(max, -std::tan(angleX * 0.5f) * max, 0);
+    ml = vec3(max, -std::tan(angleX * 0.5f) * max, 0);
   else
-    ml = Vector3f(std::cos(angleX * 0.5f) * max, -std::sin(angleX * 0.5f) * max, 0);
-  Vector3f mt(ml.x(), 0, std::tan(angleY * 0.5f) * max);
-  Vector3f tl(ml.x(), ml.y(), mt.z());
-  Vector3f tr(ml.x(), -ml.y(), mt.z());
-  Vector3f bl(ml.x(), ml.y(), -mt.z());
-  Vector3f br(ml.x(), -ml.y(), -mt.z());
+    ml = vec3(std::cos(angleX * 0.5f) * max, -std::sin(angleX * 0.5f) * max, 0);
+  vec3 mt(ml.x, 0, std::tan(angleY * 0.5f) * max);
+  vec3 tl(ml.x, ml.y, mt.z);
+  vec3 tr(ml.x, -ml.y, mt.z);
+  vec3 bl(ml.x, ml.y, -mt.z);
+  vec3 br(ml.x, -ml.y, -mt.z);
   const unsigned segments = static_cast<int>(18.f * angleX / pi);
-  vertices.reserve(5 + (projection == sphericalProjection ? 2 * segments : 0));
-  vertices.emplace_back(Vector3f::Zero(), Vector3f(0.f, 0.f, 1.f));
-  vertices.emplace_back(tl, Vector3f(0.f, 0.f, 1.f));
-  vertices.emplace_back(tr, Vector3f(0.f, 0.f, 1.f));
-  vertices.emplace_back(bl, Vector3f(0.f, 0.f, 1.f));
-  vertices.emplace_back(br, Vector3f(0.f, 0.f, 1.f));
+  
+  mesh->addVertex(Vertex(vec3(0,0,0), vec2(0,0), vec3(0.f, 0.f, 1.f)));
+  mesh->addVertex(Vertex(tl, vec2(0,0), vec3(0.f, 0.f, 1.f)));
+  mesh->addVertex(Vertex(tr, vec2(0,0), vec3(0.f, 0.f, 1.f)));
+  mesh->addVertex(Vertex(bl, vec2(0,0), vec3(0.f, 0.f, 1.f)));
+  mesh->addVertex(Vertex(br, vec2(0,0), vec3(0.f, 0.f, 1.f)));
   if(projection == sphericalProjection && segments > 0)
   {
     const float rotX = std::cos(angleX / static_cast<float>(segments));
     const float rotY = std::sin(angleX / static_cast<float>(segments));
-    float x = tl.x();
-    float y = tl.y();
+    float x = tl.x;
+    float y = tl.y;
     for(unsigned int i = 0; i < segments; ++i)
     {
-      vertices.emplace_back(Vector3f(x, y, tl.z()), Vector3f(0.f, 0.f, 1.f));
+      mesh->addVertex(Vertex(vec3(x, y, tl.z), vec2(0,0), vec3(0.f, 0.f, 1.f)));
       const float x2 = x * rotX - y * rotY;
       y = y * rotX + x * rotY;
       x = x2;
     }
     for(unsigned int i = 0; i < segments; ++i)
     {
-      vertices.emplace_back(Vector3f(x, y, br.z()), Vector3f(0.f, 0.f, 1.f));
+      mesh->addVertex(Vertex(vec3(x, y, br.z), vec2(0,0), vec3(0.f, 0.f, 1.f)));
       const float x2 = x * rotX + y * rotY;
       y = y * rotX - x * rotY;
       x = x2;
     }
   }
-  vertexBuffer->finish();
 
-  bGraphicsContext::IndexBuffer* indexBuffer = graphicsContext.requestIndexBuffer();
-  auto& indices = indexBuffer->indices;
   if(projection == sphericalProjection && segments > 0)
   {
-    indices.reserve(10 + 4 * segments);
-    indices.push_back(5);
+    mesh->addIndex(5);
     for(unsigned int i = 1; i < segments; ++i)
     {
-      indices.push_back(5 + i);
-      indices.push_back(5 + i);
+      mesh->addIndex(5 + i);
+      mesh->addIndex(5 + i);
     }
-    indices.push_back(2);
-    indices.push_back(2);
+    mesh->addIndex(2);
+    mesh->addIndex(2);
     for(unsigned int i = 0; i < segments; ++i)
     {
-      indices.push_back(5 + segments + i);
-      indices.push_back(5 + segments + i);
+      mesh->addIndex(5 + segments + i);
+      mesh->addIndex(5 + segments + i);
     }
-    indices.push_back(3);
+    mesh->addIndex(3);
   }
   else
   {
-    indices.reserve(16);
-    indices.push_back(1);
-    indices.push_back(2);
-    indices.push_back(2);
-    indices.push_back(4);
-    indices.push_back(4);
-    indices.push_back(3);
-    indices.push_back(3);
-    indices.push_back(1);
+    mesh->addIndex(1);
+    mesh->addIndex(2);
+    mesh->addIndex(2);
+    mesh->addIndex(4);
+    mesh->addIndex(4);
+    mesh->addIndex(3);
+    mesh->addIndex(3);
+    mesh->addIndex(1);
   }
-  indices.push_back(1);
-  indices.push_back(0);
-  indices.push_back(0);
-  indices.push_back(2);
-  indices.push_back(3);
-  indices.push_back(0);
-  indices.push_back(0);
-  indices.push_back(4);
+  mesh->addIndex(1);
+  mesh->addIndex(0);
+  mesh->addIndex(0);
+  mesh->addIndex(2);
+  mesh->addIndex(3);
+  mesh->addIndex(0);
+  mesh->addIndex(0);
+  mesh->addIndex(4);
 
-  //TODO
-  //pyramidChain = graphicsContext.requestMesh(vertexBuffer, indexBuffer, bGraphicsContext::lineList);
+  pyramidChain = new Object3D(mesh, "pyramidChain");
 
   ASSERT(!surface);
   static const float color[] = {0.f, 0.f, 0.5f, 1.f};
@@ -274,9 +267,8 @@ bool DepthImageSensor::DistanceSensor::getMinAndMax(float& min, float& max) cons
   return true;
 }
 
-void DepthImageSensor::drawPhysics(bGraphicsContext& graphicsContext, unsigned int flags) const
+void DepthImageSensor::drawPhysics() const
 {
   pyramidChain->render();
-
-  Sensor::drawPhysics(graphicsContext, flags);
+  Sensor::drawPhysics();
 }

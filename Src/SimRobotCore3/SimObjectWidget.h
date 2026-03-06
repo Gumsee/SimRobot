@@ -49,6 +49,7 @@ private:
   World3D* pWorld;
   Gum::IO::Mouse oMouse;
 	static inline ShaderProgram *pShader = nullptr;
+  SimRobotCore3::Renderer::ShadeMode physicsShadeMode = SimRobotCore3::Renderer::ShadeMode::flatShading;
 
   int fovY;
 

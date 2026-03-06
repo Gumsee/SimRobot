@@ -31,11 +31,11 @@ void BoxGeometry::createPhysics(bGraphicsContext& graphicsContext)
 
   ASSERT(!box);
   box = new Object3D(Mesh::generateCube(vec3(width, height, depth)), "BoxGeometry");
+  box->addInstance()->setMatrix(getTransformationMatrix());
 }
 
-void BoxGeometry::drawPhysics(bGraphicsContext& graphicsContext, unsigned int flags) const
+void BoxGeometry::drawPhysics() const
 {
   box->render();
-
-  Geometry::drawPhysics(graphicsContext, flags);
+  Geometry::drawPhysics();
 }

@@ -67,7 +67,7 @@ public:
    * @param graphicsContext The graphics context to draw the object to
    * @param flags Flags to enable or disable certain features
    */
-  void drawPhysics(bGraphicsContext& graphicsContext, unsigned int flags) const override;
+  void drawPhysics() const override;
 
 private:
   /**

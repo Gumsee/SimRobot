@@ -66,12 +66,13 @@ void Scene::drawAppearances(GraphicsContext& graphicsContext) const
   GraphicalObject::drawAppearances(graphicsContext);
 }
 
-void Scene::drawPhysics(bGraphicsContext& graphicsContext, unsigned int flags) const
+void Scene::drawPhysics() const
 {
+  Gum::Output::print("Drawing physics");
   Simulation::simulation->forwardRenderingShader->use();
   for(const Body* body : bodies)
-    body->drawPhysics(graphicsContext, flags);
-  ::PhysicalObject::drawPhysics(graphicsContext, flags);
+    body->drawPhysics();
+  ::PhysicalObject::drawPhysics();
   Simulation::simulation->forwardRenderingShader->unuse();
 }
 

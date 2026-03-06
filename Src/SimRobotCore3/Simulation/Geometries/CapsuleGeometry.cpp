@@ -29,11 +29,11 @@ void CapsuleGeometry::createPhysics(bGraphicsContext& graphicsContext)
 
   ASSERT(!capsule);
   capsule = new Object3D(Mesh::generateCapsule(radius, height, 16, 17), "CapsuleGeometry");
+  capsule->addInstance()->setMatrix(getTransformationMatrix());
 }
 
-void CapsuleGeometry::drawPhysics(bGraphicsContext& graphicsContext, unsigned int flags) const
+void CapsuleGeometry::drawPhysics() const
 {
   capsule->render();
-
-  Geometry::drawPhysics(graphicsContext, flags);
+  Geometry::drawPhysics();
 }

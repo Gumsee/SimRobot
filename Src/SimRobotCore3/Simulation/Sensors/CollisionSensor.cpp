@@ -79,11 +79,10 @@ void CollisionSensor::CollisionSensorPort::collided(SimRobotCore3::Geometry&, Si
   lastCollisionStep = Simulation::simulation->simulationStep;
 }
 
-void CollisionSensor::drawPhysics(bGraphicsContext& graphicsContext, unsigned int flags) const
+void CollisionSensor::drawPhysics() const
 {
-  if(flags & SimRobotCore3::Renderer::showSensors)
-    for(const ::PhysicalObject* drawing : (hasGeometries ? physicalDrawings : parentBody->physicalDrawings))
-      drawing->drawPhysics(graphicsContext, SimRobotCore3::Renderer::showPhysics);
+  for(const ::PhysicalObject* drawing : (hasGeometries ? physicalDrawings : parentBody->physicalDrawings))
+    drawing->drawPhysics();
 
-  Sensor::drawPhysics(graphicsContext, flags);
+  Sensor::drawPhysics();
 }

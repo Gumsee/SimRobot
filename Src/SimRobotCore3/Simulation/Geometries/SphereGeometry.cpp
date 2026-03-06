@@ -27,11 +27,12 @@ void SphereGeometry::createPhysics(bGraphicsContext& graphicsContext)
 
   ASSERT(!sphere);
   sphere = new Object3D(Mesh::generateSphere(radius, 16, 16), "SphereGeometry");
+  Object3DInstance* instance = sphere->addInstance();
+  instance->setMatrix(getTransformationMatrix());
 }
 
-void SphereGeometry::drawPhysics(bGraphicsContext& graphicsContext, unsigned int flags) const
+void SphereGeometry::drawPhysics() const
 {
   sphere->render();
-
-  Geometry::drawPhysics(graphicsContext, flags);
+  Geometry::drawPhysics();
 }

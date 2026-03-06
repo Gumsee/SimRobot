@@ -182,9 +182,8 @@ bool CameraSensor::Sensor::renderCameraImages(SimRobotCore3::SensorPort** camera
   return true;
 }
 
-void CameraSensor::drawPhysics(bGraphicsContext& graphicsContext, unsigned int flags) const
+void CameraSensor::drawPhysics() const
 {
   pyramid->render();
-
-  ::Sensor::drawPhysics(graphicsContext, flags);
+  ::Sensor::drawPhysics();
 }

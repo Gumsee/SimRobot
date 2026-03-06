@@ -44,7 +44,7 @@ public:
    * @param graphicsContext The graphics context to draw the object to
    * @param flags Flags to enable or disable certain features
    */
-  virtual void drawPhysics(bGraphicsContext& graphicsContext, unsigned int flags) const;
+  virtual void drawPhysics() const;
 
   /** Draws controller drawings of this physical object (and children) */
   void drawControllerDrawings() const;

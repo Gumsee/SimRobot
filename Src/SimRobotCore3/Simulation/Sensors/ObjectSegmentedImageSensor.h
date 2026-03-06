@@ -72,7 +72,7 @@ private:
    * @param graphicsContext The graphics context to draw the object to
    * @param flags Flags to enable or disable certain features
    */
-  void drawPhysics(bGraphicsContext& graphicsContext, unsigned int flags) const override;
+  void drawPhysics() const override;
 
   Object3D* pyramid = nullptr; /**< The pyramid mesh for the sensor drawing. */
   bGraphicsContext::Surface* surface = nullptr; /**< The surface for the sensor drawing. */

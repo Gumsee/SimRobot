@@ -29,12 +29,12 @@ void Joint::createPhysics(bGraphicsContext& graphicsContext)
   surface = graphicsContext.requestSurface(color, color);
 }
 
-void Joint::drawPhysics(bGraphicsContext& graphicsContext, unsigned int flags) const
+void Joint::drawPhysics() const
 {
   axisLine->render();
   sphere->render();
 
-  Actuator::drawPhysics(graphicsContext, flags);
+  Actuator::drawPhysics();
 }
 
 void Joint::registerObjects()

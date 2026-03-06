@@ -38,7 +38,7 @@ private:
    * @param graphicsContext The graphics context to draw the object to
    * @param flags Flags to enable or disable certain features
    */
-  void drawPhysics(bGraphicsContext& graphicsContext, unsigned int flags) const override;
+  void drawPhysics() const override;
 
   /** Registers this object with children, actuators and sensors at SimRobot's GUI */
   void registerObjects() override;

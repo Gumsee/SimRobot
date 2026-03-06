@@ -543,59 +543,59 @@ void bGraphicsContext::addLight(const SimLight* light)
 bGraphicsContext::ModelMatrix* bGraphicsContext::requestModelMatrix(ModelMatrix::Usage usage)
 {
   ModelMatrix* modelMatrix = new ModelMatrix;
-  const ModelMatrixStack& modelMatrixStack = modelMatrixStackStack.top();
-  const auto& product = modelMatrixStack.getC();
-  std::size_t startIndex = 0;
-  if(modelMatrixStack.bottomIsVariable)
-  {
-    ASSERT(!product.empty());
-    modelMatrix->variablePart = product[0];
-    startIndex = 1;
-  }
-  modelMatrix->constantPart = product.size() > startIndex ? *product[startIndex] : Pose3f();
-  for(std::size_t i = startIndex + 1; i < product.size(); ++i)
-    modelMatrix->constantPart *= *product[i];
-  modelMatrix->memory.row(3) = Eigen::RowVector4f(0.f, 0.f, 0.f, 1.f);
-  if(modelMatrix->variablePart)
-    modelMatrixSets[usage].variableModelMatrices.push_back(modelMatrix);
-  else
-  {
-    modelMatrix->memory.topLeftCorner<3, 3>() = modelMatrix->constantPart.rotation;
-    modelMatrix->memory.topRightCorner<3, 1>() = modelMatrix->constantPart.translation;
-    modelMatrixSets[usage].constantModelMatrices.push_back(modelMatrix);
-  }
+  //const ModelMatrixStack& modelMatrixStack = modelMatrixStackStack.top();
+  //const auto& product = modelMatrixStack.getC();
+  //std::size_t startIndex = 0;
+  //if(modelMatrixStack.bottomIsVariable)
+  //{
+  //  ASSERT(!product.empty());
+  //  modelMatrix->variablePart = product[0];
+  //  startIndex = 1;
+  //}
+  //modelMatrix->constantPart = product.size() > startIndex ? *product[startIndex] : Pose3f();
+  //for(std::size_t i = startIndex + 1; i < product.size(); ++i)
+  //  modelMatrix->constantPart *= *product[i];
+  //modelMatrix->memory.row(3) = Eigen::RowVector4f(0.f, 0.f, 0.f, 1.f);
+  //if(modelMatrix->variablePart)
+  //  modelMatrixSets[usage].variableModelMatrices.push_back(modelMatrix);
+  //else
+  //{
+  //  modelMatrix->memory.topLeftCorner<3, 3>() = modelMatrix->constantPart.rotation;
+  //  modelMatrix->memory.topRightCorner<3, 1>() = modelMatrix->constantPart.translation;
+  //  modelMatrixSets[usage].constantModelMatrices.push_back(modelMatrix);
+  //}
   return modelMatrix;
 }
 
 void bGraphicsContext::pushModelMatrixStack()
 {
-  modelMatrixStackStack.emplace();
+  //modelMatrixStackStack.emplace();
 }
 
 void bGraphicsContext::popModelMatrixStack()
 {
-  ASSERT(modelMatrixStackStack.top().empty());
-  modelMatrixStackStack.pop();
+  //ASSERT(modelMatrixStackStack.top().empty());
+  //modelMatrixStackStack.pop();
 }
 
 void bGraphicsContext::pushModelMatrix(const Pose3f& pose)
 {
-  modelMatrixStackStack.top().push(&pose);
+  //modelMatrixStackStack.top().push(&pose);
 }
 
 void bGraphicsContext::pushModelMatrixByReference(const Pose3f& pose)
 {
   // A variable pose must be the first on the stack.
-  ASSERT(modelMatrixStackStack.top().empty());
-  modelMatrixStackStack.top().push(&pose);
-  modelMatrixStackStack.top().bottomIsVariable = true;
+  //ASSERT(modelMatrixStackStack.top().empty());
+  //modelMatrixStackStack.top().push(&pose);
+  //modelMatrixStackStack.top().bottomIsVariable = true;
 }
 
 void bGraphicsContext::popModelMatrix()
 {
-  modelMatrixStackStack.top().pop();
-  if(modelMatrixStackStack.top().empty())
-    modelMatrixStackStack.top().bottomIsVariable = false;
+  //modelMatrixStackStack.top().pop();
+  //if(modelMatrixStackStack.top().empty())
+  //  modelMatrixStackStack.top().bottomIsVariable = false;
 }
 
 bool bGraphicsContext::emptyModelMatrixStack() const

@@ -42,10 +42,10 @@ void PhysicalObject::createPhysics(bGraphicsContext& graphicsContext)
   }
 }
 
-void PhysicalObject::drawPhysics(bGraphicsContext& graphicsContext, unsigned int flags) const
+void PhysicalObject::drawPhysics() const
 {
   for(const PhysicalObject* drawing : physicalDrawings)
-    drawing->drawPhysics(graphicsContext, flags);
+    drawing->drawPhysics();
 }
 
 void PhysicalObject::drawControllerDrawings() const

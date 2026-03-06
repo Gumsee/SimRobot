@@ -19,6 +19,7 @@
 #include <Engine/3D/Object/ObjectManager.h>
 #include <gum-engine.h>
 #include <Desktop/Window.h>
+#include <Graphics/Graphics.h>
 
 #ifdef MACOS
 #include <QFileOpenEvent>
@@ -82,10 +83,12 @@ int main(int argc, char* argv[])
   );
 
 
-  Gum::Engine::init();
-  gumWindow->getContext()->initOpenGL();
-  gumWindow->getContext()->setDefaults();
+  Gum::Graphics::init();
+  Gum::Graphics::loadDefaults();
+  Gum::Graphics::printInfo();
   gumWindow->getContext()->printInfo();
+  
+  Gum::Engine::init();
   Lightning::initShader();
 
 #ifdef WINDOWS

@@ -186,13 +186,7 @@ void Body::addMass(Mass& mass)
 
 void Body::createGraphics(GraphicsContext& graphicsContext)
 {
-  //TODO
-  //ASSERT(graphicsContext.emptyModelMatrixStack());
-  //graphicsContext.pushModelMatrixByReference(poseInParent);
-  //ASSERT(!GraphicalObject::modelMatrix);
-  //GraphicalObject::modelMatrix = graphicsContext.requestModelMatrix(bGraphicsContext::ModelMatrix::controllerDrawing);
   GraphicalObject::createGraphics(graphicsContext);
-  //graphicsContext.popModelMatrix();
   for(Body* child : bodyChildren)
     child->createGraphics(graphicsContext);
 }
@@ -229,15 +223,15 @@ void Body::visitGraphicalControllerDrawings(const std::function<void(GraphicalOb
     accept(*child);
 }
 
-void Body::drawPhysics(bGraphicsContext& graphicsContext, unsigned int flags) const
+void Body::drawPhysics() const
 {
   Simulation::simulation->bodyComSphereMesh->render();
 
   // draw children
-  ::PhysicalObject::drawPhysics(graphicsContext, flags);
+  ::PhysicalObject::drawPhysics();
 
   for(const Body* child : bodyChildren)
-    child->drawPhysics(graphicsContext, flags);
+    child->drawPhysics();
 }
 
 void Body::visitPhysicalControllerDrawings(const std::function<void(::PhysicalObject&)>& accept)
