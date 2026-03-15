@@ -394,7 +394,7 @@ Body* SimObjectRenderer::selectObject(const Vector3f& projectedClick)
   const int bodyIndex = Simulation::simulation->model->geom_bodyid[geometryIndex];
   ASSERT(bodyIndex > 0); // 0 is the world body, we excluded that by setting flg_static=0 in the call to mj_ray.
   ASSERT(bodyIndex < Simulation::simulation->model->nbody);
-  return Simulation::simulation->bodyMap[bodyIndex]->rootBody;
+  return Body::registeredBodies[bodyIndex]->rootBody;
 }
 
 bool SimObjectRenderer::startDrag(int x, int y, DragType type)

@@ -26,7 +26,7 @@ Accelerometer::Accelerometer(const std::string& name)
 
 void Accelerometer::createPhysicsInternal()
 {
-  const char* siteName = Simulation::simulation->getName(mjOBJ_SITE, "Accelerometer");
+  const char* siteName = "Accelerometer";
 
   mjsSite* site = mjs_addSite(sensor.body->body, nullptr);
   mjs_setName(site->element, siteName);
@@ -39,6 +39,11 @@ void Accelerometer::createPhysicsInternal()
   sensor->type = mjSENS_ACCELEROMETER;
   sensor->objtype = mjOBJ_SITE;
   mjs_setString(sensor->objname, siteName);
+}
+
+void Accelerometer::createIDs()
+{
+  sensor.createIDs();
 }
 
 void Accelerometer::addParent(Element& element)
@@ -58,6 +63,6 @@ void Accelerometer::registerObjects()
 
 void Accelerometer::AccelerometerSensor::updateValue()
 {
-  ASSERT(Simulation::simulation->model->sensor_dim[sensorIndex] == 3);
-  mju_n2f(linearAcc, Simulation::simulation->data->sensordata + Simulation::simulation->model->sensor_adr[sensorIndex], 3);
+  ASSERT(Simulation::simulation->model->sensor_dim[id] == 3);
+  mju_n2f(linearAcc, Simulation::simulation->data->sensordata + Simulation::simulation->model->sensor_adr[id], 3);
 }

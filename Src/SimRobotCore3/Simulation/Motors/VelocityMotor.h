@@ -21,7 +21,7 @@ public:
   float maxForce = 0.f;
 
   /** Default constructor */
-  VelocityMotor();
+  VelocityMotor(const std::string& name);
 
 private:
   /**

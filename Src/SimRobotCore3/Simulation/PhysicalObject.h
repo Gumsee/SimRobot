@@ -25,7 +25,7 @@ class PhysicalObject : public SimObject
 {
 public:
   Body* parentBody = nullptr; /**< The superior body object (might be 0) */
-  int id = -1; /**< The index of the body in MuJoCo's data. */
+  int id = -1; /**< The index of the element in MuJoCo's data. */
   bool isinitialized = false;
   int type;
 

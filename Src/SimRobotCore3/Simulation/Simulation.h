@@ -37,8 +37,6 @@ public:
   mjsBody* worldBody = nullptr; /**< The world (root) body in the model specification. Only valid during \c createPhysics. */
   mjModel* model = nullptr; /**< The MuJoCo model that is compiled from the model specification. Only valid after \c createPhysics. */
   mjData* data = nullptr; /**< The MuJoCo simulation state. Only valid after \c createPhysics. */
-  std::vector<Body*> bodyMap; /**< A map from body index in \c data to the SimRobot object. */
-  std::vector<Geometry*> geometryMap; /**< A map from geom index in \c data to the SimRobot object. */
 
   bGraphicsContext graphicsContext; /**< The object that does graphics. */
   Object3D* xAxisMesh = nullptr; /**< The mesh for the x axis in object renderers. */
@@ -74,22 +72,6 @@ public:
    */
   bool loadFile(const std::string& filename, std::list<std::string>& errors);
 
-  /**
-   * Creates a unique name for a MuJoCo element and registers it so its index can be obtained later.
-   * @param type The MuJoCo object type.
-   * @param prefix A prefix from which the name is constructed.
-   * @param indexPointer Pointer which is later filled by the index that MuJoCo assigned to the object.
-   * @param object Pointer to the SimRobot object.
-   * @return A name to be used with \c mjs_setName.
-   */
-  const char* getName(int type, const char* prefix, int* indexPointer = nullptr, void* object = nullptr)
-  {
-    static int counter = 0;
-    const std::string name = std::string(prefix) + "_" + std::to_string(counter++);
-    names.emplace_back(type, name, indexPointer, object);
-    return names.back().name.c_str();
-  }
-
   /** Executes one simulation step */
   void doSimulationStep();
   unsigned int simulationStep = 0;
@@ -106,13 +88,4 @@ private:
 
   static void mjError(const char*);
   static void mjWarning(const char*);
-
-  struct RegisteredName
-  {
-    int type = -1; /**< The MuJoCo object type. */
-    std::string name; /**< The name of the object. */
-    int* indexPointer = nullptr; /**< Pointer which is later filled by the index that MuJoCo assigned to the object. */
-    void* object = nullptr; /**< Pointer to the (SimRobot) object (used to map from the MuJoCo index to the object). */
-  };
-  std::list<RegisteredName> names; /**< The registered names of MuJoCo objects. */
 };

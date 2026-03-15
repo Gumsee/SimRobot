@@ -14,9 +14,13 @@ class Joint;
  * @class Motor
  * Abstract class for joint motors
  */
-class Motor : public Actuator::Port
+class Motor : public Actuator::Port, public PhysicalObject
 {
 public:
+  Motor(const std::string& name)
+    : PhysicalObject(mjOBJ_ACTUATOR, name)
+  {}
+  
   float setpoint = 0.f;
 
   /**
@@ -31,4 +35,9 @@ public:
 protected:
   Joint* joint = nullptr; /**< The joint controlled by this motor */
   int ctrlIndex = -1; /**< The index of this motor in the ctrl array. */
+
+  void addParent(Element& element) override
+  {
+    std::cout << "motor" << std::endl;
+  }
 };

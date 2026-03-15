@@ -9,10 +9,17 @@
 #include "Graphics/bGraphicsContext.h"
 #include "SensorWidget.h"
 #include "Simulation/Simulation.h"
+#include <mujoco/mujoco.h>
 
 Sensor::Sensor(const std::string& name)
   : ::PhysicalObject(mjOBJ_SENSOR, findAvailableName(name, "Sensor"))
 {}
+
+void Sensor::Port::createIDs()
+{
+  if(type != mjOBJ_UNKNOWN)
+    id = mj_name2id(Simulation::simulation->model, type, name.c_str());
+}
 
 const QIcon* Sensor::Port::getIcon() const
 {

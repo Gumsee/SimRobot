@@ -106,20 +106,8 @@ bool Simulation::loadFile(const std::string& filename, std::list<std::string>& e
 
   mj_kinematics(model, data);
 
-  bodyMap.resize(model->nbody);
-  
-  for(auto& name : names)
-  {
-    const int id = mj_name2id(model, name.type, name.name.c_str());
-    std::cout << "got id " << id << " for name " << name.name << " with type " << name.type << std::endl;
-    ASSERT(id >= 0);
-    if(name.type == mjOBJ_BODY)
-      bodyMap[id] = static_cast<Body*>(name.object);
-    if(name.indexPointer)
-      *(name.indexPointer) = id;
-  }
-
   Geometry::registeredGeometries.resize(model->ngeom);
+  Body::registeredBodies.resize(model->nbody);
   scene->createIDs();
 
   forwardRenderingShader = new ShaderProgram("ForwardRenderingShader", false);

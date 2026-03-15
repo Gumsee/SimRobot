@@ -31,8 +31,6 @@ private:
   mjsGeom* assembleGeometry(mjsBody* body) override
   {
     mjsGeom* geom = mjs_addGeom(body, nullptr);
-    name = Simulation::simulation->getName(mjOBJ_GEOM, "CapsuleGeometry", nullptr, this);
-    mjs_setName(geom->element, name.c_str());
     geom->type = mjGEOM_CAPSULE;
     geom->size[0] = radius;
     geom->size[1] = 0.5f * height - radius;

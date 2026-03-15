@@ -24,7 +24,6 @@ class Body : public PhysicalObject, public GraphicalObject, public SimRobotCore3
 public:
   mjsBody* body = nullptr; /**< The MuJoCo specification of this body. Only valid during \c createPhysics. */
   Body* rootBody = nullptr; /**< The first movable body in a chain of bodies (might point to itself) */
-  int bodyIndex = -1; /**< The index of the body in MuJoCo's data. */
   int collisionGroup = 0; /**< The collision group of this body (one per root body). Compounds belong to collision group 0. */
   inline static std::vector<Body*> registeredBodies;
 
@@ -39,6 +38,8 @@ public:
    * Submits draw calls for physical primitives of the object (including children) in the given graphics context
    */
   void drawPhysics() const override;
+
+  void createIDs() override;
 
   void updateTransformation() override;
 

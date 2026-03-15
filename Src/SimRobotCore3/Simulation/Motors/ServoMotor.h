@@ -47,7 +47,7 @@ public:
   bool isInitialized = false;
 
   /** Default constructor */
-  ServoMotor();
+  ServoMotor(const std::string& name);
 
 private:
   /**

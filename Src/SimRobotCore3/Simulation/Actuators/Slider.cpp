@@ -40,9 +40,8 @@ void Slider::createPhysicsInternal()
 
   childBody->createPhysics();
 
-  jointName = Simulation::simulation->getName(mjOBJ_JOINT, "Slider", &jointIndex);
   mjsJoint* joint = mjs_addJoint(childBody->body, nullptr);
-  mjs_setName(joint->element, jointName);
+  mjs_setName(joint->element, name.c_str());
   joint->type = mjJNT_SLIDE;
 
   vec3 positionInChild = mat4::inverse(childBody->worldTransformation.getMatrix()) * vec4(worldTransformation.getPosition(), 1.0f);

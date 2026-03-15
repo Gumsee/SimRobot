@@ -13,7 +13,8 @@
 #include "Simulation/Simulation.h"
 #include <cmath>
 
-PT2Motor::PT2Motor()
+PT2Motor::PT2Motor(const std::string& name)
+  : Motor(name)
 {
   Simulation::simulation->scene->actuators.push_back(this);
 

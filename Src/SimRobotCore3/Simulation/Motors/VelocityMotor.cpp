@@ -16,7 +16,8 @@
 #include <mujoco/mujoco.h>
 #include <cmath>
 
-VelocityMotor::VelocityMotor()
+VelocityMotor::VelocityMotor(const std::string& name)
+  : Motor(name)
 {
   Simulation::simulation->scene->actuators.push_back(this);
 

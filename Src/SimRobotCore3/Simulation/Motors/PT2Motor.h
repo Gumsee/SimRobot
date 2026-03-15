@@ -27,7 +27,7 @@ public:
   float F = 0.f;
 
   /** Default constructor */
-  PT2Motor();
+  PT2Motor(const std::string& name);
 
 private:
   /**

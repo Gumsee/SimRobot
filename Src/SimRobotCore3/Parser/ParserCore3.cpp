@@ -192,8 +192,7 @@ Element* ParserCore3::setElement()
 
 Element* ParserCore3::sceneElement()
 {
-  Scene* scene = new Scene();
-  scene->name = getString("name", false);
+  Scene* scene = new Scene(getString("name", false));
   scene->controller = getString("controller", false);
   getColor("color", false, scene->color);
   scene->stepLength = getTimeNonZeroPositive("stepLength", false, 0.01f);
@@ -265,43 +264,32 @@ Element* ParserCore3::spotLightElement()
 
 Element* ParserCore3::bodyElement()
 {
-  Body* body = new Body();
-  body->name = getString("name", false);
-  return body;
+  return new Body(getString("name", false));
 }
 
 Element* ParserCore3::compoundElement()
 {
-  Compound* compound = new Compound();
-  compound->name = getString("name", false);
-  return compound;
+  return new Compound(getString("name", false));
 }
 
 Element* ParserCore3::hingeElement()
 {
-  Hinge* hinge = new Hinge();
-  hinge->name = getString("name", false);
-  return hinge;
+  return new Hinge(getString("name", false));
 }
 
 Element* ParserCore3::sliderElement()
 {
-  Slider* slider = new Slider();
-  slider->name = getString("name", false);
-  return slider;
+  return new Slider(getString("name", false));
 }
 
 Element* ParserCore3::massElement()
 {
-  Mass* mass = new Mass();
-  mass->name = getString("name", false);
-  return mass;
+  return new Mass(getString("name", false));
 }
 
 Element* ParserCore3::boxMassElement()
 {
-  BoxMass* boxMass = new BoxMass();
-  boxMass->name = getString("name", false);
+  BoxMass* boxMass = new BoxMass(getString("name", false));
   boxMass->value = getMass("value", true, 0.f);
   boxMass->width = getLength("width", true, 0.f, true);
   boxMass->height = getLength("height", true, 0.f, true);
@@ -311,8 +299,7 @@ Element* ParserCore3::boxMassElement()
 
 Element* ParserCore3::sphereMassElement()
 {
-  SphereMass* sphereMass = new SphereMass();
-  sphereMass->name = getString("name", false);
+  SphereMass* sphereMass = new SphereMass(getString("name", false));
   sphereMass->value = getMass("value", true, 0.f);
   sphereMass->radius = getLength("radius", true, 0.f, true);
   return sphereMass;
@@ -320,8 +307,7 @@ Element* ParserCore3::sphereMassElement()
 
 Element* ParserCore3::inertiaMatrixMassElement()
 {
-  InertiaMatrixMass* inertiaMatrixMass = new InertiaMatrixMass();
-  inertiaMatrixMass->name = getString("name", false);
+  InertiaMatrixMass* inertiaMatrixMass = new InertiaMatrixMass(getString("name", false));
   inertiaMatrixMass->value = getMass("value", true, 0.f);
   inertiaMatrixMass->x = getLength("x", false, 0.f, false);
   inertiaMatrixMass->y = getLength("y", false, 0.f, false);
@@ -337,8 +323,7 @@ Element* ParserCore3::inertiaMatrixMassElement()
 
 Element* ParserCore3::capsuleMassElement()
 {
-  CapsuleMass* capsuleMass = new CapsuleMass();
-  capsuleMass->name = getString("name", false);
+  CapsuleMass* capsuleMass = new CapsuleMass(getString("name", false));
   capsuleMass->value = getMass("value", true, 0.f);
   capsuleMass->radius = getLength("radius", true, 0.f, true);
   capsuleMass->height = getLength("height", true, 0.f, true);
@@ -347,8 +332,7 @@ Element* ParserCore3::capsuleMassElement()
 
 Element* ParserCore3::cylinderMassElement()
 {
-  CylinderMass* cylinderMass = new CylinderMass();
-  cylinderMass->name = getString("name", false);
+  CylinderMass* cylinderMass = new CylinderMass(getString("name", false));
   cylinderMass->value = getMass("value", true, 0.f);
   cylinderMass->radius = getLength("radius", true, 0.f, true);
   cylinderMass->height = getLength("height", true, 0.f, true);
@@ -357,16 +341,13 @@ Element* ParserCore3::cylinderMassElement()
 
 Element* ParserCore3::geometryElement()
 {
-  Geometry* geometry = new Geometry();
-  geometry->name = getString("name", false);
-  return geometry;
+  return new Geometry(getString("name", false));
 }
 
 Element* ParserCore3::boxGeometryElement()
 {
-  BoxGeometry* boxGeometry = new BoxGeometry();
+  BoxGeometry* boxGeometry = new BoxGeometry(getString("name", false));
   getColor("color", false, boxGeometry->color);
-  boxGeometry->name = getString("name", false);
   boxGeometry->width = getLength("width", true, 0.f, true);
   boxGeometry->height = getLength("height", true, 0.f, true);
   boxGeometry->depth = getLength("depth", true, 0.f, true);
@@ -375,18 +356,16 @@ Element* ParserCore3::boxGeometryElement()
 
 Element* ParserCore3::sphereGeometryElement()
 {
-  SphereGeometry* sphereGeometry = new SphereGeometry();
+  SphereGeometry* sphereGeometry = new SphereGeometry(getString("name", false));
   getColor("color", false, sphereGeometry->color);
-  sphereGeometry->name = getString("name", false);
   sphereGeometry->radius = getLength("radius", true, 0.f, true);
   return sphereGeometry;
 }
 
 Element* ParserCore3::cylinderGeometryElement()
 {
-  CylinderGeometry* cylinderGeometry = new CylinderGeometry();
+  CylinderGeometry* cylinderGeometry = new CylinderGeometry(getString("name", false));
   getColor("color", false, cylinderGeometry->color);
-  cylinderGeometry->name = getString("name", false);
   cylinderGeometry->radius = getLength("radius", true, 0.f, true);
   cylinderGeometry->height = getLength("height", true, 0.f, true);
   return cylinderGeometry;
@@ -394,9 +373,8 @@ Element* ParserCore3::cylinderGeometryElement()
 
 Element* ParserCore3::capsuleGeometryElement()
 {
-  CapsuleGeometry* capsuleGeometry = new CapsuleGeometry();
+  CapsuleGeometry* capsuleGeometry = new CapsuleGeometry(getString("name", false));
   getColor("color", false, capsuleGeometry->color);
-  capsuleGeometry->name = getString("name", false);
   capsuleGeometry->radius = getLength("radius", true, 0.f, true);
   capsuleGeometry->height = getLength("height", true, 0.f, true);
   return capsuleGeometry;
@@ -412,15 +390,12 @@ Element* ParserCore3::materialElement()
 
 Element* ParserCore3::appearanceElement()
 {
-  Appearance* appearance = new Appearance();
-  appearance->name = getString("name", false);
-  return appearance;
+  return new Appearance(getString("name", false));
 }
 
 Element* ParserCore3::boxAppearanceElement()
 {
-  BoxAppearance* boxAppearance = new BoxAppearance();
-  boxAppearance->name = getString("name", false);
+  BoxAppearance* boxAppearance = new BoxAppearance(getString("name", false));
   boxAppearance->width = getLength("width", true, 0.f, true);
   boxAppearance->height = getLength("height", true, 0.f, true);
   boxAppearance->depth = getLength("depth", true, 0.f, true);
@@ -430,8 +405,7 @@ Element* ParserCore3::boxAppearanceElement()
 
 Element* ParserCore3::sphereAppearanceElement()
 {
-  SphereAppearance* sphereAppearance = new SphereAppearance();
-  sphereAppearance->name = getString("name", false);
+  SphereAppearance* sphereAppearance = new SphereAppearance(getString("name", false));
   sphereAppearance->radius = getLength("radius", true, 0.f, true);
   sphereAppearance->renderForward = getString("render", false) == "forward";
   return sphereAppearance;
@@ -439,8 +413,7 @@ Element* ParserCore3::sphereAppearanceElement()
 
 Element* ParserCore3::cylinderAppearanceElement()
 {
-  CylinderAppearance* cylinderAppearance = new CylinderAppearance();
-  cylinderAppearance->name = getString("name", false);
+  CylinderAppearance* cylinderAppearance = new CylinderAppearance(getString("name", false));
   cylinderAppearance->height = getLength("height", true, 0.f, true);
   cylinderAppearance->radius = getLength("radius", true, 0.f, true);
   cylinderAppearance->renderForward = getString("render", false) == "forward";
@@ -449,8 +422,7 @@ Element* ParserCore3::cylinderAppearanceElement()
 
 Element* ParserCore3::capsuleAppearanceElement()
 {
-  CapsuleAppearance* capsuleAppearance = new CapsuleAppearance();
-  capsuleAppearance->name = getString("name", false);
+  CapsuleAppearance* capsuleAppearance = new CapsuleAppearance(getString("name", false));
   capsuleAppearance->height = getLength("height", true, 0.f, true);
   capsuleAppearance->radius = getLength("radius", true, 0.f, true);
   capsuleAppearance->renderForward = getString("render", false) == "forward";
@@ -459,8 +431,7 @@ Element* ParserCore3::capsuleAppearanceElement()
 
 Element* ParserCore3::complexAppearanceElement()
 {
-  ComplexAppearance* complexAppearance = new ComplexAppearance();
-  complexAppearance->name = getString("name", false);
+  ComplexAppearance* complexAppearance = new ComplexAppearance(getString("name", false));
   complexAppearance->renderForward = getString("render", false) == "forward";
   return complexAppearance;
 }
@@ -621,7 +592,6 @@ Element* ParserCore3::translationElement()
   {
     Mass* mass = dynamic_cast<Mass*>(elementData->parent->returnedElement);
     ASSERT(mass);
-    ASSERT(!mass->translation);
     mass->relativeTransformation.increasePosition(translation);
   }
   return nullptr;
@@ -645,7 +615,6 @@ Element* ParserCore3::rotationElement()
   {
     Mass* mass = dynamic_cast<Mass*>(element);
     ASSERT(mass);
-    ASSERT(!mass->rotation);
     mass->relativeTransformation.increaseRotation(rotation);
   }
   return nullptr;
@@ -775,22 +744,17 @@ Element* ParserCore3::surfaceElement()
 
 Element* ParserCore3::gyroscopeElement()
 {
-  Gyroscope* gyroscope = new Gyroscope();
-  gyroscope->name = getString("name", false);
-  return gyroscope;
+  return new Gyroscope(getString("name", false));
 }
 
 Element* ParserCore3::accelerometerElement()
 {
-  Accelerometer* accelerometer = new Accelerometer();
-  accelerometer->name = getString("name", false);
-  return accelerometer;
+  return new Accelerometer(getString("name", false));
 }
 
 Element* ParserCore3::cameraElement()
 {
-  CameraSensor* camera = new CameraSensor();
-  camera->name = getString("name", false);
+  CameraSensor* camera = new CameraSensor(getString("name", false));
   camera->setImageDimensions(ivec2(
     getInteger("imageWidth", true, 0, true),
     getInteger("imageHeight", true, 0, true)
@@ -802,15 +766,12 @@ Element* ParserCore3::cameraElement()
 
 Element* ParserCore3::collisionSensorElement()
 {
-  CollisionSensor* collisionSensor = new CollisionSensor();
-  collisionSensor->name = getString("name", false);
-  return collisionSensor;
+  return new CollisionSensor(getString("name", false));
 }
 
 Element* ParserCore3::objectSegmentedImageSensorElement()
 {
-  ObjectSegmentedImageSensor* camera = new ObjectSegmentedImageSensor();
-  camera->name = getString("name", false);
+  ObjectSegmentedImageSensor* camera = new ObjectSegmentedImageSensor(getString("name", false));
   camera->imageWidth = getInteger("imageWidth", true, 0, true);
   camera->imageHeight = getInteger("imageHeight", true, 0, true);
   camera->angleX = getAngle("angleX", true, 0.f, true);
@@ -820,8 +781,7 @@ Element* ParserCore3::objectSegmentedImageSensorElement()
 
 Element* ParserCore3::singleDistanceSensorElement()
 {
-  SingleDistanceSensor* singleDistanceSensor = new SingleDistanceSensor();
-  singleDistanceSensor->name = getString("name", false);
+  SingleDistanceSensor* singleDistanceSensor = new SingleDistanceSensor(getString("name", false));
   singleDistanceSensor->min = getLength("min", false, 0.f, false);
   singleDistanceSensor->max = getLength("max", false, 999999.f, false);
   return singleDistanceSensor;
@@ -829,8 +789,7 @@ Element* ParserCore3::singleDistanceSensorElement()
 
 Element* ParserCore3::depthImageSensorElement()
 {
-  DepthImageSensor* depthImageSensor = new DepthImageSensor();
-  depthImageSensor->name = getString("name", false);
+  DepthImageSensor* depthImageSensor = new DepthImageSensor(getString("name", false));
   depthImageSensor->imageWidth = getInteger("imageWidth", true, 0, true);
   depthImageSensor->imageHeight = getInteger("imageHeight", false, 1, true);
   depthImageSensor->angleX = getAngle("angleX", true, 0.f, true);

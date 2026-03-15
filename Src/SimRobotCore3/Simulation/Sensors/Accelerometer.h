@@ -20,6 +20,8 @@ public:
   /** Default constructor */
   Accelerometer(const std::string& name);
 
+  void createIDs() override;
+
 private:
   /**
    * @class AccelerometerSensor
@@ -30,7 +32,6 @@ private:
   public:
     Body* body; /**< The body where the accelerometer is mounted on. */
     float linearAcc[4]; /**< The sensor reading. */
-    int sensorIndex = -1; /**< The index of the sensor within MuJoCo's data. */
 
     /** Update the sensor value. Is called when required. */
     void updateValue() override;

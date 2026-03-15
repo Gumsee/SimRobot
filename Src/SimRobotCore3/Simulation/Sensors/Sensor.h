@@ -23,15 +23,20 @@ public:
   {
   public:
     QString fullName; /**< The path name to the object in the scene graph */
+    std::string name; /**< The index of the sensor within MuJoCo's data. */
     SensorType sensorType; /**< The data type of the sensor readings */
     Data data; /**< The sensor reading */
     QList<int> dimensions; /**< The dimensions of the sensor readings */
     QStringList descriptions; /**< A description for each sensor reading dimension */
     QString unit; /**< The unit of the sensor readings */
     unsigned int lastSimulationStep = 0xffffffff; /**< The last time this sensor was computed. */
+    unsigned int type = mjOBJ_UNKNOWN;
+    unsigned int id = -1;
 
     /** Update the sensor value. Is called when required. */
     virtual void updateValue() = 0;
+
+    void createIDs();
 
   private:
     // API

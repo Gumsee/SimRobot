@@ -56,7 +56,7 @@ void Body::createPhysicsInternal()
     }
   }
 
-  mjs_setName(body->element, Simulation::simulation->getName(mjOBJ_BODY, "Body", &bodyIndex, this));
+  mjs_setName(body->element, name.c_str());
 
   // add masses
   for(SimObject* iter : children)
@@ -145,11 +145,21 @@ void Body::createGraphics()
     child->createGraphics();
 }
 
+void Body::createIDs()
+{
+  ::PhysicalObject::createIDs();
+
+  if(body == nullptr || id < 0)
+    return;
+
+  registeredBodies[id] = this;
+}
+
 void Body::updateTransformation()
 {
   // get pose from MuJoCo
-  mju_n2f(worldTransformation.getPosition().data(), Simulation::simulation->data->xpos + bodyIndex * 3, 3);
-  mju_n2f(worldTransformation.getRotation().data(), Simulation::simulation->data->xquat + bodyIndex * 4, 4);
+  mju_n2f(worldTransformation.getPosition().data(), Simulation::simulation->data->xpos + id * 3, 3);
+  mju_n2f(worldTransformation.getRotation().data(), Simulation::simulation->data->xquat + id * 4, 4);
   worldTransformation.updateMatrix();
 
   SimObject::updateTransformation();
@@ -187,9 +197,9 @@ void Body::move(const Vector3f& offset)
 {
   if(rootBody != this)
     return;
-  const mjtNum* pos = Simulation::simulation->data->xpos + bodyIndex * 3;
-  ASSERT(Simulation::simulation->model->body_jntnum[bodyIndex] == 1);
-  const int jointIndex = Simulation::simulation->model->body_jntadr[bodyIndex];
+  const mjtNum* pos = Simulation::simulation->data->xpos + id * 3;
+  ASSERT(Simulation::simulation->model->body_jntnum[id] == 1);
+  const int jointIndex = Simulation::simulation->model->body_jntadr[id];
   ASSERT(Simulation::simulation->model->jnt_type[jointIndex] == mjJNT_FREE);
   const int poseIndex = Simulation::simulation->model->jnt_qposadr[jointIndex];
   Simulation::simulation->data->qpos[poseIndex] = pos[0] + offset.x();
@@ -207,15 +217,15 @@ void Body::rotate(const RotationMatrix& rotation, const Vector3f& point)
   if(rootBody != this)
     return;
   Pose3f comPose;
-  mju_n2f(comPose.translation.data(), Simulation::simulation->data->xpos + bodyIndex * 3, 3);
-  mju_n2f(comPose.rotation.data(), Simulation::simulation->data->xmat + bodyIndex * 9, 9);
+  mju_n2f(comPose.translation.data(), Simulation::simulation->data->xpos + id * 3, 3);
+  mju_n2f(comPose.rotation.data(), Simulation::simulation->data->xmat + id * 9, 9);
   comPose.rotation.transposeInPlace();
 
   comPose.translation = rotation * (comPose.translation - point) + point;
   comPose.rotation = rotation * comPose.rotation;
 
-  ASSERT(Simulation::simulation->model->body_jntnum[bodyIndex] == 1);
-  const int jointIndex = Simulation::simulation->model->body_jntadr[bodyIndex];
+  ASSERT(Simulation::simulation->model->body_jntnum[id] == 1);
+  const int jointIndex = Simulation::simulation->model->body_jntadr[id];
   ASSERT(Simulation::simulation->model->jnt_type[jointIndex] == mjJNT_FREE);
   const int poseIndex = Simulation::simulation->model->jnt_qposadr[jointIndex];
   mju_f2n(Simulation::simulation->data->qpos + poseIndex, comPose.translation.data(), 3);
@@ -270,8 +280,8 @@ const float* Body::getVelocity() const
   // This is only possible for bodies that are connected to the worldbody via a freejoint.
   Vector3f& velocity = const_cast<Body*>(this)->velocityInWorld;
 
-  ASSERT(Simulation::simulation->model->body_jntnum[bodyIndex] == 1);
-  const int jointIndex = Simulation::simulation->model->body_jntadr[bodyIndex];
+  ASSERT(Simulation::simulation->model->body_jntnum[id] == 1);
+  const int jointIndex = Simulation::simulation->model->body_jntadr[id];
   ASSERT(Simulation::simulation->model->jnt_type[jointIndex] == mjJNT_FREE);
   const int velocityIndex = Simulation::simulation->model->jnt_dofadr[jointIndex];
   mju_n2f(velocity.data(), Simulation::simulation->data->qvel + velocityIndex, 3);
@@ -283,8 +293,8 @@ void Body::setVelocity(const float* velocity)
   if(rootBody != this)
     return;
   // TODO: Is this world or body coordinates?
-  ASSERT(Simulation::simulation->model->body_jntnum[bodyIndex] == 1);
-  const int jointIndex = Simulation::simulation->model->body_jntadr[bodyIndex];
+  ASSERT(Simulation::simulation->model->body_jntnum[id] == 1);
+  const int jointIndex = Simulation::simulation->model->body_jntadr[id];
   ASSERT(Simulation::simulation->model->jnt_type[jointIndex] == mjJNT_FREE);
   const int velocityIndex = Simulation::simulation->model->jnt_dofadr[jointIndex];
   mju_f2n(Simulation::simulation->data->qvel + velocityIndex, velocity, 3);
@@ -294,8 +304,8 @@ void Body::move(const float* pos)
 {
   if(rootBody != this)
     return;
-  ASSERT(Simulation::simulation->model->body_jntnum[bodyIndex] == 1);
-  const int jointIndex = Simulation::simulation->model->body_jntadr[bodyIndex];
+  ASSERT(Simulation::simulation->model->body_jntnum[id] == 1);
+  const int jointIndex = Simulation::simulation->model->body_jntadr[id];
   ASSERT(Simulation::simulation->model->jnt_type[jointIndex] == mjJNT_FREE);
   const int poseIndex = Simulation::simulation->model->jnt_qposadr[jointIndex];
   mju_f2n(Simulation::simulation->data->qpos + poseIndex, pos, 3);
@@ -311,8 +321,8 @@ void Body::move(const float* pos, const float (*rot)[3])
   if(rootBody != this)
     return;
   // Set translation
-  ASSERT(Simulation::simulation->model->body_jntnum[bodyIndex] == 1);
-  const int jointIndex = Simulation::simulation->model->body_jntadr[bodyIndex];
+  ASSERT(Simulation::simulation->model->body_jntnum[id] == 1);
+  const int jointIndex = Simulation::simulation->model->body_jntadr[id];
   ASSERT(Simulation::simulation->model->jnt_type[jointIndex] == mjJNT_FREE);
   const int poseIndex = Simulation::simulation->model->jnt_qposadr[jointIndex];
   mju_f2n(Simulation::simulation->data->qpos + poseIndex, pos, 3);
@@ -333,7 +343,7 @@ void Body::move(const float* pos, const float (*rot)[3])
 
 void Body::resetDynamics()
 {
-  mju_zero(Simulation::simulation->data->qvel + Simulation::simulation->model->body_dofadr[bodyIndex], Simulation::simulation->model->body_dofnum[bodyIndex]);
+  mju_zero(Simulation::simulation->data->qvel + Simulation::simulation->model->body_dofadr[id], Simulation::simulation->model->body_dofnum[id]);
   for(Body* child : bodyChildren)
     child->resetDynamics();
 }
@@ -345,10 +355,10 @@ void Body::enablePhysics(bool enable)
     --Simulation::simulation->model->ngravcomp;
   else
     ++Simulation::simulation->model->ngravcomp;
-  Simulation::simulation->model->body_gravcomp[bodyIndex] = enable ? 0.f : 1.f;
+  Simulation::simulation->model->body_gravcomp[id] = enable ? 0.f : 1.f;
 
   // enable/disable collisions with associated geoms
-  Simulation::simulation->model->body_contype[bodyIndex] = Simulation::simulation->model->body_conaffinity[bodyIndex] = enable ? 1 : 0;
+  Simulation::simulation->model->body_contype[id] = Simulation::simulation->model->body_conaffinity[id] = enable ? 1 : 0;
 
   for(Body* child : bodyChildren)
     child->enablePhysics(enable);
@@ -356,7 +366,7 @@ void Body::enablePhysics(bool enable)
 
 void Body::enableGravity(bool enable)
 {
-  Simulation::simulation->model->body_gravcomp[bodyIndex] = enable ? 0.f : 1.f; // TODO
+  Simulation::simulation->model->body_gravcomp[id] = enable ? 0.f : 1.f; // TODO
   for(Body* child : bodyChildren)
     child->enableGravity(enable);
 }

@@ -15,7 +15,8 @@
 #include <mujoco/mujoco.h>
 #include <cmath>
 
-ServoMotor::ServoMotor()
+ServoMotor::ServoMotor(const std::string& name)
+  : Motor(name)
 {
   Simulation::simulation->scene->actuators.push_back(this);
 
@@ -41,7 +42,7 @@ void ServoMotor::create(Joint* joint)
   actuator->trntype = mjTRN_JOINT;
   actuator->gear[0] = 1.f;
 
-  mjs_setString(actuator->target, joint->jointName);
+  mjs_setString(actuator->target, joint->name.c_str());
 
   actuator->ctrllimited = mjLIMITED_TRUE;
   actuator->ctrlrange[0] = -maxForce;
@@ -55,13 +56,13 @@ void ServoMotor::act()
 {
   if(!isInitialized)
   {
-    ASSERT(Simulation::simulation->model->jnt_type[joint->jointIndex] == mjJNT_HINGE ||
-           Simulation::simulation->model->jnt_type[joint->jointIndex] == mjJNT_SLIDE);
+    ASSERT(Simulation::simulation->model->jnt_type[joint->id] == mjJNT_HINGE ||
+           Simulation::simulation->model->jnt_type[joint->id] == mjJNT_SLIDE);
     isInitialized = true;
 
-    Simulation::simulation->model->dof_damping[Simulation::simulation->model->jnt_dofadr[joint->jointIndex]] = 0.01f;
-    Simulation::simulation->model->dof_armature[Simulation::simulation->model->jnt_dofadr[joint->jointIndex]] = 0.01f;
-    Simulation::simulation->model->dof_frictionloss[Simulation::simulation->model->jnt_dofadr[joint->jointIndex]] = 0.0f;
+    Simulation::simulation->model->dof_damping[Simulation::simulation->model->jnt_dofadr[joint->id]] = 0.01f;
+    Simulation::simulation->model->dof_armature[Simulation::simulation->model->jnt_dofadr[joint->id]] = 0.01f;
+    Simulation::simulation->model->dof_frictionloss[Simulation::simulation->model->jnt_dofadr[joint->id]] = 0.0f;
     for(unsigned i = 0; i < targetSize; i++)
       target[i] = { static_cast<float>(Simulation::simulation->data->qpos[Simulation::simulation->model->jnt_qposadr[joint->jointIndex]]), static_cast<float>(Simulation::simulation->simulatedTime) };
   }
@@ -69,9 +70,9 @@ void ServoMotor::act()
   // For puppets just overwrite the values
   if(isPuppet)
   {
-    mju_f2n(&Simulation::simulation->data->qpos[Simulation::simulation->model->jnt_qposadr[joint->jointIndex]], &this->setpoint, 1);
+    mju_f2n(&Simulation::simulation->data->qpos[Simulation::simulation->model->jnt_qposadr[joint->id]], &this->setpoint, 1);
     const float zero = 0.f;
-    mju_f2n(&Simulation::simulation->data->qvel[Simulation::simulation->model->jnt_dofadr[joint->jointIndex]], &zero, 1);
+    mju_f2n(&Simulation::simulation->data->qvel[Simulation::simulation->model->jnt_dofadr[joint->id]], &zero, 1);
     return;
   }
 
@@ -98,7 +99,7 @@ void ServoMotor::act()
   float currentPos = static_cast<float>(Simulation::simulation->data->qpos[Simulation::simulation->model->jnt_qposadr[joint->jointIndex]]);
   const float currentVel = static_cast<float>(Simulation::simulation->data->qvel[Simulation::simulation->model->jnt_dofadr[joint->jointIndex]]);
 
-  if(Simulation::simulation->model->jnt_type[joint->jointIndex] == mjJNT_HINGE)
+  if(Simulation::simulation->model->jnt_type[joint->id] == mjJNT_HINGE)
   {
     const float diff = normalize(currentPos - normalize(lastPos));
     currentPos = lastPos + diff;
@@ -164,7 +165,7 @@ bool ServoMotor::getMinAndMax(float& min, float& max) const
 void ServoMotor::PositionSensor::updateValue()
 {
   data.floatValue = static_cast<float>(Simulation::simulation->data->qpos[Simulation::simulation->model->jnt_qposadr[servoMotor->joint->jointIndex]]);
-  if(Simulation::simulation->model->jnt_type[servoMotor->joint->jointIndex] == mjJNT_HINGE)
+  if(Simulation::simulation->model->jnt_type[servoMotor->joint->id] == mjJNT_HINGE)
   {
     const float diff = normalize(data.floatValue - normalize(servoMotor->lastPos));
     data.floatValue = servoMotor->lastPos + diff;
@@ -197,7 +198,7 @@ bool ServoMotor::VelocitySensor::getMinAndMax(float& min, float& max) const
 
 void ServoMotor::registerObjects()
 {
-  if(Simulation::simulation->model->jnt_type[joint->jointIndex] == mjJNT_HINGE)
+  if(Simulation::simulation->model->jnt_type[joint->id] == mjJNT_HINGE)
   {
     positionSensor.unit = unit = QString::fromUtf8("°");
     velocitySensor.unit = QString::fromUtf8("°/s");

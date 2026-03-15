@@ -48,6 +48,8 @@ void Geometry::createPhysicsInternal()
   }
   if(geom)
   {
+    mjs_setName(geom->element, name.c_str());
+
     ASSERT(collisionGroup < 32);
     geom->contype = 1 << collisionGroup;
     geom->conaffinity = ~geom->contype;
@@ -92,10 +94,11 @@ void Geometry::createPhysicsInternal()
 
 void Geometry::createIDs()
 {
-  if(geom == nullptr)
+  ::PhysicalObject::createIDs();
+  
+  if(geom == nullptr || id < 0)
     return;
 
-  id = mj_name2id(Simulation::simulation->model, type, name.c_str());
   registeredGeometries[id] = this;
 }
 

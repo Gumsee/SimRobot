@@ -29,8 +29,6 @@ private:
   mjsGeom* assembleGeometry(mjsBody* body) override
   {
     mjsGeom* geom = mjs_addGeom(body, nullptr);
-    name = Simulation::simulation->getName(mjOBJ_GEOM, "SphereGeometry", nullptr, this);
-    mjs_setName(geom->element, name.c_str());
     geom->type = mjGEOM_SPHERE;
     geom->size[0] = radius;
     innerRadius = radius;

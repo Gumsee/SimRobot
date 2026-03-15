@@ -20,10 +20,7 @@ class Joint : public Actuator
 {
 public:
   Joint(const std::string& name);
-
   Axis* axis = nullptr;
-  const char* jointName = nullptr;
-  int jointIndex = -1;
 
 protected:
   /**

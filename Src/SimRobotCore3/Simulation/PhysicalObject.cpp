@@ -7,6 +7,8 @@
 #include "PhysicalObject.h"
 #include "Platform/Assert.h"
 #include "Simulation/Body.h"
+#include "Simulation/Simulation.h"
+#include <mujoco/mujoco.h>
 
 PhysicalObject::PhysicalObject(const int& type, const std::string& name)
   : SimObject(name),
@@ -53,6 +55,9 @@ void PhysicalObject::createPhysics()
 
 void PhysicalObject::createIDs()
 {
+  if(type != mjOBJ_UNKNOWN)
+    id = mj_name2id(Simulation::simulation->model, type, name.c_str());
+
   for(PhysicalObject* object : physicalChildren)
     object->createIDs();
 }
