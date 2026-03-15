@@ -42,11 +42,11 @@ private:
   const SimRobot::Object& object; /**< The object that should be displayed */
   SimObjectRenderer objectRenderer; /**< For rendering the object */
   GraphicsContext* pGLContext;
-  Framebuffer* pContextFramebuffer;
-  Canvas* pRenderCanvas;
-  Camera3D* pMainCamera;
-  Renderer3D* pMainRenderer;
-  World3D* pWorld;
+  Framebuffer* pContextFramebuffer = nullptr;
+  Canvas* pRenderCanvas = nullptr;
+  Camera3D* pMainCamera = nullptr;
+  Renderer3D* pMainRenderer = nullptr;
+  World3D* pWorld = nullptr;
   Gum::IO::Mouse oMouse;
 	static inline ShaderProgram *pShader = nullptr;
   SimRobotCore3::Renderer::ShadeMode physicsShadeMode = SimRobotCore3::Renderer::ShadeMode::flatShading;

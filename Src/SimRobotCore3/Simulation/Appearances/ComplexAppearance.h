@@ -18,6 +18,9 @@
 class ComplexAppearance : public Appearance
 {
 public:
+  ComplexAppearance(const std::string& name)
+    : Appearance(findAvailableName(name, "ComplexAppearance"))
+  {}
   /**
    * @enum Mode
    * Possible primitive group types (\c triangles, \c quads, ...)
@@ -59,7 +62,6 @@ public:
 private:
   /**
    * Creates a mesh for this appearance in the given graphics context
-   * @param graphicsContext The graphics context to create the mesh in
    * @return The resulting mesh
    */
   Mesh* createMesh() override;
@@ -68,7 +70,6 @@ private:
    * Creates the mesh if it is not already cached
    * @tparam VertexType The vertex type from the \c bGraphicsContext that is used for this mesh
    * @tparam withTextureCoordinates Whether the vertex type has texture coordinates
-   * @param graphicsContext The graphics context to create the mesh in
    * @return The resulting mesh
    */
   Mesh* createMeshImpl();

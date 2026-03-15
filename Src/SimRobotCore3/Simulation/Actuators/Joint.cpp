@@ -14,19 +14,22 @@
 #include "Simulation/Motors/Motor.h"
 #include <cmath>
 
-void Joint::createPhysics(bGraphicsContext& graphicsContext)
-{
-  Actuator::createPhysics(graphicsContext);
+Joint::Joint(const std::string& name)
+  : Actuator(findAvailableName(name, "Joint"))
+{}
 
+void Joint::createPhysicsInternal()
+{
   ASSERT(!axisLine);
   axisLine = new Object3D(Mesh::generateLine(vec3(axis->x, axis->y, axis->z) * -0.05f, vec3(axis->x, axis->y, axis->z) * 0.05f), "JointLine");
 
   ASSERT(!sphere);
   sphere = new Object3D(Mesh::generateSphere(0.002f, 10, 10), "JointSphere");
 
-  ASSERT(!surface);
-  const float color[] = {std::abs(axis->x), std::abs(axis->y), std::abs(axis->z), 1.f};
-  surface = graphicsContext.requestSurface(color, color);
+  //TODO
+  //ASSERT(!surface);
+  //const float color[] = {std::abs(axis->x), std::abs(axis->y), std::abs(axis->z), 1.f};
+  //surface = graphicsContext.requestSurface(color, color);
 }
 
 void Joint::drawPhysics() const

@@ -40,7 +40,7 @@ void SimObjectRenderer::resetCamera()
 void SimObjectRenderer::updateCameraTransformation()
 {
   static const Vector3f cameraUpVector(0.f, 0.f, 1.f);
-  OpenGLTools::computeCameraTransformation(cameraPos, cameraTarget, cameraUpVector, cameraTransformation);
+  //OpenGLTools::computeCameraTransformation(cameraPos, cameraTarget, cameraUpVector, cameraTransformation);
 }
 
 void SimObjectRenderer::init()
@@ -80,9 +80,6 @@ void SimObjectRenderer::destroy()
 
 void SimObjectRenderer::draw()
 {
-  // make sure transformations of movable bodies are up-to-date
-  //Simulation::simulation->scene->updateTransformations();
-
   //Simulation::simulation->graphicsContext.makeCurrent(1920, 1080);
   //mainFramebuffer->bind();
 
@@ -446,7 +443,7 @@ bool SimObjectRenderer::startDrag(int x, int y, DragType type)
   return false;
 }
 
-SimRobotCore3::Object* SimObjectRenderer::getDragSelection()
+SimRobot::Object* SimObjectRenderer::getDragSelection()
 {
   return dragSelection;
 }

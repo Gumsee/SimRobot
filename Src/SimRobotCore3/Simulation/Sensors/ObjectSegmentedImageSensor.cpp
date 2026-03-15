@@ -35,8 +35,9 @@ static float surfaceColors[numOfBodySurfaces][4] =
   {1.0f, .55f, 0.0f, 1.0f}  // dark orange,
 };
 
-ObjectSegmentedImageSensor::ObjectSegmentedImageSensor() :
-  surfaces(Simulation::simulation->bodySurfaces)
+ObjectSegmentedImageSensor::ObjectSegmentedImageSensor(const std::string& name) 
+  : Sensor(findAvailableName(name, "ObjectSegmentedImageSensor")),
+    surfaces(Simulation::simulation->bodySurfaces)
 {
   sensor.camera = this;
   sensor.sensorType = SimRobotCore3::SensorPort::cameraSensor;
@@ -50,35 +51,32 @@ ObjectSegmentedImageSensor::~ObjectSegmentedImageSensor()
     delete[] sensor.imageBuffer;
 }
 
-void ObjectSegmentedImageSensor::createPhysics(bGraphicsContext& graphicsContext)
+void ObjectSegmentedImageSensor::createPhysicsInternal()
 {
-  Sensor::createPhysics(graphicsContext);
-
   sensor.dimensions.append(imageWidth);
   sensor.dimensions.append(imageHeight);
   sensor.dimensions.append(3);
 
-  if(translation)
-    sensor.offset.translation = *translation;
-  if(rotation)
-    sensor.offset.rotation = *rotation;
+  sensor.offset = relativeTransformation;
 
   float aspect = std::tan(angleX * 0.5f) / std::tan(angleY * 0.5f);
   OpenGLTools::computePerspective(angleY, aspect, 0.01f, 500.f, sensor.projection);
 
-  if(surfaces.empty())
-  {
-    surfaces.reserve(numOfBodySurfaces);
-    for(std::size_t i = 0; i < numOfBodySurfaces; ++i)
-      surfaces.push_back(graphicsContext.requestSurface(surfaceColors[i], surfaceColors[i]));
-  }
+  //TODO
+  //if(surfaces.empty())
+  //{
+  //  surfaces.reserve(numOfBodySurfaces);
+  //  for(std::size_t i = 0; i < numOfBodySurfaces; ++i)
+  //    surfaces.push_back(graphicsContext.requestSurface(surfaceColors[i], surfaceColors[i]));
+  //}
 
   ASSERT(!pyramid);
   pyramid = new Object3D(Mesh::generatePyramid(vec2(std::tan(angleX * 0.5f) * 2.f, std::tan(angleY * 0.5f) * 2.f), 1.f), "ObjectSegmentedImageSensor");
 
-  ASSERT(!surface);
-  static const float color[] = {0.f, 0.f, 0.5f, 1.f};
-  surface = graphicsContext.requestSurface(color, color);
+  //TODO
+  //ASSERT(!surface);
+  //static const float color[] = {0.f, 0.f, 0.5f, 1.f};
+  //surface = graphicsContext.requestSurface(color, color);
 }
 
 void ObjectSegmentedImageSensor::addParent(Element& element)
@@ -110,9 +108,6 @@ void ObjectSegmentedImageSensor::ObjectSegmentedImageSensorPort::updateValue()
   //   imageBuffer = new unsigned char[imageSize];
   //   imageBufferSize = imageSize;
   // }
-
-  // // make sure the poses of all movable objects are up to date
-  // Simulation::simulation->scene->updateTransformations();
 
   // bGraphicsContext& graphicsContext = Simulation::simulation->graphicsContext;
   // graphicsContext.makeCurrent(imageWidth, imageHeight);
@@ -174,8 +169,6 @@ bool ObjectSegmentedImageSensor::ObjectSegmentedImageSensorPort::renderCameraIma
   //   imageBufferSize = multiImageBufferSize;
   // }
 
-  // // make sure the poses of all movable objects are up to date
-  // Simulation::simulation->scene->updateTransformations();
 
   // bGraphicsContext& graphicsContext = Simulation::simulation->graphicsContext;
   // graphicsContext.makeCurrent(imageWidth, imageHeight * count);

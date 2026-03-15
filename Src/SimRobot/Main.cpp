@@ -81,6 +81,7 @@ int main(int argc, char* argv[])
     nullptr, Gum::DefaultContextConfig, nullptr, 
     &mainWindow
   );
+  Gum::IO::Mouse* winmouse = gumWindow->getMouse();
 
 
   Gum::Graphics::init();
@@ -123,6 +124,7 @@ int main(int argc, char* argv[])
 
   int ret = app.exec();
   
+  Gum::_delete(winmouse);
   Gum::_delete(gumWindow);
   Gum::Engine::cleanup();
 

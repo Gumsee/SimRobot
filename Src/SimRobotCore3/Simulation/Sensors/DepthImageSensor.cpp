@@ -14,7 +14,8 @@
 #include <algorithm>
 #include <cmath>
 
-DepthImageSensor::DepthImageSensor()
+DepthImageSensor::DepthImageSensor(const std::string& name)
+  : Sensor(findAvailableName(name, "DepthImageSensor"))
 {
   sensor.depthImageSensor = this;
   sensor.sensorType = SimRobotCore3::SensorPort::floatArraySensor;
@@ -34,10 +35,8 @@ DepthImageSensor::~DepthImageSensor()
     delete[] sensor.lut;
 }
 
-void DepthImageSensor::createPhysics(bGraphicsContext& graphicsContext)
+void DepthImageSensor::createPhysicsInternal()
 {
-  Sensor::createPhysics(graphicsContext);
-
   sensor.imageBuffer = new float[imageWidth * imageHeight];
   sensor.renderHeight = imageHeight;
 
@@ -86,10 +85,7 @@ void DepthImageSensor::createPhysics(bGraphicsContext& graphicsContext)
     sensor.dimensions.append(imageHeight);
   sensor.data.floatArray = sensor.imageBuffer;
 
-  if(translation)
-    sensor.offset.translation = *translation;
-  if(rotation)
-    sensor.offset.rotation = *rotation;
+  sensor.offset = relativeTransformation;
 
   sensor.min = min;
   sensor.max = max;
@@ -98,7 +94,7 @@ void DepthImageSensor::createPhysics(bGraphicsContext& graphicsContext)
   float aspect = std::tan(sensor.renderAngleX * 0.5f) / std::tan(angleY * 0.5f);
   OpenGLTools::computePerspective(angleY, aspect, zNear, max, sensor.projection);
 
-  Mesh* mesh = new Mesh();
+  Mesh* mesh = new Mesh("DepthImageSensor"); //needs TODO, custom name for each sensor
   
   vec3 ml;
   if(projection == perspectiveProjection)
@@ -178,9 +174,10 @@ void DepthImageSensor::createPhysics(bGraphicsContext& graphicsContext)
 
   pyramidChain = new Object3D(mesh, "pyramidChain");
 
-  ASSERT(!surface);
-  static const float color[] = {0.f, 0.f, 0.5f, 1.f};
-  surface = graphicsContext.requestSurface(color, color);
+  //TODO
+  //ASSERT(!surface);
+  //static const float color[] = {0.f, 0.f, 0.5f, 1.f};
+  //surface = graphicsContext.requestSurface(color, color);
 }
 
 void DepthImageSensor::addParent(Element& element)
@@ -200,12 +197,9 @@ void DepthImageSensor::registerObjects()
 
 void DepthImageSensor::DistanceSensor::updateValue()
 {
-  // make sure the poses of all movable objects are up to date
-  Simulation::simulation->scene->updateTransformations();
-
-  bGraphicsContext& graphicsContext = Simulation::simulation->graphicsContext;
-  graphicsContext.makeCurrent(renderWidth, renderHeight, false);
-  graphicsContext.updateModelMatrices(bGraphicsContext::ModelMatrix::appearance, false);
+  //bGraphicsContext& graphicsContext = Simulation::simulation->graphicsContext;
+  //graphicsContext.makeCurrent(renderWidth, renderHeight, false);
+  //graphicsContext.updateModelMatrices(bGraphicsContext::ModelMatrix::appearance, false);
 
   // setup camera position
   /*Pose3f pose = physicalObject->poseInWorld;

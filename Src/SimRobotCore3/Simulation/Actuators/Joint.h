@@ -19,6 +19,8 @@ class Axis;
 class Joint : public Actuator
 {
 public:
+  Joint(const std::string& name);
+
   Axis* axis = nullptr;
   const char* jointName = nullptr;
   int jointIndex = -1;
@@ -28,15 +30,12 @@ protected:
    * Creates the physical objects used by the OpenDynamicsEngine (ODE).
    * These are a geometry object for collision detection and/or a body,
    * if the simulation object is movable.
-   * @param graphicsContext The graphics context to create resources in
    */
-  void createPhysics(bGraphicsContext& graphicsContext) override;
+  void createPhysicsInternal() override;
 
 private:
   /**
    * Submits draw calls for physical primitives of the object (including children) in the given graphics context
-   * @param graphicsContext The graphics context to draw the object to
-   * @param flags Flags to enable or disable certain features
    */
   void drawPhysics() const override;
 

@@ -16,12 +16,15 @@
 class SphereAppearance : public Appearance
 {
 public:
+  SphereAppearance(const std::string& name)
+    : Appearance(findAvailableName(name, "SphereAppearance"))
+  {}
+
   float radius; /**< The radius of the sphere */
 
 private:
   /**
    * Creates a mesh for this appearance in the given graphics context
-   * @param graphicsContext The graphics context to create the mesh in
    * @return The resulting mesh
    */
   Mesh* createMesh() override

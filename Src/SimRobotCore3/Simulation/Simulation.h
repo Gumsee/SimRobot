@@ -58,7 +58,8 @@ public:
   std::vector<bGraphicsContext::Surface*> bodySurfaces; /**< The special surfaces for each body, used by \c ObjectSegmentedImageSensor. */
   ShaderProgram* forwardRenderingShader;
 
-  unsigned int currentFrameRate = 0; /**< The current frame rate of the simulation */
+  unsigned int currentFrameRate = 0U; /**< The current frame rate of the simulation */
+  unsigned int collisions = 0U;
 
   /** Default Constructor. */
   Simulation();
@@ -93,8 +94,6 @@ public:
   void doSimulationStep();
   unsigned int simulationStep = 0;
   double simulatedTime = 0;
-  unsigned int collisions = 0;
-  unsigned int contactPoints = 0;
 
   /** Registers all objects of the simulation (including children, actuators and sensors) at SimRobot's GUI */
   void registerObjects();

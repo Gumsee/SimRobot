@@ -639,7 +639,7 @@ Element* ParserCore3::rotationElement()
   SimObject* simObject = dynamic_cast<SimObject*>(element);
   if(simObject)
   {
-    simObject->relativeTransformation.setRotation(quat::toEuler(simObject->relativeTransformation.getRotation()) + rotation);
+    simObject->relativeTransformation.setRotation(simObject->relativeTransformation.getRotation() * fquat::toQuaternion(rotation));    
   }
   else
   {
@@ -858,9 +858,7 @@ Element* ParserCore3::depthImageSensorElement()
 
 Element* ParserCore3::userInputElement()
 {
-  UserInput* userInput = new UserInput();
-
-  userInput->name = getString("name", false);
+  UserInput* userInput = new UserInput(getString("name", false));
   std::string type = getString("type", false);
   if(type == "angle")
   {

@@ -24,22 +24,27 @@
 class SimObject : public ElementCore3
 {
 public:
-  Transformable3D relativeTransformation;
+  Transformable3D relativeTransformation; /**< The initial offset relative transformation to the origin of the parent object */
+  Transformable3D worldTransformation; /**< The absolute pose of the object */
   QString fullName; /**< The path name to the object in the scene graph */
   std::string name; /**< The name of the scene graph object (without path) */
   std::list<SimObject*> children; /**< List of subordinate scene graph objects */
-  std::vector<SimObject*> parents;
-  Vector3f* translation = nullptr; /**< The initial translational offset relative to the origin of the parent object */
-  RotationMatrix* rotation = nullptr; /**< The initial rotational offset relative to the origin of the parent object */
-  Pose3f poseInParent; /**< The (updated) offset relative to the origin of the parent object */
+  SimObject* parent = nullptr;
+  inline static std::unordered_map<std::string, SimObject*> loadedObjects;
 
+  SimObject(const std::string& name);
   /** Destructor */
   ~SimObject();
 
   /** Registers this object with children, actuators and sensors at SimRobot's GUI */
   virtual void registerObjects();
 
-  mat4 getTransformationMatrix();
+  void calcTransformationMatrix();
+
+  /** Updates the world transformation */
+  virtual void updateTransformation();
+
+  std::string findAvailableName(std::string name, const std::string& defaultvalue);
 
 protected:
   /**
@@ -53,5 +58,4 @@ protected:
   virtual const QString& getFullName() const {return fullName;}
   virtual SimRobot::Widget* createWidget();
   virtual const QIcon* getIcon() const;
-  virtual SimRobotCore3::Renderer* createRenderer();
 };

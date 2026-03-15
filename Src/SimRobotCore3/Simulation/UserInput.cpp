@@ -9,6 +9,12 @@
 #include "CoreModule.h"
 #include "SensorWidget.h"
 
+UserInput::UserInput(const std::string& name)
+  : SimObject(findAvailableName(name, "UserInput"))
+{
+
+}
+
 const QIcon* UserInput::InputPort::getIcon() const
 {
   return &CoreModule::module->actuatorIcon;

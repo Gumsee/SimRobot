@@ -9,19 +9,10 @@
 #include "Graphics/bGraphicsContext.h"
 #include "SensorWidget.h"
 #include "Simulation/Simulation.h"
-#include "Tools/OpenGLTools.h"
 
-void Sensor::createPhysics(bGraphicsContext& graphicsContext)
-{
-  OpenGLTools::convertTransformation(rotation, translation, poseInParent);
-
-  //TODO
-  //graphicsContext.pushModelMatrix(poseInParent);
-  //ASSERT(!modelMatrix);
-  //modelMatrix = graphicsContext.requestModelMatrix(bGraphicsContext::ModelMatrix::sensorDrawing);
-  //::PhysicalObject::createPhysics(graphicsContext);
-  //graphicsContext.popModelMatrix();
-}
+Sensor::Sensor(const std::string& name)
+  : ::PhysicalObject(mjOBJ_SENSOR, findAvailableName(name, "Sensor"))
+{}
 
 const QIcon* Sensor::Port::getIcon() const
 {

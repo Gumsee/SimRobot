@@ -8,38 +8,53 @@
 #include "Platform/Assert.h"
 #include "Simulation/Body.h"
 
+PhysicalObject::PhysicalObject(const int& type, const std::string& name)
+  : SimObject(name),
+    type(type)
+    
+{}
+
 void PhysicalObject::addParent(Element& element)
 {
   ASSERT(!parent);
-  parent = dynamic_cast<PhysicalObject*>(&element);
+  PhysicalObject* physicalparent = dynamic_cast<PhysicalObject*>(&element);
   ASSERT(parent);
-  parent->physicalChildren.push_back(this);
-  parent->physicalDrawings.push_back(this);
+  physicalparent->physicalChildren.push_back(this);
+  physicalparent->physicalDrawings.push_back(this);
+  parent = physicalparent;
   SimObject::addParent(element);
 }
 
-void PhysicalObject::createPhysics(bGraphicsContext& graphicsContext)
+void PhysicalObject::createPhysics()
 {
+  calcTransformationMatrix();
+  std::string parentname = "";
+  if(parent != nullptr)
+    parentname = parent->name;
+
   // find parent body for child objects
   Body* body = dynamic_cast<Body*>(this);
   if(!body)
     body = parentBody;
 
+  if(!isinitialized)
+  {
+    createPhysicsInternal();
+    isinitialized = true;
+  }
+
   // initialize and call createPhysics() for each child object
   for(PhysicalObject* object : physicalChildren)
   {
-    // compute pose of child object
-    //TODO
-    //object->poseInWorld = poseInWorld;
-    //if(object->translation)
-    //  object->poseInWorld.translate(*object->translation);
-    //if(object->rotation)
-    //  object->poseInWorld.rotate(*object->rotation);
-
-    //
     object->parentBody = body;
-    object->createPhysics(graphicsContext);
+    object->createPhysics();
   }
+}
+
+void PhysicalObject::createIDs()
+{
+  for(PhysicalObject* object : physicalChildren)
+    object->createIDs();
 }
 
 void PhysicalObject::drawPhysics() const

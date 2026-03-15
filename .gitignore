@@ -1,3 +1,4 @@
+/.vscode
 /Build
 !/Make/Linux/.idea
 /Make/Linux/.idea/*

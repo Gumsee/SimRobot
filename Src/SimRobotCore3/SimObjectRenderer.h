@@ -96,7 +96,7 @@ public:
   void setDragMode(DragAndDropMode mode) override {dragMode = mode;}
   DragAndDropMode getDragMode() const override {return dragMode;}
   bool startDrag(int x, int y, DragType type) override;
-  SimRobotCore3::Object* getDragSelection() override;
+  SimRobot::Object* getDragSelection() override;
   void setCameraMove(bool, bool, bool, bool) override {}
   bool moveDrag(int x, int y, DragType type) override;
   bool releaseDrag(int x, int y) override;

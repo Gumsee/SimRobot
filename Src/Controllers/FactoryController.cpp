@@ -26,6 +26,7 @@
 #else
 #include <unistd.h>
 #endif
+#include <iostream>
 /**
  *  The controller class for the factory demo.
  */
@@ -69,7 +70,7 @@ public:
   bool compile() override
   {
     // Get all necessary actuator and sensor objects
-    SimRobotCore3::Object* rootObj = static_cast<SimRobotCore3::Object*>(simRobot.resolveObject("Factory", SimRobotCore3::scene));
+    SimRobot::Object* rootObj = static_cast<SimRobot::Object*>(simRobot.resolveObject("Factory", SimRobotCore3::scene));
     QVector<QString> parts;
     parts.resize(1);
     parts[0] = "distance1.distance";
@@ -135,6 +136,7 @@ public:
         startOfWaitingTime = simPort->getTime();
       if(startOfWaitingTime != 0 && nextState == 0)
         startOfWaitingTime = 0;
+      
       if((startOfWaitingTime != 0) && (simPort->getTime() - startOfWaitingTime > 3.5))
       {
         simRobot.setStatusMessage("Pushing block.");

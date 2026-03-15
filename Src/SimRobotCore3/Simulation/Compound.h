@@ -18,34 +18,20 @@ class Geometry;
  */
 class Compound : public PhysicalObject, public GraphicalObject, public SimRobotCore3::Compound
 {
+public:
+  Compound(const std::string& name);
+
 private:
-  /**
-   * Creates the physical objects used by the OpenDynamicsEngine (ODE).
-   * These are a geometry object for collision detection and/or a body,
-   * if the simulation object is movable.
-   * @param graphicsContext The graphics context to create resources in
-   */
-  void createPhysics(bGraphicsContext& graphicsContext) override;
-
-  /**
-   * Creates a stationary ODE geometry
-   * @param parentPose The pose of the group or geometry
-   * @param geometry A geometry description
-   */
-  void addGeometry(const Transformable3D& parentPose, Geometry& geometry);
-
   /**
    * Registers an element as parent
    * @param element The element to register
    */
   void addParent(Element& element) override;
 
-private:
   // API
   const QString& getFullName() const override {return SimObject::getFullName();}
   SimRobot::Widget* createWidget() override {return SimObject::createWidget();}
   const QIcon* getIcon() const override {return SimObject::getIcon();}
-  SimRobotCore3::Renderer* createRenderer() override {return SimObject::createRenderer();}
   bool registerDrawing(SimRobotCore3::Controller3DDrawing& drawing) override {return ::PhysicalObject::registerDrawing(drawing);}
   bool unregisterDrawing(SimRobotCore3::Controller3DDrawing& drawing) override {return ::PhysicalObject::unregisterDrawing(drawing);}
   SimRobotCore3::Body* getParentBody() override {return ::PhysicalObject::getParentBody();}

@@ -10,6 +10,7 @@
 #include "Graphics/bGraphicsContext.h"
 #include "Simulation/PhysicalObject.h"
 #include <mujoco/mjspec.h>
+#include <mujoco/mujoco.h>
 #include <list>
 #include <string>
 #include <unordered_map>
@@ -44,23 +45,21 @@ public:
   float innerRadiusSqr; /**< precomputed square of \c innerRadius */
   float outerRadius; /**< The radius of a sphere that covers the geometry. */
 
+  mjsGeom* geom = nullptr;
+  Object3D* obj = nullptr;
   ::color color; /**< A color for drawing the geometry */
   Material* material = nullptr; /**< The material the surface of the geometry is made of */
   std::list<SimRobotCore3::CollisionCallback*>* collisionCallbacks = nullptr; /**< Collision callback functions registered by another SimRobot module */
+  inline static unsigned int contactPoints = 0U;
+  inline static std::vector<Geometry*> registeredGeometries;
 
-  /** Default constructor */
-  Geometry();
+  Geometry(const std::string& name);
 
   /** Destructor */
   ~Geometry();
 
-  /**
-   * Creates the physical objects used by the OpenDynamicsEngine (ODE).
-   * These are a geometry object for collision detection and/or a body,
-   * if the simulation object is movable.
-   * @param bGraphicsContext The graphics context to create resources in
-   */
-  void createPhysics(bGraphicsContext& bGraphicsContext) override;
+  void createPhysicsInternal() override;
+  void createIDs() override;
 
   /**
    * Creates the geometry and adds it to a body at the given offset
@@ -69,7 +68,12 @@ public:
    * @param collisionGroup The collision group to which the geometry belongs. Geometries within a group don't collide
    * @param immaterial Whether the geometry collides or just tests for collision
    */
-  void createGeometry(mjsBody* body, int collisionGroup, const Pose3f& offset, bool immaterial = false);
+  void createGeometry(mjsBody* body, int collisionGroup, bool immaterial = false) {}
+
+  void updateTransformation() override;
+  void drawPhysics() const override;
+
+  static void checkCollisions();
 
   bGraphicsContext::Surface* surface = nullptr; /**< The surface of this geometry drawing */
 
@@ -85,14 +89,6 @@ protected:
   }
 
 private:
-  bool created = false;
-
-  /**
-   * Registers an element as parent
-   * @param element The element to register
-   */
-  void addParent(Element& element) override;
-
   friend class CollisionSensor;
 
 private:
@@ -100,7 +96,6 @@ private:
   const QString& getFullName() const override {return SimObject::getFullName();}
   SimRobot::Widget* createWidget() override {return SimObject::createWidget();}
   const QIcon* getIcon() const override {return SimObject::getIcon();}
-  SimRobotCore3::Renderer* createRenderer() override {return SimObject::createRenderer();}
   bool registerDrawing(SimRobotCore3::Controller3DDrawing& drawing) override {return ::PhysicalObject::registerDrawing(drawing);}
   bool unregisterDrawing(SimRobotCore3::Controller3DDrawing& drawing) override {return ::PhysicalObject::unregisterDrawing(drawing);}
   SimRobotCore3::Body* getParentBody() override {return ::PhysicalObject::getParentBody();}

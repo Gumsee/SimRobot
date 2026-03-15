@@ -18,15 +18,16 @@
 class Mass : public SimObject, public SimRobotCore3::Mass
 {
 public:
+  Mass(const std::string& name);
   /**
    * Creates the mass of a physical object (including children and not including \c translation and \c rotation)
    * @return The mass
    */
-  float createMass(Vector3f& com, float* inertia);
+  float createMass(vec3& com, float* inertia);
 
 protected:
   float mass;
-  Vector3f com = Vector3f::Zero();
+  vec3 com;
   float inertia[6];
   bool created = false;
 
@@ -38,5 +39,4 @@ private:
   const QString& getFullName() const override {return SimObject::getFullName();}
   SimRobot::Widget* createWidget() override {return SimObject::createWidget();}
   const QIcon* getIcon() const override {return SimObject::getIcon();}
-  SimRobotCore3::Renderer* createRenderer() override {return SimObject::createRenderer();}
 };

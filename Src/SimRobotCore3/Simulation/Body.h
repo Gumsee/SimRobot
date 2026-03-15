@@ -25,28 +25,22 @@ public:
   mjsBody* body = nullptr; /**< The MuJoCo specification of this body. Only valid during \c createPhysics. */
   Body* rootBody = nullptr; /**< The first movable body in a chain of bodies (might point to itself) */
   int bodyIndex = -1; /**< The index of the body in MuJoCo's data. */
+  int collisionGroup = 0; /**< The collision group of this body (one per root body). Compounds belong to collision group 0. */
+  inline static std::vector<Body*> registeredBodies;
+
+  Body(const std::string& name);
 
   /**
    * Creates resources to later draw the object in the given graphics context
-   * @param graphicsContext The graphics context to create resources in
    */
-  void createGraphics(GraphicsContext& graphicsContext) override;
+  void createGraphics() override;
 
   /**
    * Submits draw calls for physical primitives of the object (including children) in the given graphics context
-   * @param graphicsContext The graphics context to draw the object to
-   * @param flags Flags to enable or disable certain features
    */
   void drawPhysics() const override;
 
-  /**
-   * Submits draw calls for appearance primitives of the object (including children) in the given graphics context
-   * @param graphicsContext The graphics context to draw the object to
-   */
-  void drawAppearances(GraphicsContext& graphicsContext) const override;
-
-  /** Updates the transformation from the parent to this body (since the pose of the body may have changed) */
-  void updateTransformation();
+  void updateTransformation() override;
 
   /**
    * Moves the object and its children relative to its current position
@@ -65,7 +59,6 @@ private:
   Vector3f centerOfMass = Vector3f::Zero(); /**< The position of the center of mass relative to the pose of the body */
   Vector3f velocityInWorld; /**< A buffer used by \c getVelocity */
 
-  int collisionGroup = 0; /**< The collision group of this body (one per root body). Compounds belong to collision group 0. */
 
   std::list<Body*> bodyChildren; /**< List of first-degree child bodies that are connected to this body over a joint */
 
@@ -73,17 +66,8 @@ private:
    * Creates the physical objects used by the OpenDynamicsEngine (ODE).
    * These are a geometry object for collision detection and/or a body,
    * if the simulation object is movable.
-   * @param graphicsContext The graphics context to create resources in
    */
-  void createPhysics(bGraphicsContext& graphicsContext) override;
-
-  /**
-   * Creates a ODE geometry and attaches it to the body
-   * @param parentOffset the base geometry offset from the center of mass of the body
-   * @param geometry A geometry description
-   * @param immaterial Whether the geometry collides or just tests for collision
-   */
-  void addGeometry(const Pose3f& parentOffset, Geometry& geometry, bool immaterial = false);
+  void createPhysicsInternal() override;
 
   /**
    * Adds a mass to the mass of the body
@@ -111,14 +95,11 @@ private:
 
   friend class CollisionSensor;
 
-  bGraphicsContext::ModelMatrix* comModelMatrix = nullptr; /**< The model matrix of the CoM sphere drawing */
-
 private:
   // API
   const QString& getFullName() const override {return SimObject::getFullName();}
   SimRobot::Widget* createWidget() override {return SimObject::createWidget();}
   const QIcon* getIcon() const override {return SimObject::getIcon();}
-  SimRobotCore3::Renderer* createRenderer() override {return SimObject::createRenderer();}
   bool registerDrawing(SimRobotCore3::Controller3DDrawing& drawing) override {return ::PhysicalObject::registerDrawing(drawing);}
   bool unregisterDrawing(SimRobotCore3::Controller3DDrawing& drawing) override {return ::PhysicalObject::unregisterDrawing(drawing);}
   SimRobotCore3::Body* getParentBody() override {return parentBody;}

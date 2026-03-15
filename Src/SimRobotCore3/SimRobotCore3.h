@@ -14,7 +14,6 @@ namespace SimRobotCore3
 {
   class Renderer;
   class Controller3DDrawing;
-  class Object;
   class PhysicalObject;
   class Body;
   class Appearance;
@@ -31,16 +30,16 @@ namespace SimRobotCore3
   /** The different SimRobotCore3 object types */
   enum Kind
   {
-    body = 2, /**< An object of the type SimRobotCore3::Body */
-    appearance, /**< An object of the type SimRobotCore3::Appearance */
-    geometry, /**< An object of the type SimRobotCore3::Geometry */
-    actuator, /**< An object of the type SimRobotCore3::Actuator */
-    mass, /**< An object of the type SimRobotCore3::Mass */
-    sensor, /**< An object of the type SimRobotCore3::Sensor */
-    compound, /**< An object of the type SimRobotCore3::Compound */
-    scene, /**< An object of the type SimRobotCore3::Scene */
-    actuatorPort, /**< An object of the type SimRobotCore3::ActuatorPort */
-    sensorPort, /**< An object of the type SimRobotCore3::SensorPort */
+    body         = 0b0000000001, /**< An object of the type SimRobotCore3::Body */
+    appearance   = 0b0000000010, /**< An object of the type SimRobotCore3::Appearance */
+    geometry     = 0b0000000100, /**< An object of the type SimRobotCore3::Geometry */
+    actuator     = 0b0000001000, /**< An object of the type SimRobotCore3::Actuator */
+    mass         = 0b0000010000, /**< An object of the type SimRobotCore3::Mass */
+    sensor       = 0b0000100000, /**< An object of the type SimRobotCore3::Sensor */
+    compound     = 0b0001000000, /**< An object of the type SimRobotCore3::Compound */
+    scene        = 0b0010000000, /**< An object of the type SimRobotCore3::Scene */
+    actuatorPort = 0b0100000000, /**< An object of the type SimRobotCore3::ActuatorPort */
+    sensorPort   = 0b1000000000, /**< An object of the type SimRobotCore3::SensorPort */
   };
 
   /**
@@ -202,7 +201,7 @@ namespace SimRobotCore3
      * Accesses the object currently manipulated with a drag & drop operation
      * @return The object
      */
-    virtual Object* getDragSelection() = 0;
+    virtual SimRobot::Object* getDragSelection() = 0;
 
     virtual bool moveDrag(int x, int y, DragType type) = 0;
     virtual bool releaseDrag(int x, int y) = 0;
@@ -276,22 +275,9 @@ namespace SimRobotCore3
   };
 
   /**
-   * General interface for all renderable scene graph objects
-   */
-  class Object : public SimRobot::Object
-  {
-  public:
-    /**
-     * Creates a new instance of a renderer that can be used for rendering
-     * an object within an OpenGL context.
-     */
-    virtual Renderer* createRenderer() = 0;
-  };
-
-  /**
    * Interface for scene graph objects with physical representation
    */
-  class PhysicalObject : public Object
+  class PhysicalObject : public SimRobot::Object
   {
   public:
     /**
@@ -393,7 +379,7 @@ namespace SimRobotCore3
   /**
    * Interface to appearances
    */
-  class Appearance : public Object
+  class Appearance : public SimRobot::Object
   {
   public:
     /**
@@ -474,7 +460,7 @@ namespace SimRobotCore3
   /**
    * Interface to masses
    */
-  class Mass : public Object
+  class Mass : public SimRobot::Object
   {
   public:
     /**

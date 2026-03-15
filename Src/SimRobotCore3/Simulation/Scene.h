@@ -41,31 +41,26 @@ public:
   World3D *world;
 
   /** Default constructor */
-  Scene();
+  Scene(const std::string& name);
 
   /** Updates the transformation of movable objects */
   void updateTransformations();
-  unsigned int lastTransformationUpdateStep = 0;
 
   /** Updates all actuators that need to do something for each simulation step */
   void updateActuators();
 
   /**
    * Creates resources to later draw the object in the given graphics context
-   * @param graphicsContext The graphics context to create resources in
    */
-  void createGraphics(GraphicsContext& graphicsContext) override;
+  void createGraphics() override;
 
   /**
    * Submits draw calls for appearance primitives of the object (including children) in the given graphics context
-   * @param graphicsContext The graphics context to draw the object to
    */
-  void drawAppearances(GraphicsContext& graphicsContext) const override;
+  void updateAppearances() override;
 
   /**
    * Submits draw calls for physical primitives of the object (including children) in the given graphics context
-   * @param graphicsContext The graphics context to draw the object to
-   * @param flags Flags to enable or disable certain features
    */
   void drawPhysics() const override;
 
@@ -87,7 +82,6 @@ private:
   const QString& getFullName() const override {return SimObject::getFullName();}
   SimRobot::Widget* createWidget() override {return SimObject::createWidget();}
   const QIcon* getIcon() const override;
-  SimRobotCore3::Renderer* createRenderer() override {return SimObject::createRenderer();}
   bool registerDrawing(SimRobotCore3::Controller3DDrawing& drawing) override {return ::PhysicalObject::registerDrawing(drawing);}
   bool unregisterDrawing(SimRobotCore3::Controller3DDrawing& drawing) override {return ::PhysicalObject::unregisterDrawing(drawing);}
   SimRobotCore3::Body* getParentBody() override {return ::PhysicalObject::getParentBody();}

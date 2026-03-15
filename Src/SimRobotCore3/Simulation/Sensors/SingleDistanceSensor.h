@@ -21,7 +21,7 @@ public:
   float max; /**< The maximum distance the distance sensor can measure */
 
   /** Default constructor */
-  SingleDistanceSensor();
+  SingleDistanceSensor(const std::string& name);
 
 private:
   /**
@@ -34,11 +34,8 @@ private:
     ::PhysicalObject* physicalObject;
     float min;
     float max;
-    Pose3f offset;
 
   private:
-    Pose3f pose; /**< The pose of the sensor relative to the origin of the scene */
-
     /** Update the sensor value. Is called when required. */
     void updateValue() override;
 
@@ -50,9 +47,8 @@ private:
    * Creates the physical objects used by the OpenDynamicsEngine (ODE).
    * These are a geometry object for collision detection and/or a body,
    * if the simulation object is movable.
-   * @param graphicsContext The graphics context to create resources in
    */
-  void createPhysics(bGraphicsContext& graphicsContext) override;
+  void createPhysicsInternal() override;
 
   /** Registers this object with children, actuators and sensors at SimRobot's GUI */
   void registerObjects() override;
@@ -65,10 +61,10 @@ private:
 
   /**
    * Submits draw calls for physical primitives of the object (including children) in the given graphics context
-   * @param graphicsContext The graphics context to draw the object to
-   * @param flags Flags to enable or disable certain features
    */
   void drawPhysics() const override;
+
+  void updateTransformation() override;
 
   Object3D* ray = nullptr; /**< The ray mesh for the sensor drawing. */
   bGraphicsContext::Surface* surface = nullptr; /**< The surface for the sensor drawing. */

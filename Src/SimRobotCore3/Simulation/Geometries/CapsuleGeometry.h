@@ -15,6 +15,10 @@
 class CapsuleGeometry : public Geometry
 {
 public:
+  CapsuleGeometry(const std::string& name)
+    : Geometry(findAvailableName(name, "CapsuleGeometry"))
+  {}
+
   float height; /**< The height of the capsule (including the spheres at the ends) */
   float radius; /**< The radius of the capsule */
 
@@ -24,22 +28,20 @@ private:
    * @param body The body to which to attach the geometry
    * @param The created geometry
    */
-  mjsGeom* assembleGeometry(mjsBody* body) override;
+  mjsGeom* assembleGeometry(mjsBody* body) override
+  {
+    mjsGeom* geom = mjs_addGeom(body, nullptr);
+    name = Simulation::simulation->getName(mjOBJ_GEOM, "CapsuleGeometry", nullptr, this);
+    mjs_setName(geom->element, name.c_str());
+    geom->type = mjGEOM_CAPSULE;
+    geom->size[0] = radius;
+    geom->size[1] = 0.5f * height - radius;
+    innerRadius = radius;
+    innerRadiusSqr = innerRadius * innerRadius;
+    outerRadius = std::max(radius, height * 0.5f);
 
-  /**
-   * Creates the physical objects used by the OpenDynamicsEngine (ODE).
-   * These are a geometry object for collision detection and/or a body,
-   * if the simulation object is movable.
-   * @param graphicsContext The graphics context to create resources in
-   */
-  void createPhysics(bGraphicsContext& graphicsContext) override;
+    obj = new Object3D(Mesh::generateCapsule(radius, height, 16, 17), "CapsuleGeometry");
 
-  /**
-   * Submits draw calls for physical primitives of the object (including children) in the given graphics context
-   * @param graphicsContext The graphics context to draw the object to
-   * @param flags Flags to enable or disable certain features
-   */
-  void drawPhysics() const override;
-
-  Object3D* capsule = nullptr; /**< The capsule mesh */
+    return geom;
+  }
 };

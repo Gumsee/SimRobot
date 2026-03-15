@@ -18,7 +18,7 @@ class Accelerometer : public Sensor
 {
 public:
   /** Default constructor */
-  Accelerometer();
+  Accelerometer(const std::string& name);
 
 private:
   /**
@@ -40,7 +40,7 @@ private:
   } sensor;
 
   /** Initializes the accelerometer after all attributes have been set */
-  void createPhysics(bGraphicsContext& graphicsContext) override;
+  void createPhysicsInternal() override;
 
   /**
    * Registers an element as parent

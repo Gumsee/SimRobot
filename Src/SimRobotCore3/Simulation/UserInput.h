@@ -14,6 +14,7 @@
 class UserInput : public SimObject, public SimRobot::Object
 {
 public:
+  UserInput(const std::string& name);
   class InputPort : public SimRobotCore3::ActuatorPort
   {
   public:

@@ -17,18 +17,21 @@
 #include "Tools/Math/Rotation.h"
 #include <mujoco/mujoco.h>
 
-void Hinge::createPhysics(bGraphicsContext& graphicsContext)
+Hinge::Hinge(const std::string& name)
+  : Joint(findAvailableName(name, "Hinge"))
 {
+  
+}
+
+void Hinge::createPhysicsInternal()
+{
+  Joint::createPhysicsInternal();
   ASSERT(axis);
 
   axis->create();
 
-  //TODO
-  /*if(axis->deflection && axis->deflection->offset != 0.f)
-    poseInWorld.rotate(Rotation::AngleAxis::unpack(Vector3f(axis->x, axis->y, axis->z) * axis->deflection->offset));
-
-  */
-  Joint::createPhysics(graphicsContext);
+  if(axis->deflection && axis->deflection->offset != 0.f)
+    worldTransformation.setRotation(vec3(axis->x, axis->y, axis->z) * axis->deflection->offset);
 
   // find bodies to connect
   [[maybe_unused]] Body* parentBody = dynamic_cast<Body*>(parent);
@@ -38,16 +41,17 @@ void Hinge::createPhysics(bGraphicsContext& graphicsContext)
   ASSERT(childBody);
   ASSERT(childBody->body);
 
+  childBody->createPhysics();
+
   jointName = Simulation::simulation->getName(mjOBJ_JOINT, "Hinge", &jointIndex);
   mjsJoint* joint = mjs_addJoint(childBody->body, nullptr);
   mjs_setName(joint->element, jointName);
   joint->type = mjJNT_HINGE;
 
-  //TODO
-  /*const Vector3f positionInChild = childBody->poseInWorld.inverse() * poseInWorld.translation;
+  vec3 positionInChild = mat4::inverse(childBody->worldTransformation.getMatrix()) * vec4(worldTransformation.getPosition(), 1.0f);
   mju_f2n(joint->pos, positionInChild.data(), 3);
-  const Vector3f axisInChild = childBody->poseInWorld.rotation.inverse() * poseInWorld.rotation * Vector3f(axis->x, axis->y, axis->z);
-  mju_f2n(joint->axis, axisInChild.data(), 3);*/
+  vec3 axisInChild = mat4::inverse(Gum::Maths::rotateMatrix(childBody->worldTransformation.getRotation())) * Gum::Maths::rotateMatrix(worldTransformation.getRotation()) * vec4(axis->x, axis->y, axis->z, 0.0f);
+  mju_f2n(joint->axis, axisInChild.data(), 3);
 
   //joint->damping = 0.9f;
 

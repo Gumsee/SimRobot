@@ -27,7 +27,7 @@ public:
   float angleY;
 
   /** Default constructor */
-  ObjectSegmentedImageSensor();
+  ObjectSegmentedImageSensor(const std::string& name);
 
 private:
   /**
@@ -41,7 +41,7 @@ private:
     ObjectSegmentedImageSensor* camera;
     unsigned char* imageBuffer; /**< A buffer for rendered image data */
     unsigned int imageBufferSize;
-    Pose3f offset; /**< Offset of the camera relative to the body it mounted on */
+    Transformable3D offset; /**< Offset of the camera relative to the body it mounted on */
     Matrix4f projection; /**< The perspective projection matrix */
 
     /** Update the sensor value. Is called when required. */
@@ -56,7 +56,7 @@ private:
   ~ObjectSegmentedImageSensor();
 
   /** Initializes the camera after all attributes have been set */
-  void createPhysics(bGraphicsContext& graphicsContext) override;
+  void createPhysicsInternal() override;
 
   /**
    * Registers an element as parent
@@ -69,8 +69,6 @@ private:
 
   /**
    * Submits draw calls for physical primitives of the object (including children) in the given graphics context
-   * @param graphicsContext The graphics context to draw the object to
-   * @param flags Flags to enable or disable certain features
    */
   void drawPhysics() const override;
 

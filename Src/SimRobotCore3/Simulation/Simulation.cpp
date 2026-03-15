@@ -86,9 +86,7 @@ bool Simulation::loadFile(const std::string& filename, std::list<std::string>& e
 
   worldBody = mjs_findBody(spec, "world");
 
-  graphicsContext.pushModelMatrixStack();
-  scene->createPhysics(graphicsContext);
-  graphicsContext.popModelMatrixStack();
+  scene->createPhysics();
 
   worldBody = nullptr;
 
@@ -109,18 +107,20 @@ bool Simulation::loadFile(const std::string& filename, std::list<std::string>& e
   mj_kinematics(model, data);
 
   bodyMap.resize(model->nbody);
-  geometryMap.resize(model->ngeom);
+  
   for(auto& name : names)
   {
     const int id = mj_name2id(model, name.type, name.name.c_str());
+    std::cout << "got id " << id << " for name " << name.name << " with type " << name.type << std::endl;
     ASSERT(id >= 0);
     if(name.type == mjOBJ_BODY)
       bodyMap[id] = static_cast<Body*>(name.object);
-    else if(name.type == mjOBJ_GEOM)
-      geometryMap[id] = static_cast<Geometry*>(name.object);
     if(name.indexPointer)
       *(name.indexPointer) = id;
   }
+
+  Geometry::registeredGeometries.resize(model->ngeom);
+  scene->createIDs();
 
   forwardRenderingShader = new ShaderProgram("ForwardRenderingShader", false);
   forwardRenderingShader->addShader(new Shader(ForwardRenderingVertexShader, Shader::TYPES::VERTEX_SHADER));
@@ -128,7 +128,7 @@ bool Simulation::loadFile(const std::string& filename, std::list<std::string>& e
   forwardRenderingShader->build({{"vertexPosition", 0}, {"TextureCoords", 1}, {"Normals", 2}, {"TransMatrix", 3}});
 
 
-  scene->createGraphics(*Gum::Window::CurrentlyBoundWindow->getContext());
+  scene->createGraphics();
 
   xAxisMesh = new Object3D(Mesh::generateLine(vec3(0,0,0), vec3(1.f, 0.f, 0.f)), "xAxis");
   yAxisMesh = new Object3D(Mesh::generateLine(vec3(0,0,0), vec3(0.f, 1.f, 0.f)), "yAxis");
@@ -166,33 +166,14 @@ void Simulation::doSimulationStep()
   simulatedTime += scene->stepLength;
 
   mj_step1(model, data);
-
   scene->updateActuators();
-
   mj_step2(model, data);
 
   std::memset(data->xfrc_applied, 0, model->nbody * 6 * sizeof(mjtNum));
 
-  collisions = 0;
-  contactPoints = data->ncon;
-  for(int i = 0; i < data->ncon; ++i)
-  {
-    const int geom1 = data->contact[i].geom[0];
-    const int geom2 = data->contact[i].geom[1];
-    // Only report the first contact of each collision. (This assumes that the array is ordered.)
-    if(i && geom1 == data->contact[i - 1].geom[0] && geom2 == data->contact[i - 1].geom[1])
-      continue;
-    ++collisions;
-    if(auto* geometry1 = geometryMap[geom1], * geometry2 = geometryMap[geom2]; geometry1 && geometry2)
-    {
-      if(geometry1->collisionCallbacks)
-        for(auto* callback : *geometry1->collisionCallbacks)
-          callback->collided(*geometry1, *geometry2);
-      if(geometry2->collisionCallbacks)
-        for(auto* callback : *geometry2->collisionCallbacks)
-          callback->collided(*geometry2, *geometry1);
-    }
-  }
+  Geometry::checkCollisions();
+
+  scene->updateTransformations();
 
   updateFrameRate();
 }

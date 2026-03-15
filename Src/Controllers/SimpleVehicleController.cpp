@@ -51,7 +51,7 @@ public:
   bool compile() override
   {
     // Get all necessary actuator and sensor objects
-    SimRobotCore3::Object* vehicleObj = static_cast<SimRobotCore3::Object*>(simRobot.resolveObject("SimpleVehicle.car", SimRobotCore3::body));
+    SimRobot::Object* vehicleObj = static_cast<SimRobot::Object*>(simRobot.resolveObject("SimpleVehicle.car", SimRobotCore3::body));
     QVector<QString> parts;
     parts.resize(1);
     parts[0] = "frontLeft.velocity";

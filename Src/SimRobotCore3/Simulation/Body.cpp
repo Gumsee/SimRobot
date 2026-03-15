@@ -14,15 +14,20 @@
 #include <mujoco/mujoco.h>
 #include <iostream>
 
+Body::Body(const std::string& name)
+  : ::PhysicalObject(mjOBJ_BODY, findAvailableName(name, "Body"))
+{}
+
 void Body::addParent(Element& element)
 {
   ASSERT(!parent);
-  parent = dynamic_cast<::PhysicalObject*>(&element);
-  parent->physicalChildren.push_back(this);
+  ::PhysicalObject* physicalparent = dynamic_cast<::PhysicalObject*>(&element);
+  physicalparent->physicalChildren.push_back(this);
+  parent = physicalparent;
   SimObject::addParent(element);
 }
 
-void Body::createPhysics(bGraphicsContext& graphicsContext)
+void Body::createPhysicsInternal()
 {
   ASSERT(!body);
 
@@ -61,76 +66,25 @@ void Body::createPhysics(bGraphicsContext& graphicsContext)
       addMass(*mass);
   }
 
+
   // set position
-  //TODO
-  /*{
-    const Pose3f poseInParentBody = parentBody ? parentBody->poseInWorld.inverse() * poseInWorld : poseInWorld;
-    mju_f2n(body->pos, poseInParentBody.translation.data(), 3);
-    mjtNum buf[9];
-    mju_f2n(buf, poseInParentBody.rotation.data(), 9);
-    mju_mat2Quat(body->quat, buf);
-    mju_negQuat(body->quat, body->quat); // column major -> row major
-  }*/
-
-  // add geometries
-  const Pose3f geomOffset;
-  for(::PhysicalObject* iter : physicalDrawings)
-  {
-    auto* geometry = dynamic_cast<Geometry*>(iter);
-    if(geometry)
-      addGeometry(geomOffset, *geometry);
-  }
-
-  //TODO
-  /*poseInParent = poseInWorld;
-
-  graphicsContext.pushModelMatrixStack();
-
-  graphicsContext.pushModelMatrixByReference(poseInParent);
-
-  ASSERT(!::PhysicalObject::modelMatrix);
-  ::PhysicalObject::modelMatrix = graphicsContext.requestModelMatrix(bGraphicsContext::ModelMatrix::controllerDrawing);
-*/
-  const Pose3f centerOfMassPose(centerOfMass);
-  graphicsContext.pushModelMatrix(centerOfMassPose);
-  ASSERT(!comModelMatrix);
-  comModelMatrix = graphicsContext.requestModelMatrix(bGraphicsContext::ModelMatrix::physicalDrawing);
-  graphicsContext.popModelMatrix();
-
-  //
-  ::PhysicalObject::createPhysics(graphicsContext);
-
-  graphicsContext.popModelMatrix();
-  ASSERT(graphicsContext.emptyModelMatrixStack());
-  graphicsContext.popModelMatrixStack();
-}
-
-void Body::addGeometry(const Pose3f& parentOffset, Geometry& geometry, bool immaterial)
-{
-  // compute geometry offset
-  Pose3f offset = parentOffset;
-  if(geometry.translation)
-    offset.translate(*geometry.translation);
-  if(geometry.rotation)
-    offset.rotate(*geometry.rotation);
-
-  // create and attach geometry
-  geometry.createGeometry(body, collisionGroup, offset, immaterial);
-
-  // handle nested geometries
-  for(::PhysicalObject* iter : geometry.physicalDrawings)
-  {
-    Geometry* geometry = dynamic_cast<Geometry*>(iter);
-    ASSERT(geometry);
-    addGeometry(offset, *geometry, immaterial);
-  }
+  Transformable3D transformInParentBody;
+  transformInParentBody.setMatrix(parentBody != nullptr 
+    ? mat4::inverse(parentBody->worldTransformation.getMatrix()) * worldTransformation.getMatrix() 
+    : worldTransformation.getMatrix()
+  );
+  mju_f2n(body->pos, transformInParentBody.getPosition().data(), 3);
+  mju_f2n(body->quat, transformInParentBody.getRotation().data(), 4);
+  //mju_f2n(body->pos, worldTransformation.getPosition().data(), 3);
+  //mju_f2n(body->quat, worldTransformation.getRotation().data(), 4);
+  //mju_negQuat(body->quat, body->quat); // column major -> row major
 }
 
 void Body::addMass(Mass& mass)
 {
   if(body->mass == 0.f)
   {
-    Vector3f com;
+    vec3 com;
     float inertia[6];
     body->mass = mass.createMass(com, inertia);
     mju_f2n(body->fullinertia, inertia, 6);
@@ -184,36 +138,24 @@ void Body::addMass(Mass& mass)
    */
 }
 
-void Body::createGraphics(GraphicsContext& graphicsContext)
+void Body::createGraphics()
 {
-  GraphicalObject::createGraphics(graphicsContext);
+  GraphicalObject::createGraphics();
   for(Body* child : bodyChildren)
-    child->createGraphics(graphicsContext);
+    child->createGraphics();
 }
 
 void Body::updateTransformation()
 {
   // get pose from MuJoCo
-  //TODO
-  //mju_n2f(poseInWorld.translation.data(), Simulation::simulation->data->xpos + bodyIndex * 3, 3);
-  //mju_n2f(poseInWorld.rotation.data(), Simulation::simulation->data->xmat + bodyIndex * 9, 9);
-  //// from MuJoCo's row major format to column major
-  //poseInWorld.rotation.transposeInPlace();
-//
-  //// Bodies are always relative to the world.
-  //poseInParent = poseInWorld;
+  mju_n2f(worldTransformation.getPosition().data(), Simulation::simulation->data->xpos + bodyIndex * 3, 3);
+  mju_n2f(worldTransformation.getRotation().data(), Simulation::simulation->data->xquat + bodyIndex * 4, 4);
+  worldTransformation.updateMatrix();
 
-  //
+  SimObject::updateTransformation();
+  GraphicalObject::updateAppearances();
   for(Body* child : bodyChildren)
-    child->updateTransformation();
-}
-
-void Body::drawAppearances(GraphicsContext& graphicsContext) const
-{
-  GraphicalObject::drawAppearances(graphicsContext);
-  //std::cout << "Drawing body with " << bodyChildren.size() << " children" << std::endl;
-  for(const Body* child : bodyChildren)
-    child->drawAppearances(graphicsContext);
+    child->updateAppearances();
 }
 
 void Body::visitGraphicalControllerDrawings(const std::function<void(GraphicalObject&)>& accept)
@@ -257,7 +199,7 @@ void Body::move(const Vector3f& offset)
   // Unfortunately it seems that forward kinematics have to be done for the entire model again.
   mj_kinematics(Simulation::simulation->model, Simulation::simulation->data);
 
-  Simulation::simulation->scene->lastTransformationUpdateStep = Simulation::simulation->simulationStep - 1; // enforce transformation update
+  //TODO update children transforms
 }
 
 void Body::rotate(const RotationMatrix& rotation, const Vector3f& point)
@@ -285,7 +227,7 @@ void Body::rotate(const RotationMatrix& rotation, const Vector3f& point)
   // Unfortunately it seems that forward kinematics have to be done for the entire model again.
   mj_kinematics(Simulation::simulation->model, Simulation::simulation->data);
 
-  Simulation::simulation->scene->lastTransformationUpdateStep = Simulation::simulation->simulationStep - 1; // enforce transformation update
+  //TODO update children transforms
 }
 
 const float* Body::getPosition() const
@@ -361,7 +303,7 @@ void Body::move(const float* pos)
   // Unfortunately it seems that forward kinematics have to be done for the entire model again.
   mj_kinematics(Simulation::simulation->model, Simulation::simulation->data);
 
-  Simulation::simulation->scene->lastTransformationUpdateStep = Simulation::simulation->simulationStep - 1; // enforce transformation update
+  //TODO update children transforms
 }
 
 void Body::move(const float* pos, const float (*rot)[3])
@@ -386,7 +328,7 @@ void Body::move(const float* pos, const float (*rot)[3])
   // Unfortunately it seems that forward kinematics have to be done for the entire model again.
   mj_kinematics(Simulation::simulation->model, Simulation::simulation->data);
 
-  Simulation::simulation->scene->lastTransformationUpdateStep = Simulation::simulation->simulationStep - 1; // enforce transformation update
+  //TODO update children transforms
 }
 
 void Body::resetDynamics()

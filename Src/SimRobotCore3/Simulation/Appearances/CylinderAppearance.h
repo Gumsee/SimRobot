@@ -16,13 +16,15 @@
 class CylinderAppearance : public Appearance
 {
 public:
+  CylinderAppearance(const std::string& name)
+    : Appearance(findAvailableName(name, "CylinderAppearance"))
+  {}
   float height; /**< The height of the cylinder */
   float radius; /**< The radius */
 
 private:
   /**
    * Creates a mesh for this appearance in the given graphics context
-   * @param graphicsContext The graphics context to create the mesh in
    * @return The resulting mesh
    */
   Mesh* createMesh() override

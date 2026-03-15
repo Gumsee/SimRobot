@@ -18,7 +18,7 @@ class CollisionSensor : public Sensor
 {
 public:
   /** Default constructor */
-  CollisionSensor();
+  CollisionSensor(const std::string& name);
 
 private:
   /**
@@ -50,9 +50,8 @@ private:
    * Creates the physical objects used by the OpenDynamicsEngine (ODE).
    * These are a geometry object for collision detection and/or a body,
    * if the simulation object is movable.
-   * @param graphicsContext The graphics context to create resources in
    */
-  void createPhysics(bGraphicsContext& graphicsContext) override;
+  void createPhysicsInternal() override;
 
   /**
    * Registers the sensor collision callback function to a list of geometries and subordinate geometries
@@ -65,8 +64,6 @@ private:
 
   /**
    * Submits draw calls for physical primitives of the object (including children) in the given graphics context
-   * @param graphicsContext The graphics context to draw the object to
-   * @param flags Flags to enable or disable certain features
    */
   void drawPhysics() const override;
 };

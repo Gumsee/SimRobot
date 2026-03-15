@@ -37,7 +37,7 @@ public:
   } projection;
 
   /** Default constructor */
-  DepthImageSensor();
+  DepthImageSensor(const std::string& name);
 
 private:
   /**
@@ -50,7 +50,7 @@ private:
     ::PhysicalObject* physicalObject; /**< The physical object were the distance sensor is mounted on */
     DepthImageSensor* depthImageSensor;
     float* imageBuffer; /**< A buffer for rendered image data */
-    Pose3f offset; /**< Offset of the camera relative to the body it mounted on */
+    Transformable3D offset; /**< Offset of the camera relative to the body it mounted on */
     Matrix4f projection; /**< The perspective projection matrix */
     float min; /**< Smallest measurable value in m. */
     float max; /**< Largest measurable value in m. */
@@ -73,7 +73,7 @@ private:
   ~DepthImageSensor();
 
   /** Initializes the camera after all attributes have been set */
-  void createPhysics(bGraphicsContext& graphicsContext) override;
+  void createPhysicsInternal() override;
 
   /**
    * Registers an element as parent
@@ -86,8 +86,6 @@ private:
 
   /**
    * Submits draw calls for physical primitives of the object (including children) in the given graphics context
-   * @param graphicsContext The graphics context to draw the object to
-   * @param flags Flags to enable or disable certain features
    */
   void drawPhysics() const override;
 

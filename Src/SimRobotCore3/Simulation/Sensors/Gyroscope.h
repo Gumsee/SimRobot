@@ -18,7 +18,7 @@ class Gyroscope : public Sensor
 {
 public:
   /** Default constructor */
-  Gyroscope();
+  Gyroscope(const std::string& name);
 
 private:
   /**
@@ -40,7 +40,7 @@ private:
   } sensor;
 
   /** Initializes the gyroscope after all attributes have been set */
-  void createPhysics(bGraphicsContext& graphicsContext) override;
+  void createPhysicsInternal() override;
 
   /**
    * Registers an element as parent

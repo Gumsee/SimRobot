@@ -12,19 +12,17 @@
 #include "Simulation/Simulation.h"
 #include <iostream>
 #include <Engine/3D/Renderer3D.h>
+#include "Graphics/PhysicsRenderer.h"
 
-Scene::Scene()
+Scene::Scene(const std::string& name)
+  : ::PhysicalObject(mjOBJ_UNKNOWN, findAvailableName(name, "Scene"))
 {
 }
 
 void Scene::updateTransformations()
 {
-  if(lastTransformationUpdateStep != Simulation::simulation->simulationStep)
-  {
-    for(Body* body : bodies)
-      body->updateTransformation();
-    lastTransformationUpdateStep = Simulation::simulation->simulationStep;
-  }
+  for(Body* body : bodies)
+    body->updateTransformation();
 }
 
 void Scene::updateActuators()
@@ -33,47 +31,40 @@ void Scene::updateActuators()
     actuator->act();
 }
 
-void Scene::createGraphics(GraphicsContext& graphicsContext)
+void Scene::createGraphics()
 {
   // The model matrix is needed for controller drawings.
   // Physical object and graphical object share it because it really is just at the origin.
   //TODO
-  //ASSERT(!::PhysicalObject::modelMatrix);
-  //ASSERT(!GraphicalObject::modelMatrix);
-  //GraphicalObject::modelMatrix = ::PhysicalObject::modelMatrix = graphicsContext.requestModelMatrix(bGraphicsContext::ModelMatrix::controllerDrawing);
-//
-  //graphicsContext.setClearColor(Simulation::simulation->scene->color);
-//
   //const float color[4] = {0.2f, 0.2f, 0.2f, 1.f};
   //graphicsContext.setGlobalAmbientLight(color);
   //for(Light* light : lights)
   //  graphicsContext.addLight(light);
 //
+  calcTransformationMatrix();
 
   world = new World3D();
   world->getObjectManager()->getSkybox()->renderSky(true);
+  world->addRenderable(new PhysicsRenderer(this));
 
   for(Body* body : bodies)
-    body->createGraphics(graphicsContext);
-  GraphicalObject::createGraphics(graphicsContext);
+    body->createGraphics();
+  GraphicalObject::createGraphics();
 }
 
-void Scene::drawAppearances(GraphicsContext& graphicsContext) const
+void Scene::updateAppearances()
 {
   //std::cout << "Drawing scene with " << bodies.size() << " children" << std::endl;
-  for(const Body* body : bodies)
-    body->drawAppearances(graphicsContext);
-  GraphicalObject::drawAppearances(graphicsContext);
+  for(Body* body : bodies)
+    body->updateAppearances();
+  GraphicalObject::updateAppearances();
 }
 
 void Scene::drawPhysics() const
 {
-  Gum::Output::print("Drawing physics");
-  Simulation::simulation->forwardRenderingShader->use();
   for(const Body* body : bodies)
     body->drawPhysics();
   ::PhysicalObject::drawPhysics();
-  Simulation::simulation->forwardRenderingShader->unuse();
 }
 
 void Scene::visitGraphicalControllerDrawings(const std::function<void(GraphicalObject&)>& accept)

@@ -15,6 +15,9 @@
 class CylinderGeometry : public Geometry
 {
 public:
+  CylinderGeometry(const std::string& name)
+    : Geometry(findAvailableName(name, "Geometry"))
+  {}
   float height; /**< The height of the cylinder */
   float radius; /**< The radius of the cylinder */
 
@@ -24,22 +27,21 @@ private:
    * @param body The body to which to attach the geometry
    * @param The created geometry
    */
-  mjsGeom* assembleGeometry(mjsBody* body) override;
+  mjsGeom* assembleGeometry(mjsBody* body) override
+  {
+    mjsGeom* geom = mjs_addGeom(body, nullptr);
+    name = Simulation::simulation->getName(mjOBJ_GEOM, "CylinderGeometry", nullptr, this);
+    mjs_setName(geom->element, name.c_str());
+    geom->type = mjGEOM_CYLINDER;
+    geom->size[0] = radius;
+    geom->size[1] = 0.5f * height;
+    innerRadius = radius;
+    innerRadiusSqr = innerRadius * innerRadius;
+    outerRadius = std::sqrt(height * height * 0.25f + radius * radius);
 
-  /**
-   * Creates the physical objects used by the OpenDynamicsEngine (ODE).
-   * These are a geometry object for collision detection and/or a body,
-   * if the simulation object is movable.
-   * @param graphicsContext The graphics context to create resources in
-   */
-  void createPhysics(bGraphicsContext& graphicsContext) override;
+    obj = new Object3D(Mesh::generateCylinder(radius, height, 16), "CylinderGeometry");
 
-  /**
-   * Submits draw calls for physical primitives of the object (including children) in the given graphics context
-   * @param graphicsContext The graphics context to draw the object to
-   * @param flags Flags to enable or disable certain features
-   */
-  void drawPhysics() const override;
+    return geom;
+  }
 
-  Object3D* cylinder = nullptr; /**< The cylinder mesh */
 };

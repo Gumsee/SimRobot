@@ -8,7 +8,11 @@
 #include "Platform/Assert.h"
 #include <cstring>
 
-float Mass::createMass(Vector3f& com, float* inertia)
+Mass::Mass(const std::string& name)
+  : SimObject(findAvailableName(name, "Mass"))
+{}
+
+float Mass::createMass(vec3& com, float* inertia)
 {
   if(!created)
   {

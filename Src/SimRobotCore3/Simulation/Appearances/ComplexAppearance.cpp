@@ -23,8 +23,7 @@ Mesh* ComplexAppearance::createMesh()
   if(Tools::mapHasKeyNotNull(Mesh::mLoadedMeshes, hash))
     return Mesh::mLoadedMeshes[hash];
 
-  this->pMesh = new Mesh();
-  Mesh::mLoadedMeshes[hash] = pMesh;
+  this->pMesh = new Mesh(hash);
 
   return createMeshImpl();
 }

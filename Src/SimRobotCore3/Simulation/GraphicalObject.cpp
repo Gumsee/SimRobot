@@ -7,16 +7,16 @@
 #include "GraphicalObject.h"
 #include "Platform/Assert.h"
 
-void GraphicalObject::createGraphics(GraphicsContext& graphicsContext)
+void GraphicalObject::createGraphics()
 {
   for(GraphicalObject* graphicalObject : graphicalDrawings)
-    graphicalObject->createGraphics(graphicsContext);
+    graphicalObject->createGraphics();
 }
 
-void GraphicalObject::drawAppearances(GraphicsContext& graphicsContext) const
+void GraphicalObject::updateAppearances()
 {
-  for(const GraphicalObject* graphicalObject : graphicalDrawings)
-    graphicalObject->drawAppearances(graphicsContext);
+  for(GraphicalObject* graphicalObject : graphicalDrawings)
+    graphicalObject->updateAppearances();
 }
 
 void GraphicalObject::drawControllerDrawings() const
@@ -67,3 +67,4 @@ bool GraphicalObject::unregisterDrawing(SimRobotCore3::Controller3DDrawing& draw
     }
   return false;
 }
+

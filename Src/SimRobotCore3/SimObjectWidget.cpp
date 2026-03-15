@@ -18,6 +18,7 @@
 #include "CoreModule.h"
 #include "Platform/Assert.h"
 #include "Simulation/Scene.h"
+#include "Graphics/PhysicsRenderer.h"
 
 //#include <QOpenGLContext>
 #include <QOpenGLFramebufferObject>
@@ -29,6 +30,10 @@
 #include <QOpenGLContext>
 #include <QSurface>
 #include <Graphics/Graphics.h>
+#include <Engine/3D/Lightning/ShadowMapping/ShadowMapping.h>
+
+
+#include <mujoco/mujoco.h>
 
 SimObjectWidget::SimObjectWidget(SimObject& simObject) : QOpenGLWidget(),
   object(dynamic_cast<SimRobot::Object&>(simObject)), objectRenderer(simObject), oMouse(nullptr),
@@ -82,7 +87,7 @@ SimObjectWidget::SimObjectWidget(SimObject& simObject) : QOpenGLWidget(),
   oMouse.onDouble([this](int btn, int mod) {
     if(btn & GUM_MOUSE_BUTTON_LEFT)
     {
-      SimRobotCore3::Object* selectedObject = objectRenderer.getDragSelection();
+      SimRobot::Object* selectedObject = objectRenderer.getDragSelection();
       if(selectedObject)
         CoreModule::application->selectObject(*selectedObject);
     }
@@ -187,32 +192,43 @@ void SimObjectWidget::initializeGL()
 
   Framebuffer::DefaultFramebufferID = this->defaultFramebufferObject();
   pContextFramebuffer = new Framebuffer(pRenderCanvas->getSize(), true, Framebuffer::DefaultFramebufferID);
+  pContextFramebuffer->setClearColor(Simulation::simulation->scene->color);
   isSceneWidget = object.getKind() == SimRobotCore3::Kind::scene;
 
   if(isSceneWidget)
   {
     pWorld = Simulation::simulation->scene->world;
   }
-  else if(object.getKind() == SimRobotCore3::Kind::appearance)
-  {
-
-    pWorld = new World3D(Simulation::simulation->scene->world->getObjectManager()->getSkybox());
-    pWorld->getObjectManager()->selfManageObjects(true);
-    recursivelyAddObjects(pWorld, &object);
-
-  }
   else
   {
-    Gum::Output::error("Unknown object type");
+    pWorld = new World3D(Simulation::simulation->scene->world->getObjectManager()->getSkybox());
+    switch(object.getKind())
+    {
+      case SimRobotCore3::Kind::appearance:
+        pWorld->getObjectManager()->selfManageObjects(true);
+        recursivelyAddObjects(pWorld, &object);
+        break;
+
+      case SimRobotCore3::Kind::geometry:
+        pWorld->addRenderable(new PhysicsRenderer(dynamic_cast<const PhysicalObject*>(&object)));
+        break;
+      case SimRobotCore3::Kind::body:
+        pWorld->getObjectManager()->selfManageObjects(true);
+        recursivelyAddObjects(pWorld, &object);
+        pWorld->addRenderable(new PhysicsRenderer(dynamic_cast<const PhysicalObject*>(&object)));
+        break;
+      default:
+        Gum::Output::error("Unknown object type");
+        break;
+    }
   }
   
 
   pMainRenderer = new Renderer3D(pRenderCanvas);
-  pMainRenderer->setWorld(pWorld);
+  if(pWorld != nullptr)
+    pMainRenderer->setWorld(pWorld);
   pMainRenderer->setExposure(1.0f);
-  if(object.getKind() == SimRobotCore3::Kind::appearance)
-    pMainRenderer->renderSky(false);
-  
+  pMainRenderer->renderSky(isSceneWidget);
 
   pMainCamera = new Camera3D(pRenderCanvas->getSize(), pWorld);
   pMainCamera->setWorldUpDirection(vec3(0,0,1));
@@ -223,8 +239,8 @@ void SimObjectWidget::initializeGL()
   pMainCamera->setFOV(80);
   pMainCamera->makeActive();
 
-  PointLight* testLight = new PointLight(vec3(0, 0, 2), vec3(1), "light");
-  pWorld->getLightManager()->addPointLight(testLight);
+  //PointLight* testLight = new PointLight(vec3(0, 0, 2), vec3(1), "light");
+  //pWorld->getLightManager()->addPointLight(testLight);
 
   
   if(pShader == nullptr)
@@ -241,7 +257,7 @@ void SimObjectWidget::paintGL()
   Gum::Window::CurrentlyBoundWindow->getContext()->bind();
   bindFramebuffer();
   
-  pContextFramebuffer->clear(Framebuffer::ClearFlags::COLOR);
+  pContextFramebuffer->clear(Framebuffer::ClearFlags::COLOR | Framebuffer::ClearFlags::DEPTH);
   pMainRenderer->render();
   pMainRenderer->renderIDs();
 
@@ -251,14 +267,6 @@ void SimObjectWidget::paintGL()
   pRenderCanvas->render();
   pRenderCanvas->getTexture()->unbind(0);
   pShader->unuse();
-
-  const PhysicalObject* physicalObject = dynamic_cast<const PhysicalObject*>(&object);
-  const bool drawPhysics = physicalObject && (physicsShadeMode != SimRobotCore3::Renderer::ShadeMode::noShading);
-  // draw object / scene physics
-  if(drawPhysics)// || drawSensors)
-  {
-    physicalObject->drawPhysics();
-  }
 
   oMouse.reset();
   if(isSceneWidget)

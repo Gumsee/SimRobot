@@ -24,15 +24,13 @@ public:
 
   /**
    * Creates resources to later draw the object in the given graphics context
-   * @param graphicsContext The graphics context to create resources in
    */
-  virtual void createGraphics(GraphicsContext& graphicsContext);
+  virtual void createGraphics();
 
   /**
    * Submits draw calls for appearance primitives of the object (including children) in the given graphics context
-   * @param graphicsContext The graphics context to draw the object to
    */
-  virtual void drawAppearances(GraphicsContext& graphicsContext) const;
+  virtual void updateAppearances();
 
   /** Draws controller drawings of this graphical object (and children) */
   void drawControllerDrawings() const;

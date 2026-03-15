@@ -11,7 +11,8 @@
 #include "Simulation/Simulation.h"
 #include <mujoco/mujoco.h>
 
-Gyroscope::Gyroscope()
+Gyroscope::Gyroscope(const std::string& name)
+  : Sensor(findAvailableName(name, "Gyroscope"))
 {
   sensor.sensorType = SimRobotCore3::SensorPort::floatArraySensor;
   sensor.unit = QString::fromUtf8("°/s");
@@ -22,23 +23,15 @@ Gyroscope::Gyroscope()
   sensor.data.floatArray = sensor.angularVel;
 }
 
-void Gyroscope::createPhysics(bGraphicsContext& graphicsContext)
+void Gyroscope::createPhysicsInternal()
 {
-  Sensor::createPhysics(graphicsContext);
-
   const char* siteName = Simulation::simulation->getName(mjOBJ_SITE, "Gyroscope");
 
   mjsSite* site = mjs_addSite(sensor.body->body, nullptr);
   mjs_setName(site->element, siteName);
-  if(translation)
-    mju_f2n(site->pos, translation->data(), 3);
-  if(rotation)
-  {
-    mjtNum buf[9];
-    mju_f2n(buf, rotation->data(), 9);
-    mju_mat2Quat(site->quat, buf);
-    mju_negQuat(site->quat, site->quat); // column major -> row major
-  }
+  mju_f2n(site->pos, relativeTransformation.getPosition().data(), 3);
+  mju_f2n(site->quat, relativeTransformation.getRotation().data(), 4);
+  mju_negQuat(site->quat, site->quat); // column major -> row major
 
   mjsSensor* sensor = mjs_addSensor(Simulation::simulation->spec);
   mjs_setName(sensor->element, Simulation::simulation->getName(mjOBJ_SENSOR, "Gyroscope", &(this->sensor.sensorIndex)));

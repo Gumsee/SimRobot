@@ -7,22 +7,28 @@
 #include "Appearance.h"
 #include "CoreModule.h"
 #include "Platform/Assert.h"
-#include "Tools/OpenGLTools.h"
 #include <cstring>
 #include <Engine/3D/Renderer3D.h>
 #include <Engine/3D/World3D.h>
 #include <Engine/Material/MaterialManager.h>
 #include "Simulation/Scene.h"
 
-void Appearance::createGraphics(GraphicsContext& graphicsContext)
+Appearance::Appearance(const std::string& name)
+  : SimObject(findAvailableName(name, "Appearance"))
+{}
+
+void Appearance::createGraphics()
 {
   setName(this->name);
   pMesh = createMesh();
+
+  calcTransformationMatrix();
+  
   if(pMesh != nullptr)
   {
     load();
     Object3DInstance *instance = addInstance();
-    instance->setMatrix(getTransformationMatrix());
+    instance->setMatrix(worldTransformation.getMatrix());
     applyTransformationMatrix(instance);
 
     if(!renderForward)
@@ -31,7 +37,7 @@ void Appearance::createGraphics(GraphicsContext& graphicsContext)
       Simulation::simulation->scene->world->getObjectManager()->addObject(this, Simulation::simulation->forwardRenderingShader, false);
   }
 
-  GraphicalObject::createGraphics(graphicsContext);
+  GraphicalObject::createGraphics();
 }
 
 const QIcon* Appearance::getIcon() const
@@ -43,4 +49,15 @@ void Appearance::addParent(Element& element)
 {
   SimObject::addParent(element);
   GraphicalObject::addParent(element);
+}
+
+void Appearance::updateAppearances()
+{
+  calcTransformationMatrix();
+  if(pMesh != nullptr)
+  {
+    Object3DInstance *instance = getInstance();
+    instance->setMatrix(worldTransformation.getMatrix());
+    applyTransformationMatrix(instance);
+  }
 }

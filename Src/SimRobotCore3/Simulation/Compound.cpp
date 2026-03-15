@@ -8,51 +8,13 @@
 #include "Platform/Assert.h"
 #include "Simulation/Geometries/Geometry.h"
 #include "Simulation/Simulation.h"
-#include "Tools/OpenGLTools.h"
+
+Compound::Compound(const std::string& name)
+  : ::PhysicalObject(mjOBJ_UNKNOWN, findAvailableName(name, "Compound"))
+{}
 
 void Compound::addParent(Element& element)
 {
   ::PhysicalObject::addParent(element);
   GraphicalObject::addParent(element);
-}
-
-void Compound::createPhysics(bGraphicsContext& graphicsContext)
-{
-  // create geometry
-  for(::PhysicalObject* iter : physicalDrawings)
-  {
-    Geometry* geometry = dynamic_cast<Geometry*>(iter);
-    if(geometry)
-      addGeometry(poseInWorld, *geometry);
-  }
-
-  OpenGLTools::convertTransformation(rotation, translation, poseInParent);
-
-  //TODO
-  //graphicsContext.pushModelMatrix(poseInParent);
-  //::PhysicalObject::modelMatrix = graphicsContext.requestModelMatrix(bGraphicsContext::ModelMatrix::controllerDrawing);
-  ::PhysicalObject::createPhysics(graphicsContext);
-  //graphicsContext.popModelMatrix();
-}
-
-void Compound::addGeometry(const Transformable3D& parentPose, Geometry& geometry)
-{
-  // compute pose
-  //TODO
-  //Pose3f geomPose = parentPose;
-  //if(geometry.translation)
-  //  geomPose.translate(*geometry.translation);
-  //if(geometry.rotation)
-  //  geomPose.rotate(*geometry.rotation);
-//
-  //// create geometry
-  //geometry.createGeometry(Simulation::simulation->worldBody, 0, geomPose);
-//
-  //// handle nested geometries
-  //for(::PhysicalObject* iter : geometry.physicalDrawings)
-  //{
-  //  Geometry* geometry = dynamic_cast<Geometry*>(iter);
-  //  if(geometry)
-  //    addGeometry(geomPose, *geometry);
-  //}
 }

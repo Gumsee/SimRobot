@@ -17,6 +17,8 @@
 class Sensor : public PhysicalObject, public SimRobotCore3::Sensor
 {
 public:
+  Sensor(const std::string& name);
+
   class Port : public SimRobotCore3::SensorPort
   {
   public:
@@ -44,21 +46,11 @@ public:
     bool renderCameraImages(SimRobotCore3::SensorPort**, unsigned int) override {return false;}
   };
 
-protected:
-  /**
-   * Creates the physical objects used by the OpenDynamicsEngine (ODE).
-   * These are a geometry object for collision detection and/or a body,
-   * if the simulation object is movable.
-   * @param graphicsContext The graphics context to create resources in
-   */
-  void createPhysics(bGraphicsContext& graphicsContext) override;
-
 private:
   // API
   const QString& getFullName() const override {return SimObject::getFullName();}
   SimRobot::Widget* createWidget() override {return SimObject::createWidget();}
   const QIcon* getIcon() const override {return SimObject::getIcon();}
-  SimRobotCore3::Renderer* createRenderer() override {return SimObject::createRenderer();}
   bool registerDrawing(SimRobotCore3::Controller3DDrawing& drawing) override {return ::PhysicalObject::registerDrawing(drawing);}
   bool unregisterDrawing(SimRobotCore3::Controller3DDrawing& drawing) override {return ::PhysicalObject::unregisterDrawing(drawing);}
   SimRobotCore3::Body* getParentBody() override {return ::PhysicalObject::getParentBody();}

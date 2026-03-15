@@ -9,32 +9,20 @@
 #include "Simulation/Body.h"
 #include "Simulation/Geometries/Geometry.h"
 
-CollisionSensor::CollisionSensor()
+CollisionSensor::CollisionSensor(const std::string& name)
+  : Sensor(findAvailableName(name, "CollisionSensor"))
 {
   sensor.sensorType = SimRobotCore3::SensorPort::boolSensor;
 }
 
-void CollisionSensor::createPhysics(bGraphicsContext& graphicsContext)
+void CollisionSensor::createPhysicsInternal()
 {
   // add geometries
-  for(auto iter = physicalDrawings.begin(), end = physicalDrawings.end(); iter != end; ++iter)
+  for(::PhysicalObject* child : physicalDrawings)
   {
-    Geometry* geometry = dynamic_cast<Geometry*>(*iter);
-    if(geometry)
+    if(dynamic_cast<Geometry*>(child) != nullptr)
     {
       hasGeometries = true;
-      Pose3f geomOffset;
-      if(translation)
-        geomOffset.translate(*translation);
-      if(rotation)
-        geomOffset.rotate(*rotation);
-      parentBody->addGeometry(geomOffset, *geometry, true);
-      for(++iter; iter != end; ++iter) // avoid constructing geomOffset again
-      {
-        geometry = dynamic_cast<Geometry*>(*iter);
-        if(geometry)
-          parentBody->addGeometry(geomOffset, *geometry, true);
-      }
       break;
     }
   }
@@ -44,8 +32,6 @@ void CollisionSensor::createPhysics(bGraphicsContext& graphicsContext)
     registerCollisionCallback(physicalDrawings);
   else // in case the sensor has no geometries use the geometries of the body to which the sensor is attached
     registerCollisionCallback(parentBody->physicalDrawings);
-
-  Sensor::createPhysics(graphicsContext);
 }
 
 void CollisionSensor::registerCollisionCallback(std::list<::PhysicalObject*>& geometries)
@@ -82,7 +68,10 @@ void CollisionSensor::CollisionSensorPort::collided(SimRobotCore3::Geometry&, Si
 void CollisionSensor::drawPhysics() const
 {
   for(const ::PhysicalObject* drawing : (hasGeometries ? physicalDrawings : parentBody->physicalDrawings))
-    drawing->drawPhysics();
+  {
+    if(drawing != this) //TODO
+      drawing->drawPhysics();
+  }
 
   Sensor::drawPhysics();
 }

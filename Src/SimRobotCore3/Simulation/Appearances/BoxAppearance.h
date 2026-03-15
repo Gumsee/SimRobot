@@ -16,6 +16,9 @@
 class BoxAppearance : public Appearance
 {
 public:
+  BoxAppearance(const std::string& name)
+    : Appearance(findAvailableName(name, "BoxAppearance"))
+  {}
   float width; /**< The width of the box (cy) */
   float height; /**< The height of the box (cz) */
   float depth; /**< The depth of the box (cx) */
@@ -23,7 +26,6 @@ public:
 private:
   /**
    * Creates a mesh for this appearance in the given graphics context
-   * @param graphicsContext The graphics context to create the mesh in
    * @return The resulting mesh
    */
   Mesh* createMesh() override

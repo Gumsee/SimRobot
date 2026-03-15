@@ -14,14 +14,16 @@
  */
 class Hinge : public Joint
 {
+public:
+  Hinge(const std::string& name);
+
 private:
   /**
    * Creates the physical objects used by the OpenDynamicsEngine (ODE).
    * These are a geometry object for collision detection and/or a body,
    * if the simulation object is movable.
-   * @param graphicsContext The graphics context to create resources in
    */
-  void createPhysics(bGraphicsContext& graphicsContext) override;
+  void createPhysicsInternal() override;
 
   //API
   const QIcon* getIcon() const override;

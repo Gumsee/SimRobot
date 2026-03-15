@@ -18,10 +18,8 @@
 class Appearance : public SimObject, public GraphicalObject, public SimRobotCore3::Appearance
 {
 public:
-Appearance()
-{
-  std::cout << "Appearance" << std::endl;
-}
+  Appearance(const std::string& name);
+
   class Material        : public ElementCore3, public ::Material { public:
     void addParent(Element& element) override {
       Appearance* appearance = dynamic_cast<Appearance*>(&element);
@@ -32,16 +30,16 @@ Appearance()
   };
 
   bool renderForward = false;
+  void updateAppearances() override;
+  
 protected:
   /**
    * Creates resources to later draw the object in the given graphics context
-   * @param graphicsContext The graphics context to create resources in
    */
-  void createGraphics(GraphicsContext& graphicsContext) override;
+  void createGraphics() override;
 
   /**
    * Creates a mesh for this appearance in the given graphics context
-   * @param graphicsContext The graphics context to create the mesh in
    * @return The resulting mesh
    */
   virtual Mesh* createMesh()
@@ -60,7 +58,6 @@ private:
   const QString& getFullName() const override {return SimObject::getFullName();}
   SimRobot::Widget* createWidget() override {return SimObject::createWidget();}
   const QIcon* getIcon() const override;
-  SimRobotCore3::Renderer* createRenderer() override {return SimObject::createRenderer();}
   bool registerDrawing(SimRobotCore3::Controller3DDrawing& drawing) override {return ::GraphicalObject::registerDrawing(drawing);}
   bool unregisterDrawing(SimRobotCore3::Controller3DDrawing& drawing) override {return ::GraphicalObject::unregisterDrawing(drawing);}
 };

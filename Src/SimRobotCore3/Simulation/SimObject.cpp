@@ -17,16 +17,34 @@
 #include <typeinfo>
 #include <iostream>
 
+SimObject::SimObject(const std::string& name)
+  : name(name)
+{
+  loadedObjects[name] = this;
+}
+
 SimObject::~SimObject()
 {
-  delete rotation;
-  delete translation;
+}
+
+std::string SimObject::findAvailableName(std::string name, const std::string& defaultvalue)
+{
+  if(name.empty())
+    name = defaultvalue;
+
+  unsigned int counter = 0;
+  std::string suffix = "";
+  while(Tools::mapHasKey(loadedObjects, name+suffix))
+    suffix = std::to_string(counter++);
+    
+  return name+suffix;
 }
 
 void SimObject::addParent(Element& parent)
 {
-  dynamic_cast<SimObject*>(&parent)->children.push_back(this);
-  parents.push_back(dynamic_cast<SimObject*>(&parent));
+  this->parent = dynamic_cast<SimObject*>(&parent);
+  if(this->parent)
+    this->parent->children.push_back(this);
 }
 
 void SimObject::registerObjects()
@@ -55,7 +73,6 @@ void SimObject::registerObjects()
 
 SimRobot::Widget* SimObject::createWidget()
 {
-  std::cout << "Creating widget for " << name << std::endl;
   return new SimObjectWidget(*this);
 }
 
@@ -64,17 +81,17 @@ const QIcon* SimObject::getIcon() const
   return &CoreModule::module->objectIcon;
 }
 
-SimRobotCore3::Renderer* SimObject::createRenderer()
+
+void SimObject::calcTransformationMatrix()
 {
-  std::cout << "Creating renderer for " << name << std::endl;
-  return new SimObjectRenderer(*this);
+  worldTransformation.setMatrix(parent != nullptr
+    ? parent->worldTransformation.getMatrix() * this->relativeTransformation.getMatrix()
+    : this->relativeTransformation.getMatrix()
+  );
 }
 
-
-mat4 SimObject::getTransformationMatrix()
+void SimObject::updateTransformation()
 {
-  if(parents.size() > 0)
-    return parents[0]->getTransformationMatrix() * this->relativeTransformation.getMatrix();
-  else
-    return this->relativeTransformation.getMatrix();
+  for(SimObject* child : children)
+    child->updateTransformation();
 }

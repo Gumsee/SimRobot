@@ -13,7 +13,8 @@
 #include <cmath>
 #include <Desktop/Window.h>
 
-CameraSensor::CameraSensor()
+CameraSensor::CameraSensor(const std::string& name)
+  : ::Sensor(findAvailableName(name, "CameraSensor"))
 {
   sensor.camera = this;
   sensor.sensorType = SimRobotCore3::SensorPort::cameraSensor;
@@ -35,18 +36,13 @@ CameraSensor::~CameraSensor()
     delete[] sensor.imageBuffer;
 }
 
-void CameraSensor::createPhysics(bGraphicsContext& graphicsContext)
+void CameraSensor::createPhysicsInternal()
 {
-  ::Sensor::createPhysics(graphicsContext);
-
   sensor.dimensions.append(imageWidth);
   sensor.dimensions.append(imageHeight);
   sensor.dimensions.append(3);
 
-  if(translation)
-    sensor.offset.translation = *translation;
-  if(rotation)
-    sensor.offset.rotation = *rotation;
+  sensor.offset = relativeTransformation;
 
   float aspect = std::tan(angleX * 0.5f) / std::tan(angleY * 0.5f);
   OpenGLTools::computePerspective(angleY, aspect, 0.01f, 500.f, sensor.projection);
@@ -54,9 +50,10 @@ void CameraSensor::createPhysics(bGraphicsContext& graphicsContext)
   ASSERT(!pyramid);
   pyramid = new Object3D(Mesh::generatePyramid(vec2(std::tan(angleX * 0.5f) * 2.f, std::tan(angleY * 0.5f) * 2.f), 1.f), "CameraSensor");
 
-  ASSERT(!surface);
-  static const float color[] = {0.f, 0.f, 0.5f, 1.f};
-  surface = graphicsContext.requestSurface(color, color);
+  //TODO
+  //ASSERT(!surface);
+  //static const float color[] = {0.f, 0.f, 0.5f, 1.f};
+  //surface = graphicsContext.requestSurface(color, color);
 }
 
 void CameraSensor::addParent(Element& element)
@@ -88,11 +85,8 @@ void CameraSensor::Sensor::updateValue()
     imageBufferSize = imageSize;
   }
 
-  // make sure the poses of all movable objects are up to date
-  Simulation::simulation->scene->updateTransformations();
-
   //// setup camera position
-  camera->camera3d->setMatrix(physicalObject->poseInWorld.getMatrix());
+  camera->camera3d->setMatrix(physicalObject->worldTransformation.getMatrix());
 
   //graphicsContext.startColorRendering(projection, transformation, 0, 0, imageWidth, imageHeight, true);
 
@@ -136,9 +130,6 @@ bool CameraSensor::Sensor::renderCameraImages(SimRobotCore3::SensorPort** camera
     imageBuffer = new unsigned char[multiImageBufferSize];
     imageBufferSize = multiImageBufferSize;
   }
-
-  // make sure the poses of all movable objects are up to date
-  Simulation::simulation->scene->updateTransformations();
 
   bGraphicsContext& graphicsContext = Simulation::simulation->graphicsContext;
   graphicsContext.makeCurrent(imageWidth, imageHeight * count);

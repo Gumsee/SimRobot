@@ -24,25 +24,28 @@ class bGraphicsContext;
 class PhysicalObject : public SimObject
 {
 public:
-  PhysicalObject* parent = nullptr; /**< The only parent of the primary object (or \c 0 in case that this is the root object) */
   Body* parentBody = nullptr; /**< The superior body object (might be 0) */
+  int id = -1; /**< The index of the body in MuJoCo's data. */
+  bool isinitialized = false;
+  int type;
 
-  Transformable3D poseInWorld; /**< The absolute pose of the object */
+  
   std::list<PhysicalObject*> physicalChildren; /**< List of subordinate physical scene graph objects */
   std::list<PhysicalObject*> physicalDrawings; /**< List of subordinate physical objects that will be drawn relative to this one */
+
+  PhysicalObject(const int& type, const std::string& name);
 
   /**
    * Creates the physical objects used by the OpenDynamicsEngine (ODE).
    * These are a geometry object for collision detection and/or a body,
    * if the simulation object is movable.
-   * @param graphicsContext The graphics context to create resources in
    */
-  virtual void createPhysics(bGraphicsContext& graphicsContext);
+  void createPhysics();
+  virtual void createPhysicsInternal() {}
+  virtual void createIDs();
 
   /**
    * Submits draw calls for physical primitives of the object (including children) in the given graphics context
-   * @param graphicsContext The graphics context to draw the object to
-   * @param flags Flags to enable or disable certain features
    */
   virtual void drawPhysics() const;
 

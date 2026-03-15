@@ -8,24 +8,10 @@
 #include "ActuatorsWidget.h"
 #include "CoreModule.h"
 #include "Graphics/bGraphicsContext.h"
-#include "Tools/OpenGLTools.h"
 
-void Actuator::createPhysics(bGraphicsContext &graphicsContext)
-{
-  OpenGLTools::convertTransformation(rotation, translation, poseInParent);
-
-  //TODO
-  //graphicsContext.pushModelMatrix(poseInParent);
-  //ASSERT(!modelMatrix);
-  //modelMatrix = graphicsContext.requestModelMatrix(bGraphicsContext::ModelMatrix::physicalDrawing);
-  ::PhysicalObject::createPhysics(graphicsContext);
-  //graphicsContext.popModelMatrix();
-}
-
-void Actuator::addParent(Element& element)
-{
-  ::PhysicalObject::addParent(element);
-}
+Actuator::Actuator(const std::string& name)
+  : ::PhysicalObject(mjOBJ_JOINT, findAvailableName(name, "Actuator"))
+{}
 
 const QIcon* Actuator::Port::getIcon() const
 {
