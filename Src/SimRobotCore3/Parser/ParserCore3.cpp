@@ -664,7 +664,7 @@ Element* ParserCore3::deflectionElement()
 
 Element* ParserCore3::PT2MotorElement()
 {
-  PT2Motor* pt2motor = new PT2Motor();
+  PT2Motor* pt2motor = new PT2Motor("");
   Axis* axis = dynamic_cast<Axis*>(element);
   ASSERT(axis);
   ASSERT(!axis->motor);
@@ -681,7 +681,7 @@ Element* ParserCore3::PT2MotorElement()
 
 Element* ParserCore3::servoMotorElement()
 {
-  ServoMotor* servoMotor = new ServoMotor();
+  ServoMotor* servoMotor = new ServoMotor("");
   Axis* axis = dynamic_cast<Axis*>(element);
   ASSERT(axis);
   ASSERT(!axis->motor);
@@ -705,7 +705,7 @@ Element* ParserCore3::servoMotorElement()
 
 Element* ParserCore3::velocityMotorElement()
 {
-  VelocityMotor* velocityMotor = new VelocityMotor();
+  VelocityMotor* velocityMotor = new VelocityMotor("");
   Axis* axis = dynamic_cast<Axis*>(element);
   ASSERT(axis);
   ASSERT(!axis->motor);

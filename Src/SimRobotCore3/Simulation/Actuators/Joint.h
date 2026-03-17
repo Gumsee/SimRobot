@@ -22,6 +22,8 @@ public:
   Joint(const std::string& name);
   Axis* axis = nullptr;
 
+  void createIDs() override;
+
 protected:
   /**
    * Creates the physical objects used by the OpenDynamicsEngine (ODE).

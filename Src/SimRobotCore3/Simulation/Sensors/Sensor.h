@@ -19,6 +19,11 @@ class Sensor : public PhysicalObject, public SimRobotCore3::Sensor
 public:
   Sensor(const std::string& name);
 
+  virtual void createIDs() override
+  {
+    ::PhysicalObject::createIDs();
+  }
+
   class Port : public SimRobotCore3::SensorPort
   {
   public:
@@ -30,7 +35,7 @@ public:
     QStringList descriptions; /**< A description for each sensor reading dimension */
     QString unit; /**< The unit of the sensor readings */
     unsigned int lastSimulationStep = 0xffffffff; /**< The last time this sensor was computed. */
-    unsigned int type = mjOBJ_UNKNOWN;
+    unsigned int type = 0;
     unsigned int id = -1;
 
     /** Update the sensor value. Is called when required. */

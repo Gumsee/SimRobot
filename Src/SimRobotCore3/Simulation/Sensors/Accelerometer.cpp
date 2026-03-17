@@ -35,7 +35,7 @@ void Accelerometer::createPhysicsInternal()
   mju_negQuat(site->quat, site->quat); // column major -> row major
 
   mjsSensor* sensor = mjs_addSensor(Simulation::simulation->spec);
-  mjs_setName(sensor->element, Simulation::simulation->getName(mjOBJ_SENSOR, "Accelerometer", &(this->sensor.sensorIndex)));
+  mjs_setName(sensor->element, name.c_str());
   sensor->type = mjSENS_ACCELEROMETER;
   sensor->objtype = mjOBJ_SITE;
   mjs_setString(sensor->objname, siteName);

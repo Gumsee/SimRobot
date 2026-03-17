@@ -17,7 +17,7 @@
 #include <cmath>
 
 VelocityMotor::VelocityMotor(const std::string& name)
-  : Motor(name)
+  : Motor(findAvailableName(name, "VelocityMotor"))
 {
   Simulation::simulation->scene->actuators.push_back(this);
 
@@ -38,7 +38,7 @@ void VelocityMotor::create(Joint* joint)
 
   // This actually configures a P-controller for velocity.
   static const float gain = 0.2f;
-  mjs_setName(actuator->element, Simulation::simulation->getName(mjOBJ_ACTUATOR, "VelocityMotor", &ctrlIndex));
+  mjs_setName(actuator->element, name.c_str());
   actuator->gaintype = mjGAIN_FIXED;
   actuator->gainprm[0] = gain;
   actuator->biastype = mjBIAS_AFFINE;
@@ -48,7 +48,7 @@ void VelocityMotor::create(Joint* joint)
   actuator->dyntype = mjDYN_NONE;
   actuator->trntype = mjTRN_JOINT;
   actuator->gear[0] = 1.f;
-  mjs_setString(actuator->target, joint->jointName);
+  mjs_setString(actuator->target, joint->name.c_str());
 
   actuator->ctrllimited = mjLIMITED_TRUE;
   actuator->ctrlrange[0] = -maxVelocity;
@@ -61,9 +61,9 @@ void VelocityMotor::create(Joint* joint)
 
 void VelocityMotor::act()
 {
-  if(Simulation::simulation->model->jnt_type[joint->jointIndex] == mjJNT_HINGE)
-    positionSensor.lastPos += normalize(static_cast<float>(Simulation::simulation->data->qpos[Simulation::simulation->model->jnt_qposadr[joint->jointIndex]]) - normalize(positionSensor.lastPos));
-  Simulation::simulation->data->ctrl[ctrlIndex] = setpoint;
+  if(Simulation::simulation->model->jnt_type[joint->id] == mjJNT_HINGE)
+    positionSensor.lastPos += normalize(static_cast<float>(Simulation::simulation->data->qpos[Simulation::simulation->model->jnt_qposadr[joint->id]]) - normalize(positionSensor.lastPos));
+  Simulation::simulation->data->ctrl[id] = setpoint;
 }
 
 void VelocityMotor::setValue(float value)
@@ -85,8 +85,8 @@ bool VelocityMotor::getMinAndMax(float& min, float& max) const
 
 void VelocityMotor::PositionSensor::updateValue()
 {
-  data.floatValue = static_cast<float>(Simulation::simulation->data->qpos[Simulation::simulation->model->jnt_qposadr[joint->jointIndex]]);
-  if(Simulation::simulation->model->jnt_type[joint->jointIndex] == mjJNT_HINGE)
+  data.floatValue = static_cast<float>(Simulation::simulation->data->qpos[Simulation::simulation->model->jnt_qposadr[joint->id]]);
+  if(Simulation::simulation->model->jnt_type[joint->id] == mjJNT_HINGE)
     data.floatValue = lastPos + normalize(data.floatValue - normalize(lastPos));
 }
 
@@ -104,7 +104,7 @@ bool VelocityMotor::PositionSensor::getMinAndMax(float& min, float& max) const
 
 void VelocityMotor::VelocitySensor::updateValue()
 {
-  data.floatValue = static_cast<float>(Simulation::simulation->data->qvel[Simulation::simulation->model->jnt_dofadr[joint->jointIndex]]);
+  data.floatValue = static_cast<float>(Simulation::simulation->data->qvel[Simulation::simulation->model->jnt_dofadr[joint->id]]);
 }
 
 bool VelocityMotor::VelocitySensor::getMinAndMax(float& min, float& max) const
@@ -116,7 +116,7 @@ bool VelocityMotor::VelocitySensor::getMinAndMax(float& min, float& max) const
 
 void VelocityMotor::registerObjects()
 {
-  if(Simulation::simulation->model->jnt_type[joint->jointIndex] == mjJNT_HINGE)
+  if(Simulation::simulation->model->jnt_type[joint->id] == mjJNT_HINGE)
   {
     positionSensor.unit = QString::fromUtf8("°");
     velocitySensor.unit = unit = QString::fromUtf8("°/s");
@@ -133,6 +133,6 @@ void VelocityMotor::registerObjects()
   velocitySensor.fullName = joint->fullName + ".velocity";
   CoreModule::application->registerObject(*CoreModule::module, velocitySensor, joint);
 
-  fullName = joint->fullName + ".velocity";
+  ::PhysicalObject::fullName = joint->fullName + ".velocity";
   CoreModule::application->registerObject(*CoreModule::module, *this, joint);
 }

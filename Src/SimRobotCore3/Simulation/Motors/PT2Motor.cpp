@@ -14,7 +14,7 @@
 #include <cmath>
 
 PT2Motor::PT2Motor(const std::string& name)
-  : Motor(name)
+  : Motor(findAvailableName(name, "PT2Motor"))
 {
   Simulation::simulation->scene->actuators.push_back(this);
 
@@ -37,7 +37,7 @@ void PT2Motor::act()
     return;
 
   const float dt = Simulation::simulation->scene->stepLength;
-  const float y = static_cast<float>(Simulation::simulation->data->qpos[Simulation::simulation->model->jnt_qposadr[joint->jointIndex]]);
+  const float y = static_cast<float>(Simulation::simulation->data->qpos[Simulation::simulation->model->jnt_qposadr[joint->id]]);
 
   ASSERT(T != 0.f);
   const float dx = dt / T * (K * lastSetpoints[0] - y - 2 * D * x);
@@ -78,7 +78,7 @@ bool PT2Motor::getMinAndMax(float& min, float& max) const
 
 void PT2Motor::PositionSensor::updateValue()
 {
-  data.floatValue = static_cast<float>(Simulation::simulation->data->qpos[Simulation::simulation->model->jnt_qposadr[joint->jointIndex]]);
+  data.floatValue = static_cast<float>(Simulation::simulation->data->qpos[Simulation::simulation->model->jnt_qposadr[joint->id]]);
 }
 
 bool PT2Motor::PositionSensor::getMinAndMax(float& min, float& max) const
@@ -97,7 +97,7 @@ void PT2Motor::registerObjects()
 {
   positionSensor.unit = unit = QString::fromUtf8("°");
   positionSensor.fullName = joint->fullName + ".position";
-  fullName = joint->fullName + ".position";
+  Actuator::Port::fullName = joint->fullName + ".position";
 
   CoreModule::application->registerObject(*CoreModule::module, positionSensor, joint);
   CoreModule::application->registerObject(*CoreModule::module, *this, joint);

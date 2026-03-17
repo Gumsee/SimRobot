@@ -15,7 +15,7 @@
  * @class Actuator
  * An abstract class for actuators
  */
-class Actuator : public PhysicalObject, public SimRobotCore3::Actuator
+class Actuator : public SimRobotCore3::Actuator, public PhysicalObject
 {
 public:
   Actuator(const std::string& name);

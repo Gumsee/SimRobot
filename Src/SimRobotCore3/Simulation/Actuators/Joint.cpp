@@ -40,6 +40,13 @@ void Joint::drawPhysics() const
   Actuator::drawPhysics();
 }
 
+void Joint::createIDs()
+{
+  if(axis->motor != nullptr)
+    axis->motor->createIDs();
+
+  ::PhysicalObject::createIDs();
+}
 void Joint::registerObjects()
 {
   // add sensors and actuators

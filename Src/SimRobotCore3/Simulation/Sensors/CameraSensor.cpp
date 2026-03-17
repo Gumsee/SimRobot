@@ -109,6 +109,8 @@ bool CameraSensor::Sensor::renderCameraImages(SimRobotCore3::SensorPort** camera
   if(lastSimulationStep == Simulation::simulation->simulationStep)
     return true;
 
+  std::cout << "rendering camera" << std::endl;
+
   // allocate buffer
   /*const unsigned int imageWidth = camera->imageWidth;
   const unsigned int imageHeight = camera->imageHeight;

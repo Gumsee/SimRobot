@@ -16,7 +16,7 @@
 #include <cmath>
 
 ServoMotor::ServoMotor(const std::string& name)
-  : Motor(name)
+  : Motor(findAvailableName(name, "ServoMotor"))
 {
   Simulation::simulation->scene->actuators.push_back(this);
 
@@ -34,7 +34,7 @@ void ServoMotor::create(Joint* joint)
 
   mjsActuator* actuator = mjs_addActuator(Simulation::simulation->spec, nullptr);
 
-  mjs_setName(actuator->element, Simulation::simulation->getName(mjOBJ_ACTUATOR, "ServoMotor", &ctrlIndex));
+  mjs_setName(actuator->element, name.c_str());
   actuator->gaintype = mjGAIN_FIXED;
   actuator->gainprm[0] = 1.f;
   actuator->biastype = mjBIAS_NONE;
@@ -64,7 +64,7 @@ void ServoMotor::act()
     Simulation::simulation->model->dof_armature[Simulation::simulation->model->jnt_dofadr[joint->id]] = 0.01f;
     Simulation::simulation->model->dof_frictionloss[Simulation::simulation->model->jnt_dofadr[joint->id]] = 0.0f;
     for(unsigned i = 0; i < targetSize; i++)
-      target[i] = { static_cast<float>(Simulation::simulation->data->qpos[Simulation::simulation->model->jnt_qposadr[joint->jointIndex]]), static_cast<float>(Simulation::simulation->simulatedTime) };
+      target[i] = { static_cast<float>(Simulation::simulation->data->qpos[Simulation::simulation->model->jnt_qposadr[joint->id]]), static_cast<float>(Simulation::simulation->simulatedTime) };
   }
 
   // For puppets just overwrite the values
@@ -96,8 +96,8 @@ void ServoMotor::act()
     index = 0;
 
   float setpoint = lastExecutedSetpoint.setPoint;
-  float currentPos = static_cast<float>(Simulation::simulation->data->qpos[Simulation::simulation->model->jnt_qposadr[joint->jointIndex]]);
-  const float currentVel = static_cast<float>(Simulation::simulation->data->qvel[Simulation::simulation->model->jnt_dofadr[joint->jointIndex]]);
+  float currentPos = static_cast<float>(Simulation::simulation->data->qpos[Simulation::simulation->model->jnt_qposadr[joint->id]]);
+  const float currentVel = static_cast<float>(Simulation::simulation->data->qvel[Simulation::simulation->model->jnt_dofadr[joint->id]]);
 
   if(Simulation::simulation->model->jnt_type[joint->id] == mjJNT_HINGE)
   {
@@ -110,7 +110,7 @@ void ServoMotor::act()
     newVel = maxForce;
   if(newVel < -maxForce)
     newVel = -maxForce;
-  Simulation::simulation->data->ctrl[ctrlIndex] = newVel * stiffness;
+  Simulation::simulation->data->ctrl[id] = newVel * stiffness;
 
   lastPos = currentPos;
 }
@@ -164,7 +164,7 @@ bool ServoMotor::getMinAndMax(float& min, float& max) const
 
 void ServoMotor::PositionSensor::updateValue()
 {
-  data.floatValue = static_cast<float>(Simulation::simulation->data->qpos[Simulation::simulation->model->jnt_qposadr[servoMotor->joint->jointIndex]]);
+  data.floatValue = static_cast<float>(Simulation::simulation->data->qpos[Simulation::simulation->model->jnt_qposadr[servoMotor->joint->id]]);
   if(Simulation::simulation->model->jnt_type[servoMotor->joint->id] == mjJNT_HINGE)
   {
     const float diff = normalize(data.floatValue - normalize(servoMotor->lastPos));
@@ -186,7 +186,7 @@ bool ServoMotor::PositionSensor::getMinAndMax(float& min, float& max) const
 
 void ServoMotor::VelocitySensor::updateValue()
 {
-  data.floatValue = static_cast<float>(Simulation::simulation->data->qvel[Simulation::simulation->model->jnt_dofadr[servoMotor->joint->jointIndex]]);
+  data.floatValue = static_cast<float>(Simulation::simulation->data->qvel[Simulation::simulation->model->jnt_dofadr[servoMotor->joint->id]]);
 }
 
 bool ServoMotor::VelocitySensor::getMinAndMax(float& min, float& max) const
@@ -210,7 +210,7 @@ void ServoMotor::registerObjects()
   }
   positionSensor.fullName = joint->fullName + ".position";
   velocitySensor.fullName = joint->fullName + ".velocity";
-  fullName = joint->fullName + ".position";
+  Actuator::Port::fullName = joint->fullName + ".position";
 
   CoreModule::application->registerObject(*CoreModule::module, positionSensor, joint);
   CoreModule::application->registerObject(*CoreModule::module, velocitySensor, joint);

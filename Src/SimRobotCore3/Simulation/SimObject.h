@@ -44,7 +44,7 @@ public:
   /** Updates the world transformation */
   virtual void updateTransformation();
 
-  std::string findAvailableName(std::string name, const std::string& defaultvalue);
+  static std::string findAvailableName(std::string name, const std::string& defaultvalue);
 
 protected:
   /**

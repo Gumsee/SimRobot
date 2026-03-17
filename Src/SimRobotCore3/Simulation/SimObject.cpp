@@ -66,6 +66,8 @@ void SimObject::registerObjects()
     }
     else
       simObject->fullName = fullName + "." + simObject->name.c_str();
+
+    //std::cout << "registering " << simObject->name << " " << simObject->fullName.toStdString() << std::endl;
     CoreModule::application->registerObject(*CoreModule::module, dynamic_cast<SimRobot::Object&>(*simObject), dynamic_cast<SimRobot::Object*>(this));
     simObject->registerObjects();
   }

@@ -25,7 +25,7 @@ Gyroscope::Gyroscope(const std::string& name)
 
 void Gyroscope::createPhysicsInternal()
 {
-  const char* siteName = Simulation::simulation->getName(mjOBJ_SITE, "Gyroscope");
+  const char* siteName = name.c_str();
 
   mjsSite* site = mjs_addSite(sensor.body->body, nullptr);
   mjs_setName(site->element, siteName);
@@ -34,10 +34,15 @@ void Gyroscope::createPhysicsInternal()
   mju_negQuat(site->quat, site->quat); // column major -> row major
 
   mjsSensor* sensor = mjs_addSensor(Simulation::simulation->spec);
-  mjs_setName(sensor->element, Simulation::simulation->getName(mjOBJ_SENSOR, "Gyroscope", &(this->sensor.sensorIndex)));
+  mjs_setName(sensor->element, name.c_str());
   sensor->type = mjSENS_GYRO;
   sensor->objtype = mjOBJ_SITE;
   mjs_setString(sensor->objname, siteName);
+}
+
+void Gyroscope::createIDs()
+{
+  sensor.createIDs();
 }
 
 void Gyroscope::addParent(Element& element)
@@ -57,6 +62,6 @@ void Gyroscope::registerObjects()
 
 void Gyroscope::GyroscopeSensor::updateValue()
 {
-  ASSERT(Simulation::simulation->model->sensor_dim[sensorIndex] == 3);
-  mju_n2f(angularVel, Simulation::simulation->data->sensordata + Simulation::simulation->model->sensor_adr[sensorIndex], 3);
+  ASSERT(Simulation::simulation->model->sensor_dim[id] == 3);
+  mju_n2f(angularVel, Simulation::simulation->data->sensordata + Simulation::simulation->model->sensor_adr[id], 3);
 }
