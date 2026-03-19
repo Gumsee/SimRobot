@@ -24,6 +24,8 @@ public:
 
   void createIDs() override;
 
+  void updateTransformation() override;
+
 protected:
   /**
    * Creates the physical objects used by the OpenDynamicsEngine (ODE).

@@ -56,13 +56,13 @@ void Geometry::createPhysicsInternal()
 
     Transformable3D transformInParentBody;
     transformInParentBody.setMatrix(parentBody != nullptr 
-      ? mat4::inverse(parentBody->worldTransformation.getMatrix()) * worldTransformation.getMatrix() 
+      ? Gum::Maths::inverseTransformationMatrix(parentBody->worldTransformation.getMatrix()) * worldTransformation.getMatrix() 
       : worldTransformation.getMatrix()
     );
     // set offset
     mju_f2n(geom->pos, relativeTransformation.getPosition().data(), 3);
     mju_f2n(geom->quat, relativeTransformation.getRotation().data(), 4);
-    //mju_negQuat(geom->quat, geom->quat); // column major -> row major
+    mju_negQuat(geom->quat, geom->quat); // column major -> row major
 
     geom->condim = 3;
     geom->friction[0] = 1.f;

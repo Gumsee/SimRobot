@@ -20,7 +20,6 @@
 Hinge::Hinge(const std::string& name)
   : Joint(findAvailableName(name, "Hinge"))
 {
-  
 }
 
 void Hinge::createPhysicsInternal()
@@ -30,9 +29,6 @@ void Hinge::createPhysicsInternal()
 
   axis->create();
 
-  if(axis->deflection && axis->deflection->offset != 0.f)
-    worldTransformation.setRotation(vec3(axis->x, axis->y, axis->z) * axis->deflection->offset);
-
   // find bodies to connect
   [[maybe_unused]] Body* parentBody = dynamic_cast<Body*>(parent);
   ASSERT(!parentBody || parentBody->body);
@@ -41,25 +37,45 @@ void Hinge::createPhysicsInternal()
   ASSERT(childBody);
   ASSERT(childBody->body);
 
-  childBody->createPhysics();
+  //std::cout << "Attaching hinge between " << parentBody->name << " and " << childBody->name << " with offset " << (*axis * Gum::Maths::toDegree(axis->deflection->offset)).toString() << std::endl;
 
+  //axis->deflection->offset = 0;
+  //if(axis->deflection && axis->deflection->offset != 0.f)
+  //{
+  //  relativeTransformation.setRotation(vec3(axis->x, axis->y, axis->z) * Gum::Maths::toDegree(axis->deflection->offset));
+  //  calcTransformationMatrix();
+  //}
+
+  std::cout << name << " after: \n" << fquat::toEuler(worldTransformation.getRotation()).toString() << std::endl;
+
+  childBody->parentBody = parentBody;
+  childBody->createPhysics(true);
+
+
+  //std::cout << name << " relpos: " << childBody->relativeTransformation.getPosition().toString() << std::endl;
+  
   mjsJoint* joint = mjs_addJoint(childBody->body, nullptr);
   mjs_setName(joint->element, name.c_str());
   joint->type = mjJNT_HINGE;
 
-  vec3 positionInChild = mat4::inverse(childBody->worldTransformation.getMatrix()) * vec4(worldTransformation.getPosition(), 1.0f);
+  //vec3 positionInChild = childBody->relativeTransformation.getPosition();
+  vec3 positionInChild = Gum::Maths::inverseTransformationMatrix(childBody->worldTransformation.getMatrix()) * vec4(worldTransformation.getPosition(), 1.0f);
+  vec3 axisInChild = mat3::transpose(mat3(childBody->worldTransformation.getMatrix())) * mat3(worldTransformation.getMatrix()) * (vec3)*axis;
+  //vec3 axisInChild = Gum::Maths::rotateMatrix(childBody->relativeTransformation.getRotation()) * vec4(*axis, 1.0f);
+  std::cout << name << " after: " << fquat::toEuler(worldTransformation.getRotation()).toString() << " " << axisInChild.toString() << std::endl;
+
   mju_f2n(joint->pos, positionInChild.data(), 3);
-  vec3 axisInChild = mat4::inverse(Gum::Maths::rotateMatrix(childBody->worldTransformation.getRotation())) * Gum::Maths::rotateMatrix(worldTransformation.getRotation()) * vec4(axis->x, axis->y, axis->z, 0.0f);
   mju_f2n(joint->axis, axisInChild.data(), 3);
 
   //joint->damping = 0.9f;
 
   if(axis->deflection)
   {
+    //std::cout << name << " offset: " << Gum::Maths::toDegree(axis->deflection->offset) << std::endl;
     joint->limited = mjLIMITED_TRUE;
     joint->range[0] = axis->deflection->min;
     joint->range[1] = axis->deflection->max;
-    joint->ref = axis->deflection->offset;
+    //joint->ref = axis->deflection->offset;
   }
 
   // create motor
@@ -69,6 +85,7 @@ void Hinge::createPhysicsInternal()
     if(!dynamic_cast<VelocityMotor*>(axis->motor) && axis->deflection) // Move setpoint to a position inside the deflection range
       axis->motor->setpoint = axis->deflection->offset;
   }
+
 }
 
 const QIcon* Hinge::getIcon() const

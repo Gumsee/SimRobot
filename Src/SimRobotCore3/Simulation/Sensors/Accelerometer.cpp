@@ -22,6 +22,7 @@ Accelerometer::Accelerometer(const std::string& name)
   sensor.dimensions.append(3);
   sensor.data.floatArray = sensor.linearAcc;
   sensor.linearAcc[0] = sensor.linearAcc[1] = sensor.linearAcc[2] = 0.f;
+  sensor.name = this->name;
 }
 
 void Accelerometer::createPhysicsInternal()

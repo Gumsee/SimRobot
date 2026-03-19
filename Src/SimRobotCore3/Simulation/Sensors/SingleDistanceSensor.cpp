@@ -14,6 +14,7 @@ SingleDistanceSensor::SingleDistanceSensor(const std::string& name)
 {
   sensor.sensorType = SimRobotCore3::SensorPort::floatSensor;
   sensor.unit = "m";
+  sensor.name = this->name;
 }
 
 void SingleDistanceSensor::createPhysicsInternal()

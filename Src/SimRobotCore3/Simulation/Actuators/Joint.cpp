@@ -22,9 +22,17 @@ void Joint::createPhysicsInternal()
 {
   ASSERT(!axisLine);
   axisLine = new Object3D(Mesh::generateLine(vec3(axis->x, axis->y, axis->z) * -0.05f, vec3(axis->x, axis->y, axis->z) * 0.05f), "JointLine");
+  axisLine->getVertexArrayObject()->setPrimitiveType(VertexArrayObject::PrimitiveTypes::LINE_STRIP);
+  axisLine->getVertexArrayObject()->setVertexCount(2);
+  Object3DInstance* instance = axisLine->addInstance();
+  instance->setMatrix(worldTransformation.getMatrix());
+  axisLine->applyTransformationMatrix(instance);
 
   ASSERT(!sphere);
   sphere = new Object3D(Mesh::generateSphere(0.002f, 10, 10), "JointSphere");
+  instance = sphere->addInstance();
+  instance->setMatrix(worldTransformation.getMatrix());
+  sphere->applyTransformationMatrix(instance);
 
   //TODO
   //ASSERT(!surface);
@@ -55,4 +63,16 @@ void Joint::registerObjects()
 
   // add children
   ::PhysicalObject::registerObjects();
+}
+
+void Joint::updateTransformation()
+{
+  calcTransformationMatrix();
+  axisLine->getInstance()->setMatrix(worldTransformation.getMatrix());
+  axisLine->applyTransformationMatrix(axisLine->getInstance());
+
+  sphere->getInstance()->setMatrix(worldTransformation.getMatrix());
+  sphere->applyTransformationMatrix(sphere->getInstance());
+
+  ::PhysicalObject::updateTransformation();
 }

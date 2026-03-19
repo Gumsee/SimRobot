@@ -27,9 +27,8 @@ void PhysicalObject::addParent(Element& element)
   SimObject::addParent(element);
 }
 
-void PhysicalObject::createPhysics()
+void PhysicalObject::createPhysics(bool withchildren)
 {
-  calcTransformationMatrix();
   std::string parentname = "";
   if(parent != nullptr)
     parentname = parent->name;
@@ -41,11 +40,14 @@ void PhysicalObject::createPhysics()
 
   if(!isinitialized)
   {
+    calcTransformationMatrix();
+    //std::cout << levelSpaces(level) << name << " " << worldTransformation.getPosition().toString() << " " << fquat::toEuler(worldTransformation.getRotation()).toString() << std::endl;
     createPhysicsInternal();
     isinitialized = true;
   }
 
   // initialize and call createPhysics() for each child object
+  if(withchildren)
   for(PhysicalObject* object : physicalChildren)
   {
     object->parentBody = body;
@@ -58,7 +60,7 @@ void PhysicalObject::createIDs()
   if(type != mjOBJ_UNKNOWN)
     id = mj_name2id(Simulation::simulation->model, type, name.c_str());
 
-  std::cout << name << " " << id << std::endl;
+  //std::cout << name << " " << id << std::endl;
   for(PhysicalObject* object : physicalChildren)
     object->createIDs();
 }

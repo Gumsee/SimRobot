@@ -21,6 +21,7 @@ Gyroscope::Gyroscope(const std::string& name)
   sensor.descriptions.append("z");
   sensor.dimensions.append(3);
   sensor.data.floatArray = sensor.angularVel;
+  sensor.name = this->name;
 }
 
 void Gyroscope::createPhysicsInternal()

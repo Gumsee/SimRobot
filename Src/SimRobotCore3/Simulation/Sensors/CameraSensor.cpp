@@ -20,6 +20,7 @@ CameraSensor::CameraSensor(const std::string& name)
   sensor.sensorType = SimRobotCore3::SensorPort::cameraSensor;
   sensor.imageBuffer = nullptr;
   sensor.imageBufferSize = 0;
+  sensor.name = this->name;
 
   canvas = new Canvas(ivec2(imageWidth, imageHeight));
   renderer = new Renderer3D(canvas);
@@ -87,6 +88,7 @@ void CameraSensor::Sensor::updateValue()
 
   //// setup camera position
   camera->camera3d->setMatrix(physicalObject->worldTransformation.getMatrix());
+  camera->camera3d->updateView();
 
   //graphicsContext.startColorRendering(projection, transformation, 0, 0, imageWidth, imageHeight, true);
 
@@ -96,8 +98,6 @@ void CameraSensor::Sensor::updateValue()
   camera->camera3d->makeActive();
   camera->renderer->setWorld(Simulation::simulation->scene->world);
   camera->renderer->render();
-
-  std::cout << "Rendering camera sensor" << std::endl;
 
   // read frame buffer
   camera->renderer->getHighDynamicRange()->getFramebuffer()->readPixelData(imageBuffer, ivec2(0,0), ivec2(imageWidth, imageHeight), Gum::Graphics::Pixelformat::RGB);

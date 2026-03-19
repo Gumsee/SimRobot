@@ -110,6 +110,7 @@ void ServoMotor::act()
     newVel = maxForce;
   if(newVel < -maxForce)
     newVel = -maxForce;
+    
   Simulation::simulation->data->ctrl[id] = newVel * stiffness;
 
   lastPos = currentPos;

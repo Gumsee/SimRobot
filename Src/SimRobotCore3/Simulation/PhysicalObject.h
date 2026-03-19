@@ -40,7 +40,7 @@ public:
    * These are a geometry object for collision detection and/or a body,
    * if the simulation object is movable.
    */
-  void createPhysics();
+  void createPhysics(bool withchildren = true);
   virtual void createPhysicsInternal() {}
   virtual void createIDs();
 

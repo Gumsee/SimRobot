@@ -43,6 +43,7 @@ ObjectSegmentedImageSensor::ObjectSegmentedImageSensor(const std::string& name)
   sensor.sensorType = SimRobotCore3::SensorPort::cameraSensor;
   sensor.imageBuffer = nullptr;
   sensor.imageBufferSize = 0;
+  sensor.name = this->name;
 }
 
 ObjectSegmentedImageSensor::~ObjectSegmentedImageSensor()

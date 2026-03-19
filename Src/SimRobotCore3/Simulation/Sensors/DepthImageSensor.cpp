@@ -23,6 +23,7 @@ DepthImageSensor::DepthImageSensor(const std::string& name)
   sensor.imageBuffer = nullptr;
   sensor.renderBuffer = nullptr;
   sensor.lut = nullptr;
+  sensor.name = this->name;
 }
 
 DepthImageSensor::~DepthImageSensor()

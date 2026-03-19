@@ -13,6 +13,7 @@ CollisionSensor::CollisionSensor(const std::string& name)
   : Sensor(findAvailableName(name, "CollisionSensor"))
 {
   sensor.sensorType = SimRobotCore3::SensorPort::boolSensor;
+  sensor.name = this->name;
 }
 
 void CollisionSensor::createPhysicsInternal()

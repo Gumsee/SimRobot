@@ -32,6 +32,7 @@ void Body::createPhysicsInternal()
   ASSERT(!body);
 
   // register body at parent body
+  //std::cout << parentBody << std::endl;
   if(parentBody)
   {
     parentBody->bodyChildren.push_back(this);
@@ -66,18 +67,15 @@ void Body::createPhysicsInternal()
       addMass(*mass);
   }
 
-
   // set position
   Transformable3D transformInParentBody;
   transformInParentBody.setMatrix(parentBody != nullptr 
-    ? mat4::inverse(parentBody->worldTransformation.getMatrix()) * worldTransformation.getMatrix() 
+    ? Gum::Maths::inverseTransformationMatrix(parentBody->worldTransformation.getMatrix()) * worldTransformation.getMatrix() 
     : worldTransformation.getMatrix()
   );
   mju_f2n(body->pos, transformInParentBody.getPosition().data(), 3);
   mju_f2n(body->quat, transformInParentBody.getRotation().data(), 4);
-  //mju_f2n(body->pos, worldTransformation.getPosition().data(), 3);
-  //mju_f2n(body->quat, worldTransformation.getRotation().data(), 4);
-  //mju_negQuat(body->quat, body->quat); // column major -> row major
+  mju_negQuat(body->quat, body->quat); // column major -> row major
 }
 
 void Body::addMass(Mass& mass)
@@ -238,38 +236,32 @@ void Body::rotate(const RotationMatrix& rotation, const Vector3f& point)
   mj_kinematics(Simulation::simulation->model, Simulation::simulation->data);
 
   //TODO update children transforms
+  updateTransformation();
 }
 
 const float* Body::getPosition() const
 {
-  //TODO
-  //Pose3f& pose = const_cast<Body*>(this)->poseInWorld;
-  //mju_n2f(pose.translation.data(), Simulation::simulation->data->xpos + bodyIndex * 3, 3);
-  //return pose.translation.data();
-  return 0;
+  vec3 pos = const_cast<Body*>(this)->worldTransformation.getPosition();
+  mju_n2f(pos.data(), Simulation::simulation->data->xpos + id * 3, 3);
+  return pos.data();
 }
 
 bool Body::getPose(float* pos, float (*rot)[3]) const
 {
-  //TODO?
-  //Pose3f& pose = const_cast<Body*>(this)->poseInWorld;
-  //mju_n2f(pose.translation.data(), Simulation::simulation->data->xpos + bodyIndex * 3, 3);
-  //mju_n2f(pose.rotation.data(), Simulation::simulation->data->xmat + bodyIndex * 9, 9);
-  //pose.rotation.transposeInPlace();
-//
-  //pos[0] = pose.translation.x();
-  //pos[1] = pose.translation.y();
-  //pos[2] = pose.translation.z();
-//
-  //rot[0][0] = pose.rotation(0, 0);
-  //rot[0][1] = pose.rotation(1, 0);
-  //rot[0][2] = pose.rotation(2, 0);
-  //rot[1][0] = pose.rotation(0, 1);
-  //rot[1][1] = pose.rotation(1, 1);
-  //rot[1][2] = pose.rotation(2, 1);
-  //rot[2][0] = pose.rotation(0, 2);
-  //rot[2][1] = pose.rotation(1, 2);
-  //rot[2][2] = pose.rotation(2, 2);
+  pos[0] = const_cast<Transformable3D*>(&worldTransformation)->getPosition().x;
+  pos[1] = const_cast<Transformable3D*>(&worldTransformation)->getPosition().y;
+  pos[2] = const_cast<Transformable3D*>(&worldTransformation)->getPosition().z;
+
+  mat4 rotMatrix = Gum::Maths::rotateMatrix(const_cast<Transformable3D*>(&worldTransformation)->getRotation());
+  rot[0][0] = rotMatrix[0][0];
+  rot[0][1] = rotMatrix[1][0];
+  rot[0][2] = rotMatrix[2][0];
+  rot[1][0] = rotMatrix[0][1];
+  rot[1][1] = rotMatrix[1][1];
+  rot[1][2] = rotMatrix[2][1];
+  rot[2][0] = rotMatrix[0][2];
+  rot[2][1] = rotMatrix[1][2];
+  rot[2][2] = rotMatrix[2][2];
   return true;
 }
 

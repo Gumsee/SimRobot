@@ -113,7 +113,7 @@ set(GUM_ENGINE_SRC
     ${SIMROBOT_PREFIX}/Util/gum-qt/src/UnixSystem.cpp
 )
 set(CMAKE_CXX_FLAGS "-g")
-set(CMAKE_BUILD_TYPE RelWithDebInfo)
+#set(CMAKE_BUILD_TYPE RelWithDebInfo)
 add_library(gum-engine SHARED ${GUM_ENGINE_SRC})
 target_link_libraries(gum-engine PRIVATE 
   Qt6::Core Qt6::Gui Qt6::OpenGL Qt6::OpenGLWidgets Qt6::Widgets 

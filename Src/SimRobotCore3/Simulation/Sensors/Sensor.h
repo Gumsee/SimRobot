@@ -35,8 +35,7 @@ public:
     QStringList descriptions; /**< A description for each sensor reading dimension */
     QString unit; /**< The unit of the sensor readings */
     unsigned int lastSimulationStep = 0xffffffff; /**< The last time this sensor was computed. */
-    unsigned int type = 0;
-    unsigned int id = -1;
+    int id = -1;
 
     /** Update the sensor value. Is called when required. */
     virtual void updateValue() = 0;

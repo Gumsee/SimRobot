@@ -15,7 +15,7 @@ class Motor;
  * @class Axis
  * An axis of a joint
  */
-class Axis : public ElementCore3
+class Axis : public ElementCore3, public vec3
 {
 public:
   class Deflection
@@ -26,9 +26,6 @@ public:
     float offset = 0.f;
   };
 
-  float x = 0.f;
-  float y = 0.f;
-  float z = 0.f;
   float cfm = -1.f;
   Deflection* deflection = nullptr;
   Motor* motor = nullptr;
