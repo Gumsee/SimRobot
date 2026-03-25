@@ -41,7 +41,7 @@ private:
   void drawPhysics() const override;
 
   /** Registers this object with children, actuators and sensors at SimRobot's GUI */
-  void registerObjects() override;
+  void registerObjects(int level) override;
 
   Object3D* axisLine = nullptr;
   Object3D* sphere = nullptr;

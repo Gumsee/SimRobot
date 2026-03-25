@@ -15,7 +15,8 @@
 
 Appearance::Appearance(const std::string& name)
   : SimObject(findAvailableName(name, "Appearance"))
-{}
+{
+}
 
 void Appearance::createGraphics()
 {

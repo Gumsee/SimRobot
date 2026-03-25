@@ -33,10 +33,9 @@ void SimObjectWidget::mousePressEvent(QMouseEvent* event)
       default:                btn = GUM_MOUSE_BUTTON_NONE;     break;
   }
 
-  ;
+  oMouse.setPosition(ivec2(event->position().x(), event->position().y()));
+  oMouse.resetDelta();
   oMouse.handleEvent(Gum::Event(Gum::Event::EventData(btn), GUM_EVENT_MOUSE_PRESSED));
-  oMouse.handleEvent(Gum::Event(Gum::Event::EventData(ivec2(event->position().x(), event->position().y())), GUM_EVENT_MOUSE_MOVED));
-
   event->accept();
 }
 

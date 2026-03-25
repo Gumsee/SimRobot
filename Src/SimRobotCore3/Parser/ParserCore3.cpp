@@ -194,7 +194,7 @@ Element* ParserCore3::sceneElement()
 {
   Scene* scene = new Scene(getString("name", false));
   scene->controller = getString("controller", false);
-  getColor("color", false, scene->color);
+  getColor("color", false, scene->backgroundcolor);
   scene->stepLength = getTimeNonZeroPositive("stepLength", false, 0.01f);
   scene->gravity = getAcceleration("gravity", false, -9.80665f);
   scene->detectBodyCollisions = getBool("bodyCollisions", false, true);
@@ -583,17 +583,9 @@ Element* ParserCore3::translationElement()
 {
   vec3 translation(getLength("x", false, 0.f, false), getLength("y", false, 0.f, false), getLength("z", false, 0.f, false));
 
-  SimObject* simObject = dynamic_cast<SimObject*>(elementData->parent->returnedElement);
+  SimObject* simObject = dynamic_cast<SimObject*>(element);
   if(simObject)
-  {
     simObject->relativeTransformation.increasePosition(translation);
-  }
-  else
-  {
-    Mass* mass = dynamic_cast<Mass*>(elementData->parent->returnedElement);
-    ASSERT(mass);
-    mass->relativeTransformation.increasePosition(translation);
-  }
   return nullptr;
 }
 
@@ -608,15 +600,7 @@ Element* ParserCore3::rotationElement()
 
   SimObject* simObject = dynamic_cast<SimObject*>(element);
   if(simObject)
-  {
-    simObject->relativeTransformation.setRotation(simObject->relativeTransformation.getRotation() * fquat::toQuaternion(rotation));    
-  }
-  else
-  {
-    Mass* mass = dynamic_cast<Mass*>(element);
-    ASSERT(mass);
-    mass->relativeTransformation.increaseRotation(rotation);
-  }
+    simObject->relativeTransformation.increaseRotation(fquat::toQuaternion(rotation));
   return nullptr;
 }
 
@@ -758,9 +742,10 @@ Element* ParserCore3::cameraElement()
   camera->setImageDimensions(ivec2(
     getInteger("imageWidth", true, 0, true),
     getInteger("imageHeight", true, 0, true)
+  ), vec2(
+    getAngle("angleX", true, 0.f, true),
+    getAngle("angleY", true, 0.f, true)
   ));
-  camera->angleX = getAngle("angleX", true, 0.f, true);
-  camera->angleY = getAngle("angleY", true, 0.f, true);
   return camera;
 }
 

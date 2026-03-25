@@ -28,7 +28,7 @@ public:
   {
   public:
     QString fullName; /**< The path name to the object in the scene graph */
-    std::string name; /**< The index of the sensor within MuJoCo's data. */
+    std::string name, mujocoName; /**< The index of the sensor within MuJoCo's data. */
     SensorType sensorType; /**< The data type of the sensor readings */
     Data data; /**< The sensor reading */
     QList<int> dimensions; /**< The dimensions of the sensor readings */

@@ -17,7 +17,7 @@ Sensor::Sensor(const std::string& name)
 
 void Sensor::Port::createIDs()
 {
-  id = mj_name2id(Simulation::simulation->model, mjOBJ_SENSOR, name.c_str());
+  id = mj_name2id(Simulation::simulation->model, mjOBJ_SENSOR, mujocoName.c_str());
 }
 
 const QIcon* Sensor::Port::getIcon() const

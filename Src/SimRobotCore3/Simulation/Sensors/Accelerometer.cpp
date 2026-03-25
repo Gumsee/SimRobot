@@ -23,11 +23,12 @@ Accelerometer::Accelerometer(const std::string& name)
   sensor.data.floatArray = sensor.linearAcc;
   sensor.linearAcc[0] = sensor.linearAcc[1] = sensor.linearAcc[2] = 0.f;
   sensor.name = this->name;
+  sensor.mujocoName = this->mujocoName;
 }
 
 void Accelerometer::createPhysicsInternal()
 {
-  const char* siteName = "Accelerometer";
+  const char* siteName = mujocoName.c_str();
 
   mjsSite* site = mjs_addSite(sensor.body->body, nullptr);
   mjs_setName(site->element, siteName);
@@ -36,7 +37,7 @@ void Accelerometer::createPhysicsInternal()
   mju_negQuat(site->quat, site->quat); // column major -> row major
 
   mjsSensor* sensor = mjs_addSensor(Simulation::simulation->spec);
-  mjs_setName(sensor->element, name.c_str());
+  mjs_setName(sensor->element, mujocoName.c_str());
   sensor->type = mjSENS_ACCELEROMETER;
   sensor->objtype = mjOBJ_SITE;
   mjs_setString(sensor->objname, siteName);
@@ -54,12 +55,12 @@ void Accelerometer::addParent(Element& element)
   Sensor::addParent(element);
 }
 
-void Accelerometer::registerObjects()
+void Accelerometer::registerObjects(int level)
 {
   sensor.fullName = fullName + ".acceleration";
   CoreModule::application->registerObject(*CoreModule::module, sensor, this);
 
-  Sensor::registerObjects();
+  Sensor::registerObjects(level);
 }
 
 void Accelerometer::AccelerometerSensor::updateValue()

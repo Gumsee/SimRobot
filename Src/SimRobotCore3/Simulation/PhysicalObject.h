@@ -28,6 +28,7 @@ public:
   int id = -1; /**< The index of the element in MuJoCo's data. */
   bool isinitialized = false;
   int type;
+  ::color color; /**< A color for drawing the geometry */
 
   
   std::list<PhysicalObject*> physicalChildren; /**< List of subordinate physical scene graph objects */

@@ -22,11 +22,12 @@ Gyroscope::Gyroscope(const std::string& name)
   sensor.dimensions.append(3);
   sensor.data.floatArray = sensor.angularVel;
   sensor.name = this->name;
+  sensor.mujocoName = this->mujocoName;
 }
 
 void Gyroscope::createPhysicsInternal()
 {
-  const char* siteName = name.c_str();
+  const char* siteName = mujocoName.c_str();
 
   mjsSite* site = mjs_addSite(sensor.body->body, nullptr);
   mjs_setName(site->element, siteName);
@@ -35,7 +36,7 @@ void Gyroscope::createPhysicsInternal()
   mju_negQuat(site->quat, site->quat); // column major -> row major
 
   mjsSensor* sensor = mjs_addSensor(Simulation::simulation->spec);
-  mjs_setName(sensor->element, name.c_str());
+  mjs_setName(sensor->element, mujocoName.c_str());
   sensor->type = mjSENS_GYRO;
   sensor->objtype = mjOBJ_SITE;
   mjs_setString(sensor->objname, siteName);
@@ -53,12 +54,12 @@ void Gyroscope::addParent(Element& element)
   Sensor::addParent(element);
 }
 
-void Gyroscope::registerObjects()
+void Gyroscope::registerObjects(int level)
 {
   sensor.fullName = fullName + ".angularVelocities";
   CoreModule::application->registerObject(*CoreModule::module, sensor, this);
 
-  Sensor::registerObjects();
+  Sensor::registerObjects(level);
 }
 
 void Gyroscope::GyroscopeSensor::updateValue()

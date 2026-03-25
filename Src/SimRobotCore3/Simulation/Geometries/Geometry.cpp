@@ -48,7 +48,7 @@ void Geometry::createPhysicsInternal()
   }
   if(geom)
   {
-    mjs_setName(geom->element, name.c_str());
+    mjs_setName(geom->element, mujocoName.c_str());
 
     ASSERT(collisionGroup < 32);
     geom->contype = 1 << collisionGroup;

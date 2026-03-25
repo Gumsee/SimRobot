@@ -21,6 +21,8 @@ CameraSensor::CameraSensor(const std::string& name)
   sensor.imageBuffer = nullptr;
   sensor.imageBufferSize = 0;
   sensor.name = this->name;
+  sensor.mujocoName = this->mujocoName;
+  sensor.physicalObject = this;
 
   canvas = new Canvas(ivec2(imageWidth, imageHeight));
   renderer = new Renderer3D(canvas);
@@ -29,6 +31,8 @@ CameraSensor::CameraSensor(const std::string& name)
   camera3d = new Camera3D(ivec2(imageWidth, imageHeight), nullptr);
   camera3d->setWorldUpDirection(vec3(0,0,1));
   camera3d->setPosition(vec3(0,0,0));
+  camera3d->setMode(Camera3D::CONTROLLED);
+  camera3d->setProjectionMode(Camera3D::PERSPECTIVE);
 }
 
 CameraSensor::~CameraSensor()
@@ -45,11 +49,12 @@ void CameraSensor::createPhysicsInternal()
 
   sensor.offset = relativeTransformation;
 
-  float aspect = std::tan(angleX * 0.5f) / std::tan(angleY * 0.5f);
-  OpenGLTools::computePerspective(angleY, aspect, 0.01f, 500.f, sensor.projection);
-
   ASSERT(!pyramid);
-  pyramid = new Object3D(Mesh::generatePyramid(vec2(std::tan(angleX * 0.5f) * 2.f, std::tan(angleY * 0.5f) * 2.f), 1.f), "CameraSensor");
+  pyramid = new Object3D(Mesh::generatePyramid(vec2(std::tan(openingAngle.x * 0.5f) * 2.f, std::tan(openingAngle.y * 0.5f) * 2.f), 1.f), "CameraSensor");
+  pyramid->getVertexArrayObject()->setPrimitiveType(VertexArrayObject::PrimitiveTypes::LINES);
+  Object3DInstance *instance = pyramid->addInstance();
+  instance->setMatrix(worldTransformation.getMatrix());
+  pyramid->applyTransformationMatrix(instance);
 
   //TODO
   //ASSERT(!surface);
@@ -59,17 +64,17 @@ void CameraSensor::createPhysicsInternal()
 
 void CameraSensor::addParent(Element& element)
 {
-  sensor.physicalObject = dynamic_cast< ::PhysicalObject*>(&element);
-  ASSERT(sensor.physicalObject);
+  //sensor.physicalObject = dynamic_cast< ::PhysicalObject*>(&element);
+  //ASSERT(sensor.physicalObject);
   ::Sensor::addParent(element);
 }
 
-void CameraSensor::registerObjects()
+void CameraSensor::registerObjects(int level)
 {
   sensor.fullName = fullName + ".image";
   CoreModule::application->registerObject(*CoreModule::module, sensor, this);
 
-  ::Sensor::registerObjects();
+  ::Sensor::registerObjects(level);
 }
 
 void CameraSensor::Sensor::updateValue()
@@ -87,11 +92,26 @@ void CameraSensor::Sensor::updateValue()
   }
 
   //// setup camera position
-  camera->camera3d->setMatrix(physicalObject->worldTransformation.getMatrix());
-  camera->camera3d->updateView();
+  camera->camera3d->setPosition(physicalObject->worldTransformation.getPosition());
+  vec3 eulerrot = fquat::toEuler(physicalObject->worldTransformation.getRotation());
+  float p = eulerrot.x * M_PI / 180.0f;
+  float y = eulerrot.z * M_PI / 180.0f;
+  vec3 direction(
+    cos(y)*cos(p),
+    sin(y)*cos(p),
+    -sin(p)
+  );
+  //std::cout << direction.toString() << std::endl;
+  camera->camera3d->lookAt(direction);
+  camera->camera3d->update();
 
-  //graphicsContext.startColorRendering(projection, transformation, 0, 0, imageWidth, imageHeight, true);
-
+  //// setup camera position
+  //Pose3f pose = sensor->physicalObject->poseInWorld;
+  //pose.conc(sensor->offset);
+  //static const RotationMatrix cameraRotation = (Matrix3f() << Vector3f(0.f, -1.f, 0.f), Vector3f(0.f, 0.f, 1.f), Vector3f(-1.f, 0.f, 0.f)).finished();
+  //pose.rotate(cameraRotation);
+  //Matrix4f transformation;
+  //OpenGLTools::convertTransformation(pose.invert(), transformation);
 
   // draw all objects
   Gum::Window::CurrentlyBoundWindow->getContext()->bind();
@@ -102,76 +122,11 @@ void CameraSensor::Sensor::updateValue()
   // read frame buffer
   camera->renderer->getHighDynamicRange()->getFramebuffer()->readPixelData(imageBuffer, ivec2(0,0), ivec2(imageWidth, imageHeight), Gum::Graphics::Pixelformat::RGB);
   data.byteArray = imageBuffer;
+  lastSimulationStep = Simulation::simulation->simulationStep;
 }
 
 bool CameraSensor::Sensor::renderCameraImages(SimRobotCore3::SensorPort** cameras, unsigned int count)
 {
-  if(lastSimulationStep == Simulation::simulation->simulationStep)
-    return true;
-
-  std::cout << "rendering camera" << std::endl;
-
-  // allocate buffer
-  /*const unsigned int imageWidth = camera->imageWidth;
-  const unsigned int imageHeight = camera->imageHeight;
-  const unsigned int imageSize = imageWidth * imageHeight * 3;
-  int imagesOfCurrentSize = 0;
-  for(unsigned int i = 0; i < count; ++i)
-  {
-    CameraSensor::Sensor* sensor = static_cast<CameraSensor::Sensor*>(cameras[i]);
-    if(sensor && sensor->lastSimulationStep != Simulation::simulation->simulationStep &&
-       sensor->camera->imageWidth == imageWidth && sensor->camera->imageHeight == imageHeight)
-      ++imagesOfCurrentSize;
-  }
-  const unsigned int multiImageBufferSize = imageSize * imagesOfCurrentSize;
-
-  if(imageBufferSize < multiImageBufferSize)
-  {
-    if(imageBuffer)
-      delete[] imageBuffer;
-    imageBuffer = new unsigned char[multiImageBufferSize];
-    imageBufferSize = multiImageBufferSize;
-  }
-
-  bGraphicsContext& graphicsContext = Simulation::simulation->graphicsContext;
-  graphicsContext.makeCurrent(imageWidth, imageHeight * count);
-  graphicsContext.updateModelMatrices(bGraphicsContext::ModelMatrix::appearance, false);
-
-  // render images
-  int currentHorizontalPos = 0;
-  unsigned char* currentBufferPos = imageBuffer;
-  for(unsigned int i = 0; i < count; ++i)
-  {
-    CameraSensor::Sensor* sensor = static_cast<CameraSensor::Sensor*>(cameras[i]);
-    if(sensor && sensor->lastSimulationStep != Simulation::simulation->simulationStep &&
-       sensor->camera->imageWidth == imageWidth && sensor->camera->imageHeight == imageHeight)
-    {
-      // setup camera position
-      Pose3f pose = sensor->physicalObject->poseInWorld;
-      pose.conc(sensor->offset);
-      static const RotationMatrix cameraRotation = (Matrix3f() << Vector3f(0.f, -1.f, 0.f), Vector3f(0.f, 0.f, 1.f), Vector3f(-1.f, 0.f, 0.f)).finished();
-      pose.rotate(cameraRotation);
-      Matrix4f transformation;
-      OpenGLTools::convertTransformation(pose.invert(), transformation);
-
-      graphicsContext.startColorRendering(sensor->projection, transformation, 0, currentHorizontalPos, imageWidth, imageHeight, !currentHorizontalPos);
-
-      // draw all objects
-      //TODO
-      //Simulation::simulation->scene->drawAppearances(graphicsContext);
-
-      graphicsContext.finishRendering();
-
-      sensor->data.byteArray = currentBufferPos;
-      sensor->lastSimulationStep = Simulation::simulation->simulationStep;
-
-      currentHorizontalPos += imageHeight;
-      currentBufferPos += imageSize;
-    }
-  }
-
-  // read frame buffer
-  graphicsContext.finishImageRendering(imageBuffer, imageWidth, currentHorizontalPos);*/
   return true;
 }
 
@@ -179,4 +134,14 @@ void CameraSensor::drawPhysics() const
 {
   pyramid->render();
   ::Sensor::drawPhysics();
+}
+
+
+void CameraSensor::updateTransformation()
+{
+  calcTransformationMatrix();
+  pyramid->getInstance()->setMatrix(worldTransformation.getMatrix());
+  pyramid->applyTransformationMatrix(pyramid->getInstance());
+
+  ::PhysicalObject::updateTransformation();
 }

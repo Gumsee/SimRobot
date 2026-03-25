@@ -56,7 +56,7 @@ private:
   } outputPort;
 
   /** Registers this object with children, actuators and sensors at SimRobot's GUI */
-  void registerObjects() override;
+  void registerObjects(int level) override;
 
   // API
   const QString& getFullName() const override {return SimObject::getFullName();}

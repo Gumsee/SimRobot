@@ -34,7 +34,7 @@ void ServoMotor::create(Joint* joint)
 
   mjsActuator* actuator = mjs_addActuator(Simulation::simulation->spec, nullptr);
 
-  mjs_setName(actuator->element, name.c_str());
+  mjs_setName(actuator->element, mujocoName.c_str());
   actuator->gaintype = mjGAIN_FIXED;
   actuator->gainprm[0] = 1.f;
   actuator->biastype = mjBIAS_NONE;
@@ -42,7 +42,7 @@ void ServoMotor::create(Joint* joint)
   actuator->trntype = mjTRN_JOINT;
   actuator->gear[0] = 1.f;
 
-  mjs_setString(actuator->target, joint->name.c_str());
+  mjs_setString(actuator->target, joint->mujocoName.c_str());
 
   actuator->ctrllimited = mjLIMITED_TRUE;
   actuator->ctrlrange[0] = -maxForce;
@@ -197,7 +197,7 @@ bool ServoMotor::VelocitySensor::getMinAndMax(float& min, float& max) const
   return true;
 }
 
-void ServoMotor::registerObjects()
+void ServoMotor::registerObjects(int level)
 {
   if(Simulation::simulation->model->jnt_type[joint->id] == mjJNT_HINGE)
   {

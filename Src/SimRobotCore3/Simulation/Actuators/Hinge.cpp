@@ -24,7 +24,6 @@ Hinge::Hinge(const std::string& name)
 
 void Hinge::createPhysicsInternal()
 {
-  Joint::createPhysicsInternal();
   ASSERT(axis);
 
   axis->create();
@@ -39,14 +38,20 @@ void Hinge::createPhysicsInternal()
 
   //std::cout << "Attaching hinge between " << parentBody->name << " and " << childBody->name << " with offset " << (*axis * Gum::Maths::toDegree(axis->deflection->offset)).toString() << std::endl;
 
-  //axis->deflection->offset = 0;
-  //if(axis->deflection && axis->deflection->offset != 0.f)
-  //{
-  //  relativeTransformation.setRotation(vec3(axis->x, axis->y, axis->z) * Gum::Maths::toDegree(axis->deflection->offset));
-  //  calcTransformationMatrix();
-  //}
+  //std::cout << name << " " << worldTransformation.getRotation().toString() << " * " << fquat::toQuaternion(vec3(axis->x, axis->y, axis->z) * Gum::Maths::toDegree(axis->deflection->offset)).toString() << " = "; 
 
-  std::cout << name << " after: \n" << fquat::toEuler(worldTransformation.getRotation()).toString() << std::endl;
+  //axis->deflection->offset = 0;
+  if(axis->deflection && axis->deflection->offset != 0.f)
+  {
+    worldTransformation.increaseRotation(fquat::toQuaternion(vec3(axis->x, axis->y, axis->z) * Gum::Maths::toDegree(axis->deflection->offset)));
+    //calcTransformationMatrix();
+  }
+
+  //std::cout << worldTransformation.getRotation().toString() << std::endl;
+  
+  Joint::createPhysicsInternal();
+
+  //std::cout << name << " after: \n" << fquat::toEuler(worldTransformation.getRotation()).toString() << std::endl;
 
   childBody->parentBody = parentBody;
   childBody->createPhysics(true);
@@ -55,17 +60,20 @@ void Hinge::createPhysicsInternal()
   //std::cout << name << " relpos: " << childBody->relativeTransformation.getPosition().toString() << std::endl;
   
   mjsJoint* joint = mjs_addJoint(childBody->body, nullptr);
-  mjs_setName(joint->element, name.c_str());
+  mjs_setName(joint->element, mujocoName.c_str());
   joint->type = mjJNT_HINGE;
 
   //vec3 positionInChild = childBody->relativeTransformation.getPosition();
   vec3 positionInChild = Gum::Maths::inverseTransformationMatrix(childBody->worldTransformation.getMatrix()) * vec4(worldTransformation.getPosition(), 1.0f);
   vec3 axisInChild = mat3::transpose(mat3(childBody->worldTransformation.getMatrix())) * mat3(worldTransformation.getMatrix()) * (vec3)*axis;
   //vec3 axisInChild = Gum::Maths::rotateMatrix(childBody->relativeTransformation.getRotation()) * vec4(*axis, 1.0f);
-  std::cout << name << " after: " << fquat::toEuler(worldTransformation.getRotation()).toString() << " " << axisInChild.toString() << std::endl;
+  std::cout << name << " axis: " << positionInChild.toString() << std::endl;
 
   mju_f2n(joint->pos, positionInChild.data(), 3);
   mju_f2n(joint->axis, axisInChild.data(), 3);
+
+  //std::cout << name << " " << parentBody->worldTransformation.getRotation().toString() << " " << worldTransformation.getRotation().toString() << " " << fquat::toQuaternion(vec3(axis->x, axis->y, axis->z) * Gum::Maths::toDegree(axis->deflection->offset)).toString() << std::endl; 
+  //" " << worldTransformation.getPosition().toString() << std::endl;
 
   //joint->damping = 0.9f;
 
@@ -75,7 +83,7 @@ void Hinge::createPhysicsInternal()
     joint->limited = mjLIMITED_TRUE;
     joint->range[0] = axis->deflection->min;
     joint->range[1] = axis->deflection->max;
-    //joint->ref = axis->deflection->offset;
+    joint->ref = axis->deflection->offset;
   }
 
   // create motor

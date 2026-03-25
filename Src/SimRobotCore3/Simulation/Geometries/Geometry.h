@@ -47,7 +47,6 @@ public:
 
   mjsGeom* geom = nullptr;
   Object3D* obj = nullptr;
-  ::color color; /**< A color for drawing the geometry */
   Material* material = nullptr; /**< The material the surface of the geometry is made of */
   std::list<SimRobotCore3::CollisionCallback*>* collisionCallbacks = nullptr; /**< Collision callback functions registered by another SimRobot module */
   inline static unsigned int contactPoints = 0U;

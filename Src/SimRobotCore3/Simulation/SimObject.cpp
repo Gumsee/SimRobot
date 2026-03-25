@@ -20,7 +20,13 @@
 SimObject::SimObject(const std::string& name)
   : name(name)
 {
-  loadedObjects[name] = this;
+  unsigned int counter = 0;
+  std::string suffix = "";
+  while(Tools::mapHasKey(loadedObjects, name+suffix))
+    suffix = std::to_string(counter++);
+    
+  mujocoName = name+suffix;
+  loadedObjects[mujocoName] = this;
 }
 
 SimObject::~SimObject()
@@ -29,15 +35,7 @@ SimObject::~SimObject()
 
 std::string SimObject::findAvailableName(std::string name, const std::string& defaultvalue)
 {
-  if(name.empty())
-    name = defaultvalue;
-
-  unsigned int counter = 0;
-  std::string suffix = "";
-  while(Tools::mapHasKey(loadedObjects, name+suffix))
-    suffix = std::to_string(counter++);
-    
-  return name+suffix;
+  return name.empty() ? defaultvalue : name;
 }
 
 void SimObject::addParent(Element& parent)
@@ -47,7 +45,16 @@ void SimObject::addParent(Element& parent)
     this->parent->children.push_back(this);
 }
 
-void SimObject::registerObjects()
+std::string getLevel(int level)
+{
+  std::string ret = "";
+  for(unsigned int i = 0; i < level; i++)
+    ret += "  ";
+
+  return ret;
+}
+
+void SimObject::registerObjects(int level)
 {
   for(SimObject* simObject : children)
   {
@@ -67,9 +74,10 @@ void SimObject::registerObjects()
     else
       simObject->fullName = fullName + "." + simObject->name.c_str();
 
-    //std::cout << "registering " << simObject->name << " " << simObject->fullName.toStdString() << std::endl;
+    //std::cout << getLevel(level) << simObject->mujocoName << " " << simObject->fullName.toStdString() << std::endl;
+    std::cout << getLevel(level) << simObject->mujocoName << " " << simObject->worldTransformation.getRotation().toString() << std::endl;
     CoreModule::application->registerObject(*CoreModule::module, dynamic_cast<SimRobot::Object&>(*simObject), dynamic_cast<SimRobot::Object*>(this));
-    simObject->registerObjects();
+    simObject->registerObjects(level + 1);
   }
 }
 

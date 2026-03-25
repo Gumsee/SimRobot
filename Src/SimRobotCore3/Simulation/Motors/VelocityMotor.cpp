@@ -38,7 +38,7 @@ void VelocityMotor::create(Joint* joint)
 
   // This actually configures a P-controller for velocity.
   static const float gain = 0.2f;
-  mjs_setName(actuator->element, name.c_str());
+  mjs_setName(actuator->element, mujocoName.c_str());
   actuator->gaintype = mjGAIN_FIXED;
   actuator->gainprm[0] = gain;
   actuator->biastype = mjBIAS_AFFINE;
@@ -48,7 +48,7 @@ void VelocityMotor::create(Joint* joint)
   actuator->dyntype = mjDYN_NONE;
   actuator->trntype = mjTRN_JOINT;
   actuator->gear[0] = 1.f;
-  mjs_setString(actuator->target, joint->name.c_str());
+  mjs_setString(actuator->target, joint->mujocoName.c_str());
 
   actuator->ctrllimited = mjLIMITED_TRUE;
   actuator->ctrlrange[0] = -maxVelocity;
@@ -114,7 +114,7 @@ bool VelocityMotor::VelocitySensor::getMinAndMax(float& min, float& max) const
   return true;
 }
 
-void VelocityMotor::registerObjects()
+void VelocityMotor::registerObjects(int level)
 {
   if(Simulation::simulation->model->jnt_type[joint->id] == mjJNT_HINGE)
   {

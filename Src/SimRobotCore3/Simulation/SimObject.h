@@ -27,7 +27,7 @@ public:
   Transformable3D relativeTransformation; /**< The initial offset relative transformation to the origin of the parent object */
   Transformable3D worldTransformation; /**< The absolute pose of the object */
   QString fullName; /**< The path name to the object in the scene graph */
-  std::string name; /**< The name of the scene graph object (without path) */
+  std::string name, mujocoName; /**< The name of the scene graph object (without path) */
   std::list<SimObject*> children; /**< List of subordinate scene graph objects */
   SimObject* parent = nullptr;
   inline static std::unordered_map<std::string, SimObject*> loadedObjects;
@@ -37,7 +37,7 @@ public:
   ~SimObject();
 
   /** Registers this object with children, actuators and sensors at SimRobot's GUI */
-  virtual void registerObjects();
+  virtual void registerObjects(int level = 0);
 
   void calcTransformationMatrix();
 

@@ -93,7 +93,7 @@ bool PT2Motor::PositionSensor::getMinAndMax(float& min, float& max) const
   return false;
 }
 
-void PT2Motor::registerObjects()
+void PT2Motor::registerObjects(int level)
 {
   positionSensor.unit = unit = QString::fromUtf8("°");
   positionSensor.fullName = joint->fullName + ".position";

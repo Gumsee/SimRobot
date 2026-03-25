@@ -28,7 +28,7 @@ class Scene : public PhysicalObject, public GraphicalObject, public SimRobotCore
 public:
 
   std::string controller; /**< The name of the controller library. */
-  color color; /**< The background (clear color) */
+  ::color backgroundcolor; /**< The background (clear color) */
   float stepLength; /**< The length of a simulation step */
   float gravity; /**< The gravity in the simulated world */
   int contactMode = 0; /**< The default contact mode for contacts between bodies. TODO unused */

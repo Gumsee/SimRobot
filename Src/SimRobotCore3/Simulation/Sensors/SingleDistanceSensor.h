@@ -51,7 +51,7 @@ private:
   void createPhysicsInternal() override;
 
   /** Registers this object with children, actuators and sensors at SimRobot's GUI */
-  void registerObjects() override;
+  void registerObjects(int level) override;
 
   /**
    * Registers an element as parent

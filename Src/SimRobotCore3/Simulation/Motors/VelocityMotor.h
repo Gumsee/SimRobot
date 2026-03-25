@@ -64,7 +64,7 @@ private:
   void act() override;
 
   /** Registers this object at SimRobot's GUI */
-  void registerObjects() override;
+  void registerObjects(int level) override;
 
   // actuator API
   void setValue(float value) override;

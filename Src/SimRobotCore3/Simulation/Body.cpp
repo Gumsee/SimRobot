@@ -16,7 +16,8 @@
 
 Body::Body(const std::string& name)
   : ::PhysicalObject(mjOBJ_BODY, findAvailableName(name, "Body"))
-{}
+{
+}
 
 void Body::addParent(Element& element)
 {
@@ -57,7 +58,7 @@ void Body::createPhysicsInternal()
     }
   }
 
-  mjs_setName(body->element, name.c_str());
+  mjs_setName(body->element, mujocoName.c_str());
 
   // add masses
   for(SimObject* iter : children)

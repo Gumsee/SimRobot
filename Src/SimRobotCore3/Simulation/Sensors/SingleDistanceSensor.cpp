@@ -15,6 +15,7 @@ SingleDistanceSensor::SingleDistanceSensor(const std::string& name)
   sensor.sensorType = SimRobotCore3::SensorPort::floatSensor;
   sensor.unit = "m";
   sensor.name = this->name;
+  sensor.mujocoName = this->mujocoName;
 }
 
 void SingleDistanceSensor::createPhysicsInternal()
@@ -30,18 +31,15 @@ void SingleDistanceSensor::createPhysicsInternal()
   instance->setMatrix(worldTransformation.getMatrix());
   ray->applyTransformationMatrix(instance);
 
-  //TODO
-  //ASSERT(!surface);
-  //static const float color[] = {0.5f, 0.f, 0.f, 1.f};
-  //surface = graphicsContext.requestSurface(color, color);
+  color = rgba(128.5f, 0.0f, 0.0f, 255.0f);
 }
 
-void SingleDistanceSensor::registerObjects()
+void SingleDistanceSensor::registerObjects(int level)
 {
   sensor.fullName = fullName + ".distance";
   CoreModule::application->registerObject(*CoreModule::module, sensor, this);
 
-  Sensor::registerObjects();
+  Sensor::registerObjects(level);
 }
 
 void SingleDistanceSensor::addParent(Element& element)
@@ -66,14 +64,10 @@ void SingleDistanceSensor::DistanceSensor::updateValue()
 
   const float dist = static_cast<float>(mj_ray(Simulation::simulation->model, Simulation::simulation->data, origin, dir, nullptr, 1, -1, nullptr));
   
-  if(dist < 0.f)
-    data.floatValue = max;
-  else if(dist < min)
-    data.floatValue = min;
-  else if(dist > max)
-    data.floatValue = max;
-  else
-    data.floatValue = dist;
+  if(dist < 0.f)      data.floatValue = max;
+  else if(dist < min) data.floatValue = min;
+  else if(dist > max) data.floatValue = max;
+  else                data.floatValue = dist;
 }
 
 bool SingleDistanceSensor::DistanceSensor::getMinAndMax(float& min, float& max) const
@@ -85,6 +79,7 @@ bool SingleDistanceSensor::DistanceSensor::getMinAndMax(float& min, float& max) 
 
 void SingleDistanceSensor::drawPhysics() const
 {
+  Simulation::simulation->forwardRenderingShader->loadUniform("color", color.getGLColor());
   ray->render();
   Sensor::drawPhysics();
 }

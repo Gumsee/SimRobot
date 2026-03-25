@@ -58,7 +58,7 @@ void PhysicalObject::createPhysics(bool withchildren)
 void PhysicalObject::createIDs()
 {
   if(type != mjOBJ_UNKNOWN)
-    id = mj_name2id(Simulation::simulation->model, type, name.c_str());
+    id = mj_name2id(Simulation::simulation->model, type, mujocoName.c_str());
 
   //std::cout << name << " " << id << std::endl;
   for(PhysicalObject* object : physicalChildren)

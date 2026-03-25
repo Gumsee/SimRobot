@@ -24,6 +24,7 @@ DepthImageSensor::DepthImageSensor(const std::string& name)
   sensor.renderBuffer = nullptr;
   sensor.lut = nullptr;
   sensor.name = this->name;
+  sensor.mujocoName = this->mujocoName;
 }
 
 DepthImageSensor::~DepthImageSensor()
@@ -188,12 +189,12 @@ void DepthImageSensor::addParent(Element& element)
   Sensor::addParent(element);
 }
 
-void DepthImageSensor::registerObjects()
+void DepthImageSensor::registerObjects(int level)
 {
   sensor.fullName = fullName + ".image";
   CoreModule::application->registerObject(*CoreModule::module, sensor, this);
 
-  Sensor::registerObjects();
+  Sensor::registerObjects(level);
 }
 
 void DepthImageSensor::DistanceSensor::updateValue()

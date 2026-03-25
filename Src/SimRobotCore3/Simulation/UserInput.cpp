@@ -48,7 +48,7 @@ SimRobot::Widget* UserInput::OutputPort::createWidget()
   return new SensorWidget(this);
 }
 
-void UserInput::registerObjects()
+void UserInput::registerObjects(int level)
 {
   inputPort.data.floatValue = inputPort.defaultValue;
   inputPort.fullName = fullName + ".value";

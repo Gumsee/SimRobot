@@ -13,6 +13,7 @@
 #include "Simulation/Axis.h"
 #include "Simulation/Motors/Motor.h"
 #include <cmath>
+#include <Simulation/Simulation.h>
 
 Joint::Joint(const std::string& name)
   : Actuator(findAvailableName(name, "Joint"))
@@ -34,14 +35,12 @@ void Joint::createPhysicsInternal()
   instance->setMatrix(worldTransformation.getMatrix());
   sphere->applyTransformationMatrix(instance);
 
-  //TODO
-  //ASSERT(!surface);
-  //const float color[] = {std::abs(axis->x), std::abs(axis->y), std::abs(axis->z), 1.f};
-  //surface = graphicsContext.requestSurface(color, color);
+  color = rgba(std::abs(axis->x) * 255.0f, std::abs(axis->y) * 255.0f, std::abs(axis->z) * 255.0f, 255.0f);
 }
 
 void Joint::drawPhysics() const
 {
+  Simulation::simulation->forwardRenderingShader->loadUniform("color", color.getGLColor());
   axisLine->render();
   sphere->render();
 
@@ -55,14 +54,14 @@ void Joint::createIDs()
 
   ::PhysicalObject::createIDs();
 }
-void Joint::registerObjects()
+void Joint::registerObjects(int level)
 {
   // add sensors and actuators
   if(axis->motor)
-    axis->motor->registerObjects();
+    axis->motor->registerObjects(level);
 
   // add children
-  ::PhysicalObject::registerObjects();
+  ::PhysicalObject::registerObjects(level);
 }
 
 void Joint::updateTransformation()

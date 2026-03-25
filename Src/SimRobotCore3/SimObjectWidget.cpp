@@ -20,8 +20,6 @@
 #include "Simulation/Scene.h"
 #include "Graphics/PhysicsRenderer.h"
 
-//#include <QOpenGLContext>
-#include <QOpenGLFramebufferObject>
 #include <gum-engine.h>
 #include <Engine/PostProcessing/PostProcessing.h>
 #include <Engine/Material/MaterialManager.h>
@@ -41,6 +39,7 @@ SimObjectWidget::SimObjectWidget(SimObject& simObject) : QOpenGLWidget(),
 {
   pGLContext = new GraphicsContext(this->context(), Gum::Window::CurrentlyBoundWindow->getContext()->getNativeHandle(), nullptr, Gum::DefaultContextConfig);
 
+  //setMouseTracking(true);
   setFocusPolicy(Qt::StrongFocus);
   grabGesture(Qt::PinchGesture);
 
@@ -72,14 +71,14 @@ SimObjectWidget::SimObjectWidget(SimObject& simObject) : QOpenGLWidget(),
 
 
   oMouse.onPress([this](int btn, int mod) {
-    oMouse.reset();
     if(btn & (GUM_MOUSE_BUTTON_LEFT | GUM_MOUSE_BUTTON_MIDDLE))
     {
+      //std::cout << (btn & (GUM_MOUSE_BUTTON_LEFT | GUM_MOUSE_BUTTON_MIDDLE)) << oMouse.getDelta().toString() << std::endl;
       const Qt::KeyboardModifiers m = QApplication::keyboardModifiers();
       if(objectRenderer.startDrag(oMouse.getPosition().x, oMouse.getPosition().y, m & Qt::ShiftModifier ? (m & Qt::ControlModifier ? SimObjectRenderer::dragRotateWorld : SimObjectRenderer::dragRotate) : (m & Qt::ControlModifier ? SimObjectRenderer::dragNormalObject : SimObjectRenderer::dragNormal)))
       {
-        update();
       }
+      update();
     }
   });
 
@@ -126,7 +125,7 @@ SimObjectWidget::SimObjectWidget(SimObject& simObject) : QOpenGLWidget(),
   //QTimer *timer = new QTimer(this);
   //connect(timer, &QTimer::timeout, this, QOverload<>::of(&SimObjectWidget::update));
   //timer->start(16);
-  connect(this, &QOpenGLWidget::frameSwapped, this, QOverload<>::of(&SimObjectWidget::update));
+  //connect(this, &QOpenGLWidget::frameSwapped, this, QOverload<>::of(&SimObjectWidget::update));
 }
 
 SimObjectWidget::~SimObjectWidget()
@@ -192,7 +191,7 @@ void SimObjectWidget::initializeGL()
 
   Framebuffer::DefaultFramebufferID = this->defaultFramebufferObject();
   pContextFramebuffer = new Framebuffer(pRenderCanvas->getSize(), true, Framebuffer::DefaultFramebufferID);
-  pContextFramebuffer->setClearColor(Simulation::simulation->scene->color);
+  pContextFramebuffer->setClearColor(Simulation::simulation->scene->backgroundcolor);
   isSceneWidget = object.getKind() == SimRobotCore3::Kind::scene;
 
   if(isSceneWidget)
@@ -268,7 +267,6 @@ void SimObjectWidget::paintGL()
   pRenderCanvas->getTexture()->unbind(0);
   pShader->unuse();
 
-  oMouse.reset();
   if(isSceneWidget)
   {
     Time::update();
@@ -294,6 +292,7 @@ void SimObjectWidget::update()
   QOpenGLWidget::update();
   pMainCamera->update();
   pMainRenderer->update();
+  oMouse.reset();
 }
 
 void SimObjectWidget::bindFramebuffer()
@@ -564,35 +563,36 @@ void SimObjectWidget::copy()
 void SimObjectWidget::exportAsImage(int width, int height)
 {
   QSettings& settings = CoreModule::application->getSettings();
-  QString fileName = QFileDialog::getSaveFileName(this,
-                                                  tr("Export as Image"), settings.value("ExportDirectory", "").toString(), tr("Portable Network Graphic (*.png)")
+  QString fileName = QFileDialog::getSaveFileName(
+    this, tr("Export as Image"), settings.value("ExportDirectory", "").toString(), tr("Portable Network Graphic (*.png)")
 #if defined LINUX && defined QT_VERSION && QT_VERSION < QT_VERSION_CHECK(6, 6, 0)
-                                                  , nullptr, QFileDialog::DontUseNativeDialog
+    , nullptr, QFileDialog::DontUseNativeDialog
 #endif
-                                                  );
+  );
   if(fileName.isEmpty())
     return;
   settings.setValue("ExportDirectory", QFileInfo(fileName).dir().path());
 
-  QImage image;
-  {
-    unsigned int winWidth, winHeight;
-    objectRenderer.getSize(winWidth, winHeight);
-    makeCurrent();
+  // allocate buffer
+  const unsigned int imageSize = width * height * 3;
+  unsigned char* imageBuffer = new unsigned char[imageSize];
 
-    // render object using a temporary framebuffer
-    //TODO
-    QOpenGLFramebufferObject framebuffer(width, height, QOpenGLFramebufferObject::Depth);
-    framebuffer.bind();
-    objectRenderer.resize(fovY, width, height);
-    objectRenderer.draw();
-    image = framebuffer.toImage();
-    framebuffer.release();
+  ivec2 oldSize = pRenderCanvas->getSize();
+  resizeGL(width, height);
+  bindFramebuffer();
 
-    objectRenderer.resize(fovY, winWidth, winHeight);
-  }
+  pMainRenderer->render();
+  pMainRenderer->getHighDynamicRange()->getFramebuffer()->readPixelData(imageBuffer, ivec2(0,0), ivec2(width, height), Gum::Graphics::Pixelformat::RGB);
 
-  image.save(fileName);
+  QImage image(&imageBuffer[0], width, height, QImage::Format_RGB888);
+  //image.mirror();
+  if(!image.save(fileName))
+    Gum::Output::error("Failed to save image to file " + fileName.toStdString());
+
+  resizeGL(oldSize.x, oldSize.y);
+  bindFramebuffer();
+
+  Gum::_delete(imageBuffer);
 }
 
 void SimObjectWidget::setSurfaceShadeMode(int style)

@@ -14,6 +14,7 @@ CollisionSensor::CollisionSensor(const std::string& name)
 {
   sensor.sensorType = SimRobotCore3::SensorPort::boolSensor;
   sensor.name = this->name;
+  sensor.mujocoName = this->mujocoName;
 }
 
 void CollisionSensor::createPhysicsInternal()
@@ -48,12 +49,12 @@ void CollisionSensor::registerCollisionCallback(std::list<::PhysicalObject*>& ge
   }
 }
 
-void CollisionSensor::registerObjects()
+void CollisionSensor::registerObjects(int level)
 {
   sensor.fullName = fullName + ".contact";
   CoreModule::application->registerObject(*CoreModule::module, sensor, this);
 
-  Sensor::registerObjects();
+  Sensor::registerObjects(level);
 }
 
 void CollisionSensor::CollisionSensorPort::updateValue()

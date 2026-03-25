@@ -42,7 +42,7 @@ void Slider::createPhysicsInternal()
   childBody->createPhysics();
 
   mjsJoint* joint = mjs_addJoint(childBody->body, nullptr);
-  mjs_setName(joint->element, name.c_str());
+  mjs_setName(joint->element, mujocoName.c_str());
   joint->type = mjJNT_SLIDE;
 
   vec3 positionInChild = Gum::Maths::inverseTransformationMatrix(childBody->worldTransformation.getMatrix()) * vec4(worldTransformation.getPosition(), 1.0f);

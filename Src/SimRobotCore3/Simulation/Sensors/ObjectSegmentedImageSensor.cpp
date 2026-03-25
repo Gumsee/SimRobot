@@ -44,6 +44,7 @@ ObjectSegmentedImageSensor::ObjectSegmentedImageSensor(const std::string& name)
   sensor.imageBuffer = nullptr;
   sensor.imageBufferSize = 0;
   sensor.name = this->name;
+  sensor.mujocoName = this->mujocoName;
 }
 
 ObjectSegmentedImageSensor::~ObjectSegmentedImageSensor()
@@ -87,12 +88,12 @@ void ObjectSegmentedImageSensor::addParent(Element& element)
   Sensor::addParent(element);
 }
 
-void ObjectSegmentedImageSensor::registerObjects()
+void ObjectSegmentedImageSensor::registerObjects(int level)
 {
   sensor.fullName = fullName + ".image";
   CoreModule::application->registerObject(*CoreModule::module, sensor, this);
 
-  Sensor::registerObjects();
+  Sensor::registerObjects(level);
 }
 
 void ObjectSegmentedImageSensor::ObjectSegmentedImageSensorPort::updateValue()
