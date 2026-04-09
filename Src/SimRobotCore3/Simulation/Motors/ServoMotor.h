@@ -87,7 +87,7 @@ private:
     float executionTimestamp = 0.f;
   };
 
-  NextTargets* target;
+  NextTargets* target = nullptr;
   unsigned targetSize = 1;
   unsigned index = 0;
   NextTargets lastExecutedSetpoint;

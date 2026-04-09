@@ -40,7 +40,7 @@ public:
    * @param projection Pointer to a column-major 4x4 projection matrix
    * @param view Pointer to a column-major 4x4 view matrix
    */
-  void beforeControllerDrawings(const float* projection, const float* view) const;
+  void beforeControllerDrawings(const float* projection, const float* view);
 
   /** Finish a frame of controller drawings for this graphical object (and children) */
   void afterControllerDrawings() const;

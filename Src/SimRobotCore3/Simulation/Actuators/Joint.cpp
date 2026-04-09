@@ -26,13 +26,13 @@ void Joint::createPhysicsInternal()
   axisLine->getVertexArrayObject()->setPrimitiveType(VertexArrayObject::PrimitiveTypes::LINE_STRIP);
   axisLine->getVertexArrayObject()->setVertexCount(2);
   Object3DInstance* instance = axisLine->addInstance();
-  instance->setMatrix(worldTransformation.getMatrix());
+  instance->setMatrix(getMatrix());
   axisLine->applyTransformationMatrix(instance);
 
   ASSERT(!sphere);
   sphere = new Object3D(Mesh::generateSphere(0.002f, 10, 10), "JointSphere");
   instance = sphere->addInstance();
-  instance->setMatrix(worldTransformation.getMatrix());
+  instance->setMatrix(getMatrix());
   sphere->applyTransformationMatrix(instance);
 
   color = rgba(std::abs(axis->x) * 255.0f, std::abs(axis->y) * 255.0f, std::abs(axis->z) * 255.0f, 255.0f);
@@ -40,7 +40,7 @@ void Joint::createPhysicsInternal()
 
 void Joint::drawPhysics() const
 {
-  Simulation::simulation->forwardRenderingShader->loadUniform("color", color.getGLColor());
+  Simulation::simulation->forwardRenderingShader->loadUniform("color", color);
   axisLine->render();
   sphere->render();
 
@@ -67,10 +67,10 @@ void Joint::registerObjects(int level)
 void Joint::updateTransformation()
 {
   calcTransformationMatrix();
-  axisLine->getInstance()->setMatrix(worldTransformation.getMatrix());
+  axisLine->getInstance()->setMatrix(getMatrix());
   axisLine->applyTransformationMatrix(axisLine->getInstance());
 
-  sphere->getInstance()->setMatrix(worldTransformation.getMatrix());
+  sphere->getInstance()->setMatrix(getMatrix());
   sphere->applyTransformationMatrix(sphere->getInstance());
 
   ::PhysicalObject::updateTransformation();

@@ -7,7 +7,6 @@
 #include "Actuator.h"
 #include "ActuatorsWidget.h"
 #include "CoreModule.h"
-#include "Graphics/bGraphicsContext.h"
 
 Actuator::Actuator(const std::string& name)
   : ::PhysicalObject(mjOBJ_JOINT, findAvailableName(name, "Actuator"))

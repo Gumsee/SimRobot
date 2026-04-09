@@ -9,12 +9,13 @@
 #include <QOpenGLWidget>
 
 #include "SimRobotCore3.h"
-#include "SimObjectRenderer.h"
 #include <Desktop/GraphicsContext.h>
 #include <Desktop/Window.h>
 #include <Engine/3D/Camera3D.h>
 #include <Engine/3D/Renderer3D.h>
 #include <Engine/3D/World3D.h>
+#include "Graphics/PhysicsRenderer.h"
+#include "Simulation/Body.h"
 
 
 class SimObject;
@@ -24,7 +25,7 @@ class Simulation;
  * @class SimObjectWidget
  * A class that implements the 3D-view for simulated objects
  */
-class SimObjectWidget : public QOpenGLWidget, public SimRobot::Widget
+class SimObjectWidget : public QOpenGLWidget, public SimRobot::Widget, public SimRobotCore3::Renderer
 {
   Q_OBJECT
 
@@ -39,22 +40,34 @@ public:
   ~SimObjectWidget();
 
 private:
+  SimObject& simObject;
   const SimRobot::Object& object; /**< The object that should be displayed */
-  SimObjectRenderer objectRenderer; /**< For rendering the object */
   GraphicsContext* pGLContext;
   Framebuffer* pContextFramebuffer = nullptr;
-  Canvas* pRenderCanvas = nullptr;
-  Camera3D* pMainCamera = nullptr;
-  Renderer3D* pMainRenderer = nullptr;
+  Canvas* renderCanvas = nullptr;
+  Camera3D* camera = nullptr;
+  Renderer3D* renderer = nullptr;
   World3D* pWorld = nullptr;
   Gum::IO::Mouse oMouse;
+  Gum::IO::Keyboard oKeyboard;
+  PhysicsRenderer* physicsRenderer = nullptr;
+  ShadeMode appearanceShadeMode = ShadeMode::smoothShading;
+  ShadeMode controllerdrawingsShadeMode = ShadeMode::smoothShading;
+  unsigned int dragStartTime = 0;
+  bool dragRotate = false;
+  vec3 dragPlane = vec3(0,0,1);
+  vec3 dragStartPos;
+  DragAndDropMode dragMode = keepDynamics;
 	static inline ShaderProgram *pShader = nullptr;
-  SimRobotCore3::Renderer::ShadeMode physicsShadeMode = SimRobotCore3::Renderer::ShadeMode::flatShading;
 
-  int fovY;
-
-  bool wKey, aKey, sKey, dKey;
+  vec3 defaultCameraPos;
+  Body* clickedBody = nullptr;
+  Object3DInstance* clickedBodyRing = nullptr;
+  bool updateCamera = false;
+  bool updateZoomInNextFrame = false;
   bool isSceneWidget;
+  bool registeredAtManager = false;
+  unsigned int renderFlags = SimRobotCore3::Renderer::enableLights | SimRobotCore3::Renderer::enableTextures | SimRobotCore3::Renderer::enableMultisample;
 
   QWidget* getWidget() override {return this;}
   void update() override;
@@ -73,20 +86,15 @@ private:
   bool event(QEvent* event) override;
   void wheelEvent(QWheelEvent* event) override;
   void bindFramebuffer();
+  Body* selectObject(vec3 startpos, vec3 raydir);
   QSize sizeHint() const override {return QSize(320, 240);}
 
 private slots:
   void copy();
-  void setSurfaceShadeMode(int style);
-  void setPhysicsShadeMode(int style);
-  void setDrawingsShadeMode(int style);
   void setDrawingsOcclusion(int flag);
-  void setCameraMode(int mode);
-  void setFovY(int fovY);
-  void setDragPlane(int plane);
-  void setDragMode(int mode);
+  void setDragPlane(vec3 plane);
+  void setDragMode(DragAndDropMode mode);
   void resetCamera();
-  void toggleCameraMode();
   void toggleRenderFlag(int flag);
   void exportAsImage(int width, int height);
 };

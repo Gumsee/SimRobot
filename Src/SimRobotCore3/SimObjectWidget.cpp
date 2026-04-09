@@ -18,153 +18,269 @@
 #include "CoreModule.h"
 #include "Platform/Assert.h"
 #include "Simulation/Scene.h"
-#include "Graphics/PhysicsRenderer.h"
 
 #include <gum-engine.h>
 #include <Engine/PostProcessing/PostProcessing.h>
 #include <Engine/Material/MaterialManager.h>
 #include <gum-maths.h>
-#include <GL/glew.h>
-#include <QOpenGLContext>
 #include <QSurface>
 #include <Graphics/Graphics.h>
 #include <Engine/3D/Lightning/ShadowMapping/ShadowMapping.h>
-
-
 #include <mujoco/mujoco.h>
+#include <Platform/System.h>
 
 SimObjectWidget::SimObjectWidget(SimObject& simObject) : QOpenGLWidget(),
-  object(dynamic_cast<SimRobot::Object&>(simObject)), objectRenderer(simObject), oMouse(nullptr),
-  wKey(false), aKey(false), sKey(false), dKey(false)
+  simObject(simObject), object(dynamic_cast<SimRobot::Object&>(simObject)), oMouse(nullptr), oKeyboard(nullptr),
+  defaultCameraPos(1.5f, 0.0f, 0.0f)
 {
-  pGLContext = new GraphicsContext(this->context(), Gum::Window::CurrentlyBoundWindow->getContext()->getNativeHandle(), nullptr, Gum::DefaultContextConfig);
-
   //setMouseTracking(true);
   setFocusPolicy(Qt::StrongFocus);
   grabGesture(Qt::PinchGesture);
 
+  isSceneWidget = object.getKind() == SimRobotCore3::Kind::scene;
+
+  pGLContext = new GraphicsContext(this->context(), Gum::Window::CurrentlyBoundWindow->getContext()->getNativeHandle(), nullptr, Gum::DefaultContextConfig);
+
+  camera = new Camera3D(ivec2(0,0), nullptr);
+  camera->setWorldUpDirection(vec3(0,0,1));
+  camera->setMode(Camera3D::Modes::THIRDPERSON_WITH_DRAGGING);
+  camera->setOffset(5.0f);
+  camera->setZoomSpeed(0.3f);
+  camera->makeActive();
+
+  if(isSceneWidget)
+  {
+    physicsRenderer = Simulation::simulation->scene->physicsRenderer;
+  }
+  else
+  {
+    switch(object.getKind())
+    {
+      case SimRobotCore3::Kind::geometry:
+      case SimRobotCore3::Kind::body:
+        physicsRenderer = new PhysicsRenderer(static_cast<const PhysicalObject*>(&simObject));
+        break;
+    }
+  }
+
   // load layout settings
   QSettings* settings = &CoreModule::application->getLayoutSettings();
   settings->beginGroup(object.getFullName());
-
-  objectRenderer.setSurfaceShadeMode(SimRobotCore3::Renderer::ShadeMode(settings->value("SurfaceShadeMode", int(objectRenderer.getSurfaceShadeMode())).toInt()));
-  objectRenderer.setPhysicsShadeMode(SimRobotCore3::Renderer::ShadeMode(settings->value("PhysicsShadeMode", int(objectRenderer.getPhysicsShadeMode())).toInt()));
-  objectRenderer.setDrawingsShadeMode(SimRobotCore3::Renderer::ShadeMode(settings->value("DrawingsShadeMode", int(objectRenderer.getDrawingsShadeMode())).toInt()));
-  objectRenderer.setCameraMode(SimRobotCore3::Renderer::CameraMode(settings->value("CameraMode", int(objectRenderer.getCameraMode())).toInt()));
-  fovY = settings->value("FovY", objectRenderer.getFovY()).toInt();
-  objectRenderer.setDragPlane(SimRobotCore3::Renderer::DragAndDropPlane(settings->value("DragPlane", int(objectRenderer.getDragPlane())).toInt()));
-  objectRenderer.setDragMode(SimRobotCore3::Renderer::DragAndDropMode(settings->value("DragMode", int(objectRenderer.getDragMode())).toInt()));
-  objectRenderer.setRenderFlags(settings->value("RenderFlags", objectRenderer.getRenderFlags()).toInt());
-
-  float pos[3];
-  float target[3];
-  objectRenderer.getCamera(pos, target);
-  pos[0] = settings->value("cameraPosX", pos[0]).toFloat();
-  pos[1] = settings->value("cameraPosY", pos[1]).toFloat();
-  pos[2] = settings->value("cameraPosZ", pos[2]).toFloat();
-  target[0] = settings->value("cameraTargetX", target[0]).toFloat();
-  target[1] = settings->value("cameraTargetY", target[1]).toFloat();
-  target[2] = settings->value("cameraTargetZ", target[2]).toFloat();
-  objectRenderer.setCamera(pos, target);
-
+  appearanceShadeMode = ShadeMode(settings->value("SurfaceShadeMode", int(appearanceShadeMode)).toInt());
+  controllerdrawingsShadeMode = ShadeMode(settings->value("DrawingsShadeMode", int(controllerdrawingsShadeMode)).toInt());
+  physicsRenderer->setShadeMode(ShadeMode(settings->value("PhysicsShadeMode", int(physicsRenderer->getShadeMode())).toInt()));
+  setDragPlane(Tools::StringToVec<float, 3>(settings->value("DragPlane").toString().toStdString(), vec3(0,0,1)));
+  setDragMode(DragAndDropMode(settings->value("DragMode", int(dragMode)).toInt()));
+  renderFlags = settings->value("RenderFlags", renderFlags).toInt();
+  camera->setFOV(settings->value("Fov", 40.0f).toFloat());
+  camera->setPosition(Tools::StringToVec<float, 3>(settings->value("cameraPos").toString().toStdString(), defaultCameraPos));
   settings->endGroup();
 
+  Simulation::simulation->originRenderer->enable(renderFlags & SimRobotCore3::Renderer::showCoordinateSystem);
 
-  oMouse.onPress([this](int btn, int mod) {
-    if(btn & (GUM_MOUSE_BUTTON_LEFT | GUM_MOUSE_BUTTON_MIDDLE))
+  oKeyboard.onKeyPress([this](int key, int mods) {
+    if(key == GUM_KEY_PAGE_UP || key == GUM_KEY_PLUS)
     {
-      //std::cout << (btn & (GUM_MOUSE_BUTTON_LEFT | GUM_MOUSE_BUTTON_MIDDLE)) << oMouse.getDelta().toString() << std::endl;
-      const Qt::KeyboardModifiers m = QApplication::keyboardModifiers();
-      if(objectRenderer.startDrag(oMouse.getPosition().x, oMouse.getPosition().y, m & Qt::ShiftModifier ? (m & Qt::ControlModifier ? SimObjectRenderer::dragRotateWorld : SimObjectRenderer::dragRotate) : (m & Qt::ControlModifier ? SimObjectRenderer::dragNormalObject : SimObjectRenderer::dragNormal)))
+      camera->increaseZoom(camera->getZoomSpeed() * -1.0f);
+      updateZoomInNextFrame = camera->updateZoom();
+    }
+    else if(key == GUM_KEY_PAGE_DOWN || key == GUM_KEY_MINUS)
+    {
+      camera->increaseZoom(camera->getZoomSpeed());
+      updateZoomInNextFrame = camera->updateZoom();
+    }
+  });
+
+  oMouse.onPress([this](int btn, int mods) {
+    resizeGL(width(), height());
+    if(btn & (GUM_MOUSE_BUTTON_LEFT))
+    {
+      if(mods & GUM_KEYBOARD_MOD_ALT)
       {
+        Object3DInstance* instance = pWorld->getObjectManager()->getInstanceByID(renderer->getIDUnderMouse());
+        if(instance != nullptr)
+        {
+          std::cout << instance->getID() << " "  << instance->getPosition().toString() << std::endl;
+        }
       }
+      else
+      {
+        clickedBody = selectObject(camera->getPosition(), camera->calcScreenRayDirection(oMouse.getPosition()));
+        if(clickedBody != nullptr)
+        {
+          dragRotate = mods & GUM_KEYBOARD_MOD_SHIFT;
+          if(!Physics::calcRayPlaneIntersection(camera->getPosition(), camera->calcScreenRayDirection(oMouse.getPosition()), clickedBody->getPosition(), dragPlane, dragStartPos))
+          {
+            clickedBody = nullptr;
+          }
+          else
+          {
+            static_cast<SimRobotCore3::Body*>(clickedBody)->enablePhysics(false);
+            if(dragMode == resetDynamics)
+              static_cast<SimRobotCore3::Body*>(clickedBody)->resetDynamics();
+
+            if(dragMode == adoptDynamics)
+              dragStartTime = System::getTime();
+
+            clickedBodyRing = Simulation::simulation->scene->dragPlaneMesh->addInstance();
+            clickedBodyRing->setPosition(clickedBody->getPosition());
+          }
+        }
+        else
+        {
+          updateCamera = true;
+        }
+      }
+      
       update();
     }
   });
 
 
-  oMouse.onDouble([this](int btn, int mod) {
-    if(btn & GUM_MOUSE_BUTTON_LEFT)
-    {
-      SimRobot::Object* selectedObject = objectRenderer.getDragSelection();
-      if(selectedObject)
-        CoreModule::application->selectObject(*selectedObject);
-    }
-  });
-
-  oMouse.onMoved([this](ivec2 pos) {
-    //Gum::Output::print("Moved: " + pos.toString() + " in fb: " + std::to_string(Framebuffer::CurrentlyBoundFramebuffer->getID()));
-    const Qt::KeyboardModifiers m = QApplication::keyboardModifiers();
-    if(objectRenderer.moveDrag(pos.x, pos.y,
-                              m & Qt::ShiftModifier
-                              ? (m & Qt::ControlModifier
-                                  ? SimObjectRenderer::dragRotateWorld
-                                  : SimObjectRenderer::dragRotate)
-                              : (m & Qt::ControlModifier
-                                  ? SimObjectRenderer::dragNormalObject
-                                  : SimObjectRenderer::dragNormal)))
-    {
-      update();
-    }
-  });
-
-  oMouse.onRelease([this](int btn, int mod) {
-    if(objectRenderer.releaseDrag(oMouse.getPosition().x, oMouse.getPosition().y))
-      update();
-  });
-
-  oMouse.onScroll([this](vec2 dir) {
-    //if(dir.y != 0.f)
+  oMouse.onDouble([]([[maybe_unused]] int btn, [[maybe_unused]] int mod) {
+    //if(btn & GUM_MOUSE_BUTTON_LEFT)
     //{
-    //  objectRenderer.zoom(dir.y, oMouse.getPosition().x, oMouse.getPosition().y);
-    //  update();
+    //  SimRobot::Object* selectedObject = objectRenderer.getDragSelection();
+    //  if(selectedObject)
+    //    CoreModule::application->selectObject(*selectedObject);
     //}
-    update();
   });
 
-  //QTimer *timer = new QTimer(this);
-  //connect(timer, &QTimer::timeout, this, QOverload<>::of(&SimObjectWidget::update));
-  //timer->start(16);
-  //connect(this, &QOpenGLWidget::frameSwapped, this, QOverload<>::of(&SimObjectWidget::update));
+  oMouse.onMoved([this]([[maybe_unused]]ivec2 pos) {
+    if(updateCamera)
+    {
+      camera->update();
+      update();
+      paintGL();
+    }
+    else if(clickedBody != nullptr)
+    {
+      ASSERT(clickedBody->rootBody == clickedBody);
+      if(dragMode == applyDynamics)
+        return;
+      vec3 currentPos;
+      if(Physics::calcRayPlaneIntersection(camera->getPosition(), camera->calcScreenRayDirection(pos), clickedBody->getPosition(), dragPlane, currentPos))
+      {
+        if(dragRotate)
+        {
+          vec3 oldV = dragStartPos - clickedBody->getPosition();
+          vec3 newV = currentPos - clickedBody->getPosition();
+
+          mat3 invRotation = mat3::transpose(Gum::Maths::rotateMatrix(clickedBody->getRotation()));
+          oldV = invRotation * oldV;
+          newV = invRotation * newV;
+
+          float angle = 0.0f;
+          if     (dragPlane == vec3(1,0,0)) angle = std::atan2(newV.z, newV.y) - std::atan2(oldV.z, oldV.y);
+          else if(dragPlane == vec3(0,1,0)) angle = std::atan2(newV.x, newV.z) - std::atan2(oldV.x, oldV.z);
+          else                              angle = std::atan2(newV.y, newV.x) - std::atan2(oldV.y, oldV.x);
+
+          const vec3 offset = dragPlane * Gum::Maths::toDegree(angle);
+          clickedBody->increaseRotation(offset);
+          if(dragMode == adoptDynamics)
+          {
+            const unsigned int now = System::getTime();
+            const float t = std::max(1U, now - dragStartTime) * 0.001f;
+            vec3 velocity = offset / t;
+            ASSERT(Simulation::simulation->model->body_jntnum[clickedBody->id] == 1);
+            const int jointIndex = Simulation::simulation->model->body_jntadr[clickedBody->id];
+            ASSERT(Simulation::simulation->model->jnt_type[jointIndex] == mjJNT_FREE);
+            const int velocityIndex = Simulation::simulation->model->jnt_dofadr[jointIndex];
+            mjtNum* mjcVel = Simulation::simulation->data->qvel + velocityIndex + 3;
+            velocity = velocity * 0.3f + vec3(static_cast<float>(mjcVel[0]), static_cast<float>(mjcVel[1]), static_cast<float>(mjcVel[2])) * 0.7f;
+            mju_f2n(mjcVel, velocity.data(), 3);
+            dragStartTime = now;
+          }
+          dragStartPos = currentPos;
+        }
+        else
+        {
+          const vec3 offset = currentPos - dragStartPos;
+          clickedBody->increasePosition(offset);
+          if(dragMode == adoptDynamics)
+          {
+            const unsigned int now = System::getTime();
+            const float t = std::max(1U, now - dragStartTime) * 0.001f;
+            vec3 velocity = offset / t;
+            ASSERT(Simulation::simulation->model->body_jntnum[clickedBody->id] == 1);
+            const int jointIndex = Simulation::simulation->model->body_jntadr[clickedBody->id];
+            ASSERT(Simulation::simulation->model->jnt_type[jointIndex] == mjJNT_FREE);
+            const int velocityIndex = Simulation::simulation->model->jnt_dofadr[jointIndex];
+            mjtNum* mjcVel = Simulation::simulation->data->qvel + velocityIndex;
+            velocity = velocity * 0.3f + vec3(static_cast<float>(mjcVel[0]), static_cast<float>(mjcVel[1]), static_cast<float>(mjcVel[2])) * 0.7f;
+            mju_f2n(mjcVel, velocity.data(), 3);
+            dragStartTime = now;
+          }
+          dragStartPos = currentPos;
+          clickedBodyRing->setPosition(clickedBody->getPosition());
+        }
+      }
+    }
+  });
+
+  oMouse.onRelease([this]([[maybe_unused]] int btn, [[maybe_unused]] int mod) {
+    if(clickedBody != nullptr)
+      static_cast<SimRobotCore3::Body*>(clickedBody)->enablePhysics(true);
+    updateCamera = false;
+    clickedBody = nullptr;
+    clickedBodyRing = nullptr;
+    Simulation::simulation->scene->dragPlaneMesh->clearInstances();
+  });
+
+  std::function<void (vec2)> scrollFunc = [this]([[maybe_unused]] vec2 dir) {
+    updateZoomInNextFrame = camera->updateZoom();
+    oMouse.resetDelta();
+    camera->thirdPersonMotionUpdate();
+    update();
+    paintGL();
+  };
+
+  oMouse.onScroll(scrollFunc);
+  QMetaObject::Connection connection = connect(this, &QOpenGLWidget::frameSwapped, this, [scrollFunc, this](){
+    if(updateZoomInNextFrame)
+      scrollFunc(vec2());
+  });
+
+
+  if(isSceneWidget)
+  {
+    connect(this, &QOpenGLWidget::frameSwapped, this, [](){
+      Time::update();
+      Texture::updateBackgroundLoading();
+    });
+  }
 }
 
 SimObjectWidget::~SimObjectWidget()
 {
+  Gum::Window::CurrentlyBoundWindow->getContext()->bind();
+  
   // save layout settings
   QSettings* settings = &CoreModule::application->getLayoutSettings();
   settings->beginGroup(object.getFullName());
-
-  settings->setValue("SurfaceShadeMode", int(objectRenderer.getSurfaceShadeMode()));
-  settings->setValue("PhysicsShadeMode", int(objectRenderer.getPhysicsShadeMode()));
-  settings->setValue("DrawingsShadeMode", int(objectRenderer.getDrawingsShadeMode()));
-  settings->setValue("CameraMode", int(objectRenderer.getCameraMode()));
-  settings->setValue("FovY", objectRenderer.getFovY());
-  settings->setValue("DragPlane", int(objectRenderer.getDragPlane()));
-  settings->setValue("DragMode", int(objectRenderer.getDragMode()));
-  settings->setValue("RenderFlags", objectRenderer.getRenderFlags());
-
-  float pos[3];
-  float target[3];
-  objectRenderer.getCamera(pos, target);
-
-  settings->setValue("cameraPosX", pos[0]);
-  settings->setValue("cameraPosY", pos[1]);
-  settings->setValue("cameraPosZ", pos[2]);
-  settings->setValue("cameraTargetX", target[0]);
-  settings->setValue("cameraTargetY", target[1]);
-  settings->setValue("cameraTargetZ", target[2]);
-
+  settings->setValue("SurfaceShadeMode", int(appearanceShadeMode));
+  settings->setValue("PhysicsShadeMode", int(physicsRenderer->getShadeMode()));
+  settings->setValue("DrawingsShadeMode", int(controllerdrawingsShadeMode));
+  settings->setValue("DragPlane", dragPlane.toString("","",", ").c_str());
+  settings->setValue("DragMode", int(dragMode));
+  settings->setValue("RenderFlags", renderFlags);
+  settings->setValue("Fov", camera->getFOV());
+  settings->setValue("cameraPos", QString(((Transformable3D*)camera)->getPosition().toString("", "", ", ").c_str()));
   settings->endGroup();
 
-  makeCurrent();
-  objectRenderer.destroy();
-
-  if(object.getKind() == SimRobotCore3::Kind::appearance)
-  {
+  if(!isSceneWidget)
     Gum::_delete(pWorld);
+  Gum::_delete(renderCanvas);
+  Gum::_delete(camera);
+  Gum::_delete(renderer);
+
+
+  if(registeredAtManager)
+  {
+    ASSERT(Simulation::simulation->scene->drawingManager);
+    Simulation::simulation->scene->drawingManager->unregisterContext();
+    registeredAtManager = false;
   }
-  Gum::_delete(pMainCamera);
-  Gum::_delete(pMainRenderer);
 }
 
 void recursivelyAddObjects(World3D* world, const SimRobot::Object* object)
@@ -176,9 +292,7 @@ void recursivelyAddObjects(World3D* world, const SimRobot::Object* object)
     world->getObjectManager()->addObject(((Appearance*)object));
   
   for(SimObject* obj : ((Appearance*)object)->children)
-  {
     recursivelyAddObjects(world, dynamic_cast<Appearance*>(obj));
-  }
 }
 
 void SimObjectWidget::initializeGL()
@@ -187,35 +301,36 @@ void SimObjectWidget::initializeGL()
   Gum::Graphics::init();
   Gum::Graphics::loadDefaults();
 
-  pRenderCanvas = new Canvas(ivec2(width(), height()));
+  renderCanvas = new Canvas(ivec2(width(), height()));
 
   Framebuffer::DefaultFramebufferID = this->defaultFramebufferObject();
-  pContextFramebuffer = new Framebuffer(pRenderCanvas->getSize(), true, Framebuffer::DefaultFramebufferID);
+  pContextFramebuffer = new Framebuffer(renderCanvas->getSize(), true, Framebuffer::DefaultFramebufferID);
   pContextFramebuffer->setClearColor(Simulation::simulation->scene->backgroundcolor);
-  isSceneWidget = object.getKind() == SimRobotCore3::Kind::scene;
 
   if(isSceneWidget)
   {
     pWorld = Simulation::simulation->scene->world;
+    physicsRenderer = Simulation::simulation->scene->physicsRenderer;
+    //Object3D* testobj = new Object3D(Mesh::generateCube(vec3(1,1,1)), "");
+    //Object3DInstance *instance = testobj->addInstance();
+    //instance->setPosition(vec3(0,3,0));
+    //pWorld->getObjectManager()->addObject(testobj);
   }
   else
   {
     pWorld = new World3D(Simulation::simulation->scene->world->getObjectManager()->getSkybox());
+
+    if(physicsRenderer)
+      pWorld->addRenderable(physicsRenderer);
+
     switch(object.getKind())
     {
+      case SimRobotCore3::Kind::body:
       case SimRobotCore3::Kind::appearance:
         pWorld->getObjectManager()->selfManageObjects(true);
         recursivelyAddObjects(pWorld, &object);
         break;
 
-      case SimRobotCore3::Kind::geometry:
-        pWorld->addRenderable(new PhysicsRenderer(dynamic_cast<const PhysicalObject*>(&object)));
-        break;
-      case SimRobotCore3::Kind::body:
-        pWorld->getObjectManager()->selfManageObjects(true);
-        recursivelyAddObjects(pWorld, &object);
-        pWorld->addRenderable(new PhysicsRenderer(dynamic_cast<const PhysicalObject*>(&object)));
-        break;
       default:
         Gum::Output::error("Unknown object type");
         break;
@@ -223,23 +338,11 @@ void SimObjectWidget::initializeGL()
   }
   
 
-  pMainRenderer = new Renderer3D(pRenderCanvas);
+  renderer = new Renderer3D(renderCanvas);
   if(pWorld != nullptr)
-    pMainRenderer->setWorld(pWorld);
-  pMainRenderer->setExposure(1.0f);
-  pMainRenderer->renderSky(isSceneWidget);
-
-  pMainCamera = new Camera3D(pRenderCanvas->getSize(), pWorld);
-  pMainCamera->setWorldUpDirection(vec3(0,0,1));
-  pMainCamera->setPosition(vec3(0,0,0));
-  pMainCamera->setMode(Camera3D::Modes::THIRDPERSON);
-  pMainCamera->setOffset(5.0f);
-  pMainCamera->setZoomSpeed(0.3f);
-  pMainCamera->setFOV(80);
-  pMainCamera->makeActive();
-
-  //PointLight* testLight = new PointLight(vec3(0, 0, 2), vec3(1), "light");
-  //pWorld->getLightManager()->addPointLight(testLight);
+    renderer->setWorld(pWorld);
+  renderer->setExposure(1.0f);
+  renderer->renderSky(isSceneWidget);
 
   
   if(pShader == nullptr)
@@ -249,28 +352,112 @@ void SimObjectWidget::initializeGL()
     pShader->addShader(Gum::PostProcessing::FragmentShader);
     pShader->build();
   }
+
+  if(Simulation::simulation->scene->drawingManager)
+  {
+    Simulation::simulation->scene->drawingManager->registerContext();
+    registeredAtManager = true;
+  }
 }
 
 void SimObjectWidget::paintGL()
 {
+  if(appearanceShadeMode == SimRobotCore3::Renderer::ShadeMode::noShading)
+    return;
   Gum::Window::CurrentlyBoundWindow->getContext()->bind();
   bindFramebuffer();
+
+  if(updateZoomInNextFrame)
+    updateZoomInNextFrame = camera->updateZoom();
   
   pContextFramebuffer->clear(Framebuffer::ClearFlags::COLOR | Framebuffer::ClearFlags::DEPTH);
-  pMainRenderer->render();
-  pMainRenderer->renderIDs();
-
-  pContextFramebuffer->bind();
-  pShader->use();
-  pRenderCanvas->getTexture()->bind(0);
-  pRenderCanvas->render();
-  pRenderCanvas->getTexture()->unbind(0);
-  pShader->unuse();
-
-  if(isSceneWidget)
+  switch(appearanceShadeMode)
   {
-    Time::update();
-    Texture::updateBackgroundLoading();
+    case SimRobotCore3::Renderer::ShadeMode::wireframeShading:
+    case SimRobotCore3::Renderer::ShadeMode::flatShading:
+      Gum::Graphics::renderWireframe(appearanceShadeMode == SimRobotCore3::Renderer::ShadeMode::wireframeShading);
+      Simulation::simulation->forwardRenderingShader->use();
+      Simulation::simulation->forwardRenderingShader->loadUniform("projectionMatrix", Camera::getActiveCamera()->getProjectionMatrix());
+      Simulation::simulation->forwardRenderingShader->loadUniform("canvassize", renderCanvas->getSize());
+      pWorld->getObjectManager()->renderEverything();
+      Simulation::simulation->forwardRenderingShader->unuse();
+      Gum::Graphics::renderWireframe(false);
+      break;
+  
+    default:
+      renderer->render();
+
+      pContextFramebuffer->bind();
+      pShader->use();
+      renderCanvas->getTexture()->bind(0);
+      //renderer->getIDRenderer()->getResultTexture()->bind(0);
+      renderCanvas->render();
+      renderCanvas->getTexture()->unbind(0);
+      pShader->unuse();
+      break;
+  }
+
+  renderer->renderIDs();
+
+  // draw controller drawings
+  if(Simulation::simulation->scene->drawingManager != nullptr)
+  {
+    // If the manager registered later, it must be done now.
+    if(!registeredAtManager)
+    {
+      Simulation::simulation->scene->drawingManager->registerContext();
+      registeredAtManager = true;
+    }
+
+    Gum::Graphics::renderWireframe(controllerdrawingsShadeMode == wireframeShading);
+
+    //glEnable(GL_BLEND);
+    //glBlendFunc(GL_CONSTANT_ALPHA, GL_ONE_MINUS_CONSTANT_ALPHA);
+    //glBlendColor(1.0f, 1.0f, 1.0f, 1.0f);
+
+    Simulation::simulation->scene->drawingManager->beforeFrame();
+
+    PhysicalObject* physicalObject = dynamic_cast<PhysicalObject*>(&simObject);
+    GraphicalObject* graphicalObject = dynamic_cast<GraphicalObject*>(&simObject);
+
+    if(physicalObject)
+      physicalObject->beforeControllerDrawings(&camera->getProjectionMatrix()[0][0], &camera->getViewMatrix()[0][0]);
+    if(graphicalObject)
+      graphicalObject->beforeControllerDrawings(&camera->getProjectionMatrix()[0][0], &camera->getViewMatrix()[0][0]);
+
+    Simulation::simulation->scene->drawingManager->uploadData();
+
+    if(renderFlags & enableDrawingsTransparentOcclusion)
+    {
+      Simulation::simulation->scene->drawingManager->beforeDraw();
+
+      if(physicalObject)
+        physicalObject->drawControllerDrawings();
+      if(graphicalObject)
+        graphicalObject->drawControllerDrawings();
+    }
+
+    if((renderFlags & enableDrawingsTransparentOcclusion) || !(renderFlags & enableDrawingsOcclusion))
+      pContextFramebuffer->clear(Framebuffer::ClearFlags::DEPTH);
+
+    if(renderFlags & enableDrawingsTransparentOcclusion)
+      glBlendColor(0.5f, 0.5f, 0.5f, 0.5f);
+
+    Simulation::simulation->scene->drawingManager->beforeDraw();
+
+    if(physicalObject)
+      physicalObject->drawControllerDrawings();
+    if(graphicalObject)
+      graphicalObject->drawControllerDrawings();
+
+    if(physicalObject)
+      physicalObject->afterControllerDrawings();
+    if(graphicalObject)
+      graphicalObject->afterControllerDrawings();
+
+    Simulation::simulation->scene->drawingManager->afterFrame();
+
+    Gum::Graphics::renderWireframe(false);
   }
 }
 
@@ -278,21 +465,21 @@ void SimObjectWidget::resizeGL(int width, int height)
 {
   bindFramebuffer();
   
-  pRenderCanvas->setSize(ivec2(width*this->devicePixelRatio(), height*this->devicePixelRatio()));
+  renderCanvas->setSize(ivec2(width*this->devicePixelRatio(), height*this->devicePixelRatio()));
 
-  pContextFramebuffer->setSize(pRenderCanvas->getSize());
+  pContextFramebuffer->setSize(renderCanvas->getSize());
   pContextFramebuffer->resetViewport();
 
-  pMainRenderer->updateFramebufferSize();
-  pMainCamera->updateProjection(pRenderCanvas->getSize());
+  renderer->updateFramebufferSize();
+  camera->updateProjection(renderCanvas->getSize());
 }
 
 void SimObjectWidget::update()
 {
   QOpenGLWidget::update();
-  pMainCamera->update();
-  pMainRenderer->update();
+  renderer->update();
   oMouse.reset();
+  oKeyboard.reset();
 }
 
 void SimObjectWidget::bindFramebuffer()
@@ -301,9 +488,10 @@ void SimObjectWidget::bindFramebuffer()
   Framebuffer::DefaultFramebufferID = this->defaultFramebufferObject();
   pContextFramebuffer->overrideID(Framebuffer::DefaultFramebufferID);
   pContextFramebuffer->bind();
-  pMainRenderer->makeActive();
-  pMainCamera->makeActive();
+  renderer->makeActive();
+  camera->makeActive();
   Gum::Window::CurrentlyBoundWindow->overrideMouseIO(&oMouse);
+  Gum::Window::CurrentlyBoundWindow->overrideKeyboardIO(&oKeyboard);
 }
 
 QMenu* SimObjectWidget::createEditMenu() const
@@ -330,18 +518,18 @@ QMenu* SimObjectWidget::createUserMenu() const
     action->setIcon(icon);
     action->setStatusTip(tr("Select the drag and drop dynamics mode and plane along which operations are performed"));
     QActionGroup* actionGroup = new QActionGroup(subMenu);
-    auto addPlaneAction = [this, subMenu, actionGroup](const char* label, Qt::Key key, SimRobotCore3::Renderer::DragAndDropPlane plane)
+    auto addPlaneAction = [this, subMenu, actionGroup](const char* label, Qt::Key key, vec3 plane)
     {
       auto* action = subMenu->addAction(tr(label));
       actionGroup->addAction(action);
       action->setShortcut(QKeySequence(key));
       action->setCheckable(true);
-      action->setChecked(objectRenderer.getDragPlane() == plane);
+      action->setChecked(dragPlane == plane);
       connect(action, &QAction::triggered, this, [this, plane]{ const_cast<SimObjectWidget*>(this)->setDragPlane(plane); });
     };
-    addPlaneAction("X/Y Plane", Qt::Key_Z, SimRobotCore3::Renderer::xyPlane);
-    addPlaneAction("X/Z Plane", Qt::Key_Y, SimRobotCore3::Renderer::xzPlane);
-    addPlaneAction("Y/Z Plane", Qt::Key_X, SimRobotCore3::Renderer::yzPlane);
+    addPlaneAction("X/Y Plane", Qt::Key_Z, vec3(0,0,1));
+    addPlaneAction("X/Z Plane", Qt::Key_Y, vec3(0,1,0));
+    addPlaneAction("Y/Z Plane", Qt::Key_X, vec3(1,0,0));
     subMenu->addSeparator();
     actionGroup = new QActionGroup(subMenu);
     auto addModeAction = [this, subMenu, actionGroup](const char* label, Qt::Key key, SimRobotCore3::Renderer::DragAndDropMode mode)
@@ -350,7 +538,7 @@ QMenu* SimObjectWidget::createUserMenu() const
       actionGroup->addAction(action);
       action->setShortcut(QKeySequence(key));
       action->setCheckable(true);
-      action->setChecked(objectRenderer.getDragMode() == mode);
+      action->setChecked(dragMode == mode);
       connect(action, &QAction::triggered, this, [this, mode]{ const_cast<SimObjectWidget*>(this)->setDragMode(mode); });
     };
     addModeAction("&Keep Dynamics", Qt::Key_7, SimRobotCore3::Renderer::keepDynamics);
@@ -377,47 +565,21 @@ QMenu* SimObjectWidget::createUserMenu() const
     icon.setIsMask(true);
     action->setIcon(icon);
     QActionGroup* actionGroup = new QActionGroup(subMenu);
-    auto addFovYAction = [this, subMenu, actionGroup](const char* label, Qt::Key key, int fovY)
+    auto addFovYAction = [this, subMenu, actionGroup](const char* label, Qt::Key key, float fov)
     {
       auto* action = subMenu->addAction(tr(label));
       actionGroup->addAction(action);
       action->setShortcut(QKeySequence(key));
       action->setCheckable(true);
-      action->setChecked(objectRenderer.getFovY() == fovY);
-      connect(action, &QAction::triggered, this, [this, fovY]{ const_cast<SimObjectWidget*>(this)->setFovY(fovY); });
+      action->setChecked(this->camera->getFOV() == fov);
+      connect(action, &QAction::triggered, this, [this, fov]{ const_cast<SimObjectWidget*>(this)->camera->setFOV(fov); });
     };
-    addFovYAction("&20°", Qt::Key_1, 20);
-    addFovYAction("&40°", Qt::Key_2, 40);
-    addFovYAction("&60°", Qt::Key_3, 60);
-    addFovYAction("&80°", Qt::Key_4, 80);
-    addFovYAction("100°", Qt::Key_5, 100);
-    addFovYAction("120°", Qt::Key_6, 120);
-  }
-
-  {
-    QMenu* subMenu = menu->addMenu(tr("&Origin"));
-    QActionGroup* actionGroup = new QActionGroup(subMenu);
-    QAction* action = subMenu->menuAction();
-    QIcon icon(":/Icons/icons8-collect-50.png");
-    icon.setIsMask(true);
-    action->setIcon(icon);
-    auto addOriginAction = [this, subMenu, actionGroup](const char* label, Qt::Key key, SimRobotCore3::Renderer::RenderFlags flag)
-    {
-      auto* action = subMenu->addAction(tr(label));
-      actionGroup->addAction(action);
-      action->setShortcut(QKeySequence(key));
-      action->setCheckable(true);
-      const int mask = SimRobotCore3::Renderer::showAsGlobalView | SimRobotCore3::Renderer::showAsGlobalOrientation;
-      action->setChecked((objectRenderer.getRenderFlags() & mask) == flag);
-      connect(action, &QAction::triggered, this, [this, flag]
-      {
-        const unsigned flags = objectRenderer.getRenderFlags() & ~mask;
-        const_cast<SimObjectWidget*>(this)->objectRenderer.setRenderFlags(flags | flag);
-      });
-    };
-    addOriginAction("S&cene", Qt::Key_C, SimRobotCore3::Renderer::showAsGlobalView); // cspell:disable-line
-    addOriginAction("&Object Position", Qt::Key_O, SimRobotCore3::Renderer::showAsGlobalOrientation);
-    addOriginAction("Object &Pose", Qt::Key_P, SimRobotCore3::Renderer::RenderFlags(0));
+    addFovYAction("&20°", Qt::Key_1, 20.0f);
+    addFovYAction("&40°", Qt::Key_2, 40.0f);
+    addFovYAction("&60°", Qt::Key_3, 60.0f);
+    addFovYAction("&80°", Qt::Key_4, 80.0f);
+    addFovYAction("100°", Qt::Key_5, 100.0f);
+    addFovYAction("120°", Qt::Key_6, 120.0f);
   }
 
   menu->addSeparator();
@@ -437,15 +599,16 @@ QMenu* SimObjectWidget::createUserMenu() const
       if(key)
         action->setShortcut(QKeySequence(static_cast<int>(Qt::CTRL) + static_cast<int>(key)));
       action->setCheckable(true);
-      action->setChecked(objectRenderer.getSurfaceShadeMode() == shading);
-      connect(action, &QAction::triggered, this, [this, shading]{ const_cast<SimObjectWidget*>(this)->setSurfaceShadeMode(shading); });
+      action->setChecked(appearanceShadeMode == shading);
+      connect(action, &QAction::triggered, this, [this, shading]{ const_cast<SimObjectWidget*>(this)->appearanceShadeMode = shading; });
     };
     addShadingAction("&Off", Qt::Key(0), SimRobotCore3::Renderer::noShading);
     addShadingAction("&Wire Frame", Qt::Key_W, SimRobotCore3::Renderer::wireframeShading);
-    addShadingAction("&Flat Shading", Qt::Key_F, SimRobotCore3::Renderer::flatShading);
-    addShadingAction("&Smooth Shading", Qt::Key_M, SimRobotCore3::Renderer::smoothShading);
+    addShadingAction("&Deferred Shading", Qt::Key_M, SimRobotCore3::Renderer::smoothShading);
+    addShadingAction("&Simple Shading", Qt::Key_F, SimRobotCore3::Renderer::flatShading);
   }
 
+  if(physicsRenderer != nullptr)
   {
     QMenu* subMenu = menu->addMenu(tr("&Physics Rendering"));
     QActionGroup* actionGroup = new QActionGroup(subMenu);
@@ -459,17 +622,16 @@ QMenu* SimObjectWidget::createUserMenu() const
       auto* action = subMenu->addAction(tr(label));
       actionGroup->addAction(action);
       action->setCheckable(true);
-      action->setChecked(objectRenderer.getPhysicsShadeMode() == shading);
-      connect(action, &QAction::triggered, this, [this, shading]{ const_cast<SimObjectWidget*>(this)->setPhysicsShadeMode(shading); });
+      action->setChecked(physicsRenderer->getShadeMode() == shading);
+      connect(action, &QAction::triggered, this, [this, shading]{ physicsRenderer->setShadeMode(shading); });
     };
     addShadingAction("&Off", SimRobotCore3::Renderer::noShading);
     addShadingAction("&Wire Frame", SimRobotCore3::Renderer::wireframeShading);
-    addShadingAction("&Flat Shading", SimRobotCore3::Renderer::flatShading);
     addShadingAction("&Smooth Shading", SimRobotCore3::Renderer::smoothShading);
   }
 
   {
-    QMenu* subMenu = menu->addMenu(tr("&Drawings Rendering"));
+    QMenu* subMenu = menu->addMenu(tr("&Controller drawings Rendering"));
     QActionGroup* actionGroup = new QActionGroup(subMenu);
     QAction* action = subMenu->menuAction();
     QIcon icon(":/Icons/icons8-line-chart-50.png");
@@ -481,8 +643,8 @@ QMenu* SimObjectWidget::createUserMenu() const
       auto* action = subMenu->addAction(tr(label));
       actionGroup->addAction(action);
       action->setCheckable(true);
-      action->setChecked(objectRenderer.getDrawingsShadeMode() == shading);
-      connect(action, &QAction::triggered, this, [this, shading]{ const_cast<SimObjectWidget*>(this)->setDrawingsShadeMode(shading); });
+      action->setChecked(controllerdrawingsShadeMode == shading);
+      connect(action, &QAction::triggered, this, [this, shading]{ const_cast<SimObjectWidget*>(this)->controllerdrawingsShadeMode = shading; });
     };
     addShadingAction("&Off", SimRobotCore3::Renderer::noShading);
     addShadingAction("&Wire Frame", SimRobotCore3::Renderer::wireframeShading);
@@ -500,7 +662,7 @@ QMenu* SimObjectWidget::createUserMenu() const
       auto* action = subMenu->addAction(tr(label));
       actionGroup->addAction(action);
       action->setCheckable(true);
-      action->setChecked((objectRenderer.getRenderFlags() & (SimRobotCore3::Renderer::enableDrawingsOcclusion | SimRobotCore3::Renderer::enableDrawingsTransparentOcclusion)) == flag);
+      action->setChecked((renderFlags & (SimRobotCore3::Renderer::enableDrawingsOcclusion | SimRobotCore3::Renderer::enableDrawingsTransparentOcclusion)) == flag);
       connect(action, &QAction::triggered, this, [this, flag]{ const_cast<SimObjectWidget*>(this)->setDrawingsOcclusion(flag); });
     };
 
@@ -525,8 +687,12 @@ QMenu* SimObjectWidget::createUserMenu() const
       action = menu->addAction(tr(label));
     action->setStatusTip(tr(tip));
     action->setCheckable(true);
-    action->setChecked(objectRenderer.getRenderFlags() & flag);
-    connect(action, &QAction::triggered, this, [this, flag]{ const_cast<SimObjectWidget*>(this)->toggleRenderFlag(flag); });
+    action->setChecked(renderFlags & flag);
+    connect(action, &QAction::triggered, this, [this, flag]{ 
+      const_cast<SimObjectWidget*>(this)->toggleRenderFlag(flag); 
+
+      Simulation::simulation->originRenderer->enable(renderFlags & SimRobotCore3::Renderer::showCoordinateSystem);
+    });
   };
 
   addRenderFlagAction("Enable &Lights", "Enable lighting", SimRobotCore3::Renderer::enableLights);
@@ -577,12 +743,12 @@ void SimObjectWidget::exportAsImage(int width, int height)
   const unsigned int imageSize = width * height * 3;
   unsigned char* imageBuffer = new unsigned char[imageSize];
 
-  ivec2 oldSize = pRenderCanvas->getSize();
+  ivec2 oldSize = renderCanvas->getSize();
   resizeGL(width, height);
   bindFramebuffer();
 
-  pMainRenderer->render();
-  pMainRenderer->getHighDynamicRange()->getFramebuffer()->readPixelData(imageBuffer, ivec2(0,0), ivec2(width, height), Gum::Graphics::Pixelformat::RGB);
+  renderer->render();
+  renderer->getHighDynamicRange()->getFramebuffer()->readPixelData(imageBuffer, ivec2(0,0), ivec2(width, height), Gum::Graphics::Pixelformat::RGB);
 
   QImage image(&imageBuffer[0], width, height, QImage::Format_RGB888);
   //image.mirror();
@@ -595,81 +761,49 @@ void SimObjectWidget::exportAsImage(int width, int height)
   Gum::_delete(imageBuffer);
 }
 
-void SimObjectWidget::setSurfaceShadeMode(int style)
-{
-  objectRenderer.setSurfaceShadeMode(SimRobotCore3::Renderer::ShadeMode(style));
-  update();
-}
-
-void SimObjectWidget::setPhysicsShadeMode(int style)
-{
-  objectRenderer.setPhysicsShadeMode(SimRobotCore3::Renderer::ShadeMode(style));
-  update();
-}
-
-void SimObjectWidget::setDrawingsShadeMode(int style)
-{
-  objectRenderer.setDrawingsShadeMode(SimRobotCore3::Renderer::ShadeMode(style));
-  update();
-}
-
 void SimObjectWidget::setDrawingsOcclusion(int flag)
 {
-  unsigned int flags = objectRenderer.getRenderFlags();
-  flags &= ~(SimRobotCore3::Renderer::enableDrawingsOcclusion | SimRobotCore3::Renderer::enableDrawingsTransparentOcclusion);
-  flags |= flag;
-  objectRenderer.setRenderFlags(flags);
-  update();
+  renderFlags &= ~(SimRobotCore3::Renderer::enableDrawingsOcclusion | SimRobotCore3::Renderer::enableDrawingsTransparentOcclusion);
+  renderFlags |= flag;
 }
 
-void SimObjectWidget::setCameraMode(int mode)
+void SimObjectWidget::setDragPlane(vec3 plane)
 {
-  objectRenderer.setCameraMode(SimRobotCore3::Renderer::CameraMode(mode));
-  update();
+  dragPlane = plane;
 }
 
-void SimObjectWidget::setFovY(int fovY)
+void SimObjectWidget::setDragMode(DragAndDropMode mode)
 {
-  unsigned int width, height;
-  this->fovY = fovY;
-  objectRenderer.getSize(width, height);
-  makeCurrent();
-  objectRenderer.resize(fovY, width, height);
-  update();
-}
-
-void SimObjectWidget::setDragPlane(int plane)
-{
-  objectRenderer.setDragPlane(SimRobotCore3::Renderer::DragAndDropPlane(plane));
-  update();
-}
-
-void SimObjectWidget::setDragMode(int mode)
-{
-  objectRenderer.setDragMode(SimRobotCore3::Renderer::DragAndDropMode(mode));
-  update();
+  dragMode = mode;
 }
 
 void SimObjectWidget::resetCamera()
 {
-  objectRenderer.resetCamera();
-  update();
-}
-
-void SimObjectWidget::toggleCameraMode()
-{
-  objectRenderer.toggleCameraMode();
-  update();
+  camera->setPosition(defaultCameraPos);
 }
 
 void SimObjectWidget::toggleRenderFlag(int flag)
 {
-  unsigned int flags = objectRenderer.getRenderFlags();
-  if(flags & flag)
-    flags &= ~flag;
-  else
-    flags |= flag;
-  objectRenderer.setRenderFlags(flags);
+  if(renderFlags & flag) renderFlags &= ~flag;
+  else                   renderFlags |= flag;
+}
 
-  update();
+Body* SimObjectWidget::selectObject(vec3 startpos, vec3 raydir)
+{
+  if(!isSceneWidget)
+    return nullptr;
+
+  int geometryIndex = -1;
+  mjtNum origin[3], dir[3];
+  mju_f2n(origin, startpos.data(), 3);
+  mju_f2n(dir, raydir.data(), 3);
+  const mjtNum dist = mj_ray(Simulation::simulation->model, Simulation::simulation->data, origin, dir, nullptr, 0, -1, &geometryIndex);
+  if(dist < static_cast<mjtNum>(0))
+    return nullptr;
+  ASSERT(geometryIndex >= 0);
+  ASSERT(geometryIndex < Simulation::simulation->model->ngeom);
+  const int bodyIndex = Simulation::simulation->model->geom_bodyid[geometryIndex];
+  ASSERT(bodyIndex > 0); // 0 is the world body, we excluded that by setting flg_static=0 in the call to mj_ray.
+  ASSERT(bodyIndex < Simulation::simulation->model->nbody);
+  return Body::registeredBodies[bodyIndex]->rootBody;
 }

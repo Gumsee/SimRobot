@@ -25,8 +25,6 @@ Geometry::~Geometry()
 
 void Geometry::createPhysicsInternal()
 {
-  ASSERT(parentBody);
-  ASSERT(parentBody->body);
   mjsBody* body = Simulation::simulation->worldBody;
   int collisionGroup = 0;
   bool immaterial = dynamic_cast<CollisionSensor*>(parent) != nullptr;
@@ -43,7 +41,7 @@ void Geometry::createPhysicsInternal()
   if(obj != nullptr)
   {
     Object3DInstance* instance = obj->addInstance();
-    instance->setMatrix(worldTransformation.getMatrix());
+    instance->setMatrix(getMatrix());
     obj->applyTransformationMatrix(instance);
   }
   if(geom)
@@ -56,8 +54,8 @@ void Geometry::createPhysicsInternal()
 
     Transformable3D transformInParentBody;
     transformInParentBody.setMatrix(parentBody != nullptr 
-      ? Gum::Maths::inverseTransformationMatrix(parentBody->worldTransformation.getMatrix()) * worldTransformation.getMatrix() 
-      : worldTransformation.getMatrix()
+      ? Gum::Maths::inverseTransformationMatrix(parentBody->getMatrix()) * getMatrix() 
+      : getMatrix()
     );
     // set offset
     mju_f2n(geom->pos, relativeTransformation.getPosition().data(), 3);
@@ -147,7 +145,7 @@ void Geometry::updateTransformation()
 
     obj->getInstance()->updateMatrix();
     obj->applyTransformationMatrix(obj->getInstance());
-    worldTransformation.setMatrix(obj->getInstance()->getMatrix());
+    setMatrix(obj->getInstance()->getMatrix());
   }
   else
   {
@@ -160,7 +158,7 @@ void Geometry::updateTransformation()
 
 void Geometry::drawPhysics() const
 {
-  Simulation::simulation->forwardRenderingShader->loadUniform("color", color.getGLColor());
+  Simulation::simulation->forwardRenderingShader->loadUniform("color", color);
   if(obj != nullptr)
     obj->render();
   ::PhysicalObject::drawPhysics();

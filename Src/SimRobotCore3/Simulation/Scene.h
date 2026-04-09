@@ -15,6 +15,7 @@
 #include <string>
 #include <unordered_map>
 #include <Engine/3D/World3D.h>
+#include "Graphics/PhysicsRenderer.h"
 
 class Body;
 class SimLight;
@@ -39,6 +40,8 @@ public:
   std::list<Actuator::Port*> actuators; /**< List of actuators that need to do something in every simulation step */
   std::list<SimLight*> lights; /**< List of scene lights */
   World3D *world;
+  PhysicsRenderer* physicsRenderer = nullptr;
+  SceneObject* dragPlaneMesh = nullptr; /**< The mesh for the drag plane in object renderers. */
 
   /** Default constructor */
   Scene(const std::string& name);

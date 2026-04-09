@@ -26,13 +26,15 @@ void GraphicalObject::drawControllerDrawings() const
   const_cast<GraphicalObject*>(this)->visitGraphicalControllerDrawings([](GraphicalObject& child){child.drawControllerDrawings();});
 }
 
-void GraphicalObject::beforeControllerDrawings(const float* projection, const float* view) const
+void GraphicalObject::beforeControllerDrawings(const float* projection, const float* view)
 {
-  //TODO
-  /*ASSERT(modelMatrix);
+  mat4 model;
+  if(numInstances() > 0)
+    model = getInstance()->getMatrix();
+
   for(SimRobotCore3::Controller3DDrawing* drawing : controllerDrawings)
-    drawing->beforeFrame(projection, view, modelMatrix->getPointer());
-  const_cast<GraphicalObject*>(this)->visitGraphicalControllerDrawings([projection, view](GraphicalObject& child){child.beforeControllerDrawings(projection, view);});*/
+    drawing->beforeFrame(projection, view, &model[0][0]);
+  const_cast<GraphicalObject*>(this)->visitGraphicalControllerDrawings([projection, view](GraphicalObject& child){child.beforeControllerDrawings(projection, view);});
 }
 
 void GraphicalObject::afterControllerDrawings() const

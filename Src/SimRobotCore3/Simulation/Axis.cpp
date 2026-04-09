@@ -13,7 +13,7 @@
 Axis::~Axis()
 {
   delete deflection;
-  delete motor;
+  //delete motor;
 }
 
 void Axis::create()

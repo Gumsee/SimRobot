@@ -7,7 +7,6 @@
 #pragma once
 
 #include "SimRobotCore3.h"
-#include "Graphics/bGraphicsContext.h"
 #include "Simulation/SimObject.h"
 #include "Tools/Math/Pose3f.h"
 #include <list>
@@ -15,7 +14,6 @@
 #include <Primitives/Transformable.h>
 
 class Body;
-class bGraphicsContext;
 
 /**
  * @class PhysicalObject
@@ -58,7 +56,7 @@ public:
    * @param projection Pointer to a column-major 4x4 projection matrix
    * @param view Pointer to a column-major 4x4 view matrix
    */
-  void beforeControllerDrawings(const float* projection, const float* view) const;
+  void beforeControllerDrawings(const float* projection, const float* view);
 
   /** Finish a frame of controller drawings for this physical object (and children) */
   void afterControllerDrawings() const;

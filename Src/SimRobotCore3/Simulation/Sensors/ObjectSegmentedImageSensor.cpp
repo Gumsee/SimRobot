@@ -36,8 +36,8 @@ static float surfaceColors[numOfBodySurfaces][4] =
 };
 
 ObjectSegmentedImageSensor::ObjectSegmentedImageSensor(const std::string& name) 
-  : Sensor(findAvailableName(name, "ObjectSegmentedImageSensor")),
-    surfaces(Simulation::simulation->bodySurfaces)
+  : Sensor(findAvailableName(name, "ObjectSegmentedImageSensor"))
+    //surfaces(Simulation::simulation->bodySurfaces) TODO
 {
   sensor.camera = this;
   sensor.sensorType = SimRobotCore3::SensorPort::cameraSensor;

@@ -6,7 +6,6 @@
 
 #pragma once
 
-#include "Graphics/bGraphicsContext.h"
 #include "Simulation/Sensors/Sensor.h"
 #include "Tools/Math/Eigen.h"
 #include "Tools/Math/Pose3f.h"
@@ -25,24 +24,10 @@ public:
   Camera3D* camera3d;
 
   /** Default constructor */
-  CameraSensor(const std::string& name);
-
-  void setImageDimensions(ivec2 dimensions, vec2 angle)
-  {
-    this->openingAngle = angle;
-    this->imageWidth = dimensions.x;
-    this->imageHeight = dimensions.y;
-    canvas->setSize(dimensions);
-    renderer->updateFramebufferSize();
-    float aspect = std::tan(openingAngle.x * 0.5f) / std::tan(openingAngle.y * 0.5f);
-    camera3d->setAspectRatio(aspect);
-    camera3d->setFOV(Gum::Maths::toDegree(openingAngle.y));
-    camera3d->updateProjection(dimensions);
-  }
+  CameraSensor(const std::string& name, const ivec2& imageSize, const vec2& angle);
 
 private:
-  unsigned int imageWidth; /**< The width of a camera image */
-  unsigned int imageHeight; /**< The height of a camera image */
+  ivec2 imageSize = 0; /**< The size of a camera image */
   /**
    * @class CameraSensor
    * The camera sensor interface
@@ -87,5 +72,4 @@ private:
   void updateTransformation() override;
 
   Object3D* pyramid = nullptr; /**< The pyramid mesh for the sensor drawing. */
-  bGraphicsContext::Surface* surface = nullptr; /**< The surface for the sensor drawing. */
 };

@@ -32,6 +32,7 @@ public:
   };
 
   class Vertices        : public ElementCore3 { public: std::vector<vec3> data; float unit; 
+    ~Vertices() {}
     void addParent(Element& element) override {
       ComplexAppearance* complexAppearance = dynamic_cast<ComplexAppearance*>(&element);
       ASSERT(!complexAppearance->vertices);
@@ -39,6 +40,7 @@ public:
     } 
   };
   class Normals         : public ElementCore3 { public: std::vector<vec3> data; 
+    ~Normals() {}
     void addParent(Element& element) override {
       ComplexAppearance* complexAppearance = dynamic_cast<ComplexAppearance*>(&element);
       ASSERT(!complexAppearance->normals);
@@ -46,6 +48,7 @@ public:
     }
   };
   class TexCoords       : public ElementCore3 { public: std::vector<vec2> data; 
+    ~TexCoords() {}
     void addParent(Element& element) override {
       ComplexAppearance* complexAppearance = dynamic_cast<ComplexAppearance*>(&element);
       ASSERT(!complexAppearance->texCoords);
@@ -68,8 +71,6 @@ private:
 
   /**
    * Creates the mesh if it is not already cached
-   * @tparam VertexType The vertex type from the \c bGraphicsContext that is used for this mesh
-   * @tparam withTextureCoordinates Whether the vertex type has texture coordinates
    * @return The resulting mesh
    */
   Mesh* createMeshImpl();

@@ -169,7 +169,7 @@ ParserCore3::ParserCore3()
 
 bool ParserCore3::getColor(const char* key, bool required, color& colors)
 {
-  unsigned char colorsUC[4];
+  unsigned char colorsUC[4] = {0};
   if(!Parser::getColor(key, required, colorsUC))
     return false;
   colors.r = colorsUC[0];
@@ -738,8 +738,7 @@ Element* ParserCore3::accelerometerElement()
 
 Element* ParserCore3::cameraElement()
 {
-  CameraSensor* camera = new CameraSensor(getString("name", false));
-  camera->setImageDimensions(ivec2(
+  CameraSensor* camera = new CameraSensor(getString("name", false), ivec2(
     getInteger("imageWidth", true, 0, true),
     getInteger("imageHeight", true, 0, true)
   ), vec2(

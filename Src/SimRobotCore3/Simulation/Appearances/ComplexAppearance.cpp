@@ -23,14 +23,15 @@ Mesh* ComplexAppearance::createMesh()
   if(Tools::mapHasKeyNotNull(Mesh::mLoadedMeshes, hash))
     return Mesh::mLoadedMeshes[hash];
 
-  this->pMesh = new Mesh(hash);
+  this->pMesh = Mesh::getMesh(hash);
 
   return createMeshImpl();
 }
 
 Mesh* ComplexAppearance::createMeshImpl()
 {
-  ASSERT(texCoords->data.size() == vertices->data.size());
+  if(texCoords)
+    ASSERT(texCoords->data.size() == vertices->data.size());
 
   std::unordered_map<std::uint64_t, unsigned int> indexMap;
 

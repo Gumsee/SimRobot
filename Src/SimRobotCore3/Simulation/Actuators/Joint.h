@@ -7,7 +7,6 @@
 
 #pragma once
 
-#include "Graphics/bGraphicsContext.h"
 #include "Simulation/Actuators/Actuator.h"
 
 class Axis;
@@ -45,5 +44,4 @@ private:
 
   Object3D* axisLine = nullptr;
   Object3D* sphere = nullptr;
-  bGraphicsContext::Surface* surface = nullptr;
 };

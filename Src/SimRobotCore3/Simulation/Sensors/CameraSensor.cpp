@@ -13,9 +13,12 @@
 #include <cmath>
 #include <Desktop/Window.h>
 
-CameraSensor::CameraSensor(const std::string& name)
-  : ::Sensor(findAvailableName(name, "CameraSensor"))
+CameraSensor::CameraSensor(const std::string& name, const ivec2& imageSize, const vec2& angle)
+  : ::Sensor(findAvailableName(name, "CameraSensor")),
+  openingAngle(angle),
+  imageSize(imageSize)
 {
+
   sensor.camera = this;
   sensor.sensorType = SimRobotCore3::SensorPort::cameraSensor;
   sensor.imageBuffer = nullptr;
@@ -24,15 +27,17 @@ CameraSensor::CameraSensor(const std::string& name)
   sensor.mujocoName = this->mujocoName;
   sensor.physicalObject = this;
 
-  canvas = new Canvas(ivec2(imageWidth, imageHeight));
+  canvas = new Canvas(this->imageSize);
   renderer = new Renderer3D(canvas);
   renderer->setExposure(1.0f);
 
-  camera3d = new Camera3D(ivec2(imageWidth, imageHeight), nullptr);
+  camera3d = new Camera3D(canvas->getSize(), nullptr);
   camera3d->setWorldUpDirection(vec3(0,0,1));
   camera3d->setPosition(vec3(0,0,0));
   camera3d->setMode(Camera3D::CONTROLLED);
   camera3d->setProjectionMode(Camera3D::PERSPECTIVE);
+  camera3d->setAspectRatio(std::tan(openingAngle.x * 0.5f) / std::tan(openingAngle.y * 0.5f));
+  camera3d->setFOV(Gum::Maths::toDegree(openingAngle.y));
 }
 
 CameraSensor::~CameraSensor()
@@ -43,8 +48,8 @@ CameraSensor::~CameraSensor()
 
 void CameraSensor::createPhysicsInternal()
 {
-  sensor.dimensions.append(imageWidth);
-  sensor.dimensions.append(imageHeight);
+  sensor.dimensions.append(imageSize.x);
+  sensor.dimensions.append(imageSize.y);
   sensor.dimensions.append(3);
 
   sensor.offset = relativeTransformation;
@@ -53,7 +58,7 @@ void CameraSensor::createPhysicsInternal()
   pyramid = new Object3D(Mesh::generatePyramid(vec2(std::tan(openingAngle.x * 0.5f) * 2.f, std::tan(openingAngle.y * 0.5f) * 2.f), 1.f), "CameraSensor");
   pyramid->getVertexArrayObject()->setPrimitiveType(VertexArrayObject::PrimitiveTypes::LINES);
   Object3DInstance *instance = pyramid->addInstance();
-  instance->setMatrix(worldTransformation.getMatrix());
+  instance->setMatrix(getMatrix());
   pyramid->applyTransformationMatrix(instance);
 
   //TODO
@@ -80,8 +85,8 @@ void CameraSensor::registerObjects(int level)
 void CameraSensor::Sensor::updateValue()
 {
   // allocate buffer
-  const unsigned int imageWidth = camera->imageWidth;
-  const unsigned int imageHeight = camera->imageHeight;
+  const unsigned int imageWidth = camera->imageSize.x;
+  const unsigned int imageHeight = camera->imageSize.y;
   const unsigned int imageSize = imageWidth * imageHeight * 3;
   if(imageBufferSize < imageSize)
   {
@@ -92,10 +97,10 @@ void CameraSensor::Sensor::updateValue()
   }
 
   //// setup camera position
-  camera->camera3d->setPosition(physicalObject->worldTransformation.getPosition());
-  vec3 eulerrot = fquat::toEuler(physicalObject->worldTransformation.getRotation());
-  float p = eulerrot.x * M_PI / 180.0f;
-  float y = eulerrot.z * M_PI / 180.0f;
+  camera->camera3d->setPosition(physicalObject->getPosition());
+  vec3 eulerrot = fquat::toEuler(physicalObject->getRotation());
+  float p = eulerrot.x * GUM_PI_F / 180.0f;
+  float y = eulerrot.z * GUM_PI_F / 180.0f;
   vec3 direction(
     cos(y)*cos(p),
     sin(y)*cos(p),
@@ -116,8 +121,11 @@ void CameraSensor::Sensor::updateValue()
   // draw all objects
   Gum::Window::CurrentlyBoundWindow->getContext()->bind();
   camera->camera3d->makeActive();
+  SimRobotCore3::Renderer::ShadeMode currPhysicsShadeMode = Simulation::simulation->scene->physicsRenderer->getShadeMode();
   camera->renderer->setWorld(Simulation::simulation->scene->world);
+  Simulation::simulation->scene->physicsRenderer->setShadeMode(SimRobotCore3::Renderer::ShadeMode::noShading);
   camera->renderer->render();
+  Simulation::simulation->scene->physicsRenderer->setShadeMode(currPhysicsShadeMode);
 
   // read frame buffer
   camera->renderer->getHighDynamicRange()->getFramebuffer()->readPixelData(imageBuffer, ivec2(0,0), ivec2(imageWidth, imageHeight), Gum::Graphics::Pixelformat::RGB);
@@ -140,7 +148,7 @@ void CameraSensor::drawPhysics() const
 void CameraSensor::updateTransformation()
 {
   calcTransformationMatrix();
-  pyramid->getInstance()->setMatrix(worldTransformation.getMatrix());
+  pyramid->getInstance()->setMatrix(getMatrix());
   pyramid->applyTransformationMatrix(pyramid->getInstance());
 
   ::PhysicalObject::updateTransformation();

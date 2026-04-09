@@ -11,14 +11,14 @@ PhysicsRenderer::PhysicsRenderer(const PhysicalObject* physicalobject)
 
 void PhysicsRenderer::render()
 {
-  if(!renderphysics)
+  if(shademode == SimRobotCore3::Renderer::ShadeMode::noShading)
     return;
     
-  Gum::Graphics::renderWireframe(true);
+  Gum::Graphics::renderWireframe(shademode == SimRobotCore3::Renderer::ShadeMode::wireframeShading);
   Simulation::simulation->forwardRenderingShader->use();
   Simulation::simulation->forwardRenderingShader->loadUniform("projectionMatrix", Camera::getActiveCamera()->getProjectionMatrix());
   Simulation::simulation->forwardRenderingShader->loadUniform("viewMatrix", Camera::getActiveCamera()->getViewMatrix());
-  Simulation::simulation->forwardRenderingShader->loadUniform("color", color(255,0,0,255).getGLColor());
+  Simulation::simulation->forwardRenderingShader->loadUniform("color", rgba(255,0,0,255));
   Simulation::simulation->forwardRenderingShader->loadUniform("hasTexture", 0);
   
   physicalObject->drawPhysics();
@@ -26,7 +26,12 @@ void PhysicsRenderer::render()
   Gum::Graphics::renderWireframe(false);
 }
 
-void PhysicsRenderer::enable(const bool& enabled)
+void PhysicsRenderer::setShadeMode(SimRobotCore3::Renderer::ShadeMode shademode)
 {
-  renderphysics = enabled;
+  this->shademode = shademode;
+}
+
+SimRobotCore3::Renderer::ShadeMode PhysicsRenderer::getShadeMode()
+{
+  return this->shademode;
 }

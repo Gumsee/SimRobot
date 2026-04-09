@@ -116,34 +116,13 @@ bool Simulation::loadFile(const std::string& filename, std::list<std::string>& e
   forwardRenderingShader->build({{"vertexPosition", 0}, {"TextureCoords", 1}, {"Normals", 2}, {"TransMatrix", 3}});
 
 
+  originRenderer = new OriginRenderer();
   scene->createGraphics();
 
-  xAxisMesh = new Object3D(Mesh::generateLine(vec3(0,0,0), vec3(1.f, 0.f, 0.f)), "xAxis");
-  yAxisMesh = new Object3D(Mesh::generateLine(vec3(0,0,0), vec3(0.f, 1.f, 0.f)), "yAxis");
-  zAxisMesh = new Object3D(Mesh::generateLine(vec3(0,0,0), vec3(0.f, 0.f, 1.f)), "zAxis");
-  dragPlaneMesh = new Object3D(Mesh::generateDisk(0.003f, 0.5f, 30), "dragPlane");
   bodyComSphereMesh = new Object3D(Mesh::generateSphere(0.003f, 10, 10), "bodyComSphereMesh");
-  static const float redColor[] = {1.f, 0.f, 0.f, 1.f};
-  static const float greenColor[] = {0.f, 1.f, 0.f, 1.f};
-  static const float blueColor[] = {0.f, 0.f, 1.f, 1.f};
-  static const float dragPlaneColor[] = {0.5f, 0.5f, 0.5f, 0.5f};
-  static const float bodyComSphereColor[] = {0.8f, 0.f, 0.f, 1.f};
-  xAxisSurface = graphicsContext.requestSurface(redColor, redColor);
-  yAxisSurface = graphicsContext.requestSurface(greenColor, greenColor);
-  zAxisSurface = graphicsContext.requestSurface(blueColor, blueColor);
-  dragPlaneSurface = graphicsContext.requestSurface(dragPlaneColor, dragPlaneColor);
-  bodyComSphereSurface = graphicsContext.requestSurface(bodyComSphereColor, bodyComSphereColor);
-
-  graphicsContext.pushModelMatrixStack();
-  graphicsContext.pushModelMatrixByReference(originPose);
-  originModelMatrix = graphicsContext.requestModelMatrix(bGraphicsContext::ModelMatrix::origin);
-  graphicsContext.popModelMatrix();
-  graphicsContext.pushModelMatrixByReference(dragPlanePose);
-  dragPlaneModelMatrix = graphicsContext.requestModelMatrix(bGraphicsContext::ModelMatrix::dragPlane);
-  graphicsContext.popModelMatrix();
-  graphicsContext.popModelMatrixStack();
-
-  graphicsContext.compile();
+  //TODO
+  //static const float bodyComSphereColor[] = {0.8f, 0.f, 0.f, 1.f};
+  //bodyComSphereSurface = graphicsContext.requestSurface(bodyComSphereColor, bodyComSphereColor);
 
   return true;
 }

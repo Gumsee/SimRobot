@@ -9,6 +9,7 @@
 #include "SimRobotCore3.h"
 #include "Simulation/GraphicalObject.h"
 #include "Simulation/SimObject.h"
+#include "Platform/Assert.h"
 #include <string>
 
 /**
@@ -24,13 +25,13 @@ public:
     void addParent(Element& element) override {
       Appearance* appearance = dynamic_cast<Appearance*>(&element);
       ASSERT(appearance);
-      ASSERT(!appearance->getMaterial());
       appearance->setMaterial(this);
     } 
   };
 
   bool renderForward = false;
   void updateAppearances() override;
+  void onTransformUpdate() override;
   
 protected:
   /**

@@ -20,7 +20,6 @@ void PhysicalObject::addParent(Element& element)
 {
   ASSERT(!parent);
   PhysicalObject* physicalparent = dynamic_cast<PhysicalObject*>(&element);
-  ASSERT(parent);
   physicalparent->physicalChildren.push_back(this);
   physicalparent->physicalDrawings.push_back(this);
   parent = physicalparent;
@@ -41,7 +40,7 @@ void PhysicalObject::createPhysics(bool withchildren)
   if(!isinitialized)
   {
     calcTransformationMatrix();
-    //std::cout << levelSpaces(level) << name << " " << worldTransformation.getPosition().toString() << " " << fquat::toEuler(worldTransformation.getRotation()).toString() << std::endl;
+    //std::cout << levelSpaces(level) << name << " " << getPosition().toString() << " " << fquat::toEuler(getRotation()).toString() << std::endl;
     createPhysicsInternal();
     isinitialized = true;
   }
@@ -78,13 +77,11 @@ void PhysicalObject::drawControllerDrawings() const
   const_cast<PhysicalObject*>(this)->visitPhysicalControllerDrawings([](PhysicalObject& child){child.drawControllerDrawings();});
 }
 
-void PhysicalObject::beforeControllerDrawings(const float* projection, const float* view) const
+void PhysicalObject::beforeControllerDrawings(const float* projection, const float* view)
 {
-  //TODO
-  //ASSERT(modelMatrix);
-  //for(SimRobotCore3::Controller3DDrawing* drawing : controllerDrawings)
-  //  drawing->beforeFrame(projection, view, modelMatrix->getPointer());
-  //const_cast<PhysicalObject*>(this)->visitPhysicalControllerDrawings([projection, view](PhysicalObject& child){child.beforeControllerDrawings(projection, view);});
+  for(SimRobotCore3::Controller3DDrawing* drawing : controllerDrawings)
+    drawing->beforeFrame(projection, view, &getMatrix()[0][0]);
+  const_cast<PhysicalObject*>(this)->visitPhysicalControllerDrawings([projection, view](PhysicalObject& child){child.beforeControllerDrawings(projection, view);});
 }
 
 void PhysicalObject::afterControllerDrawings() const

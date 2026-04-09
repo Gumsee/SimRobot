@@ -12,7 +12,6 @@
 #include "Simulation/Simulation.h"
 #include <iostream>
 #include <Engine/3D/Renderer3D.h>
-#include "Graphics/PhysicsRenderer.h"
 
 Scene::Scene(const std::string& name)
   : ::PhysicalObject(mjOBJ_UNKNOWN, findAvailableName(name, "Scene"))
@@ -44,8 +43,13 @@ void Scene::createGraphics()
   calcTransformationMatrix();
 
   world = new World3D();
-  world->getObjectManager()->getSkybox()->renderSky(true);
-  world->addRenderable(new PhysicsRenderer(this));
+  //world->getObjectManager()->getSkybox()->renderSky(true);
+  world->addRenderable(physicsRenderer = new PhysicsRenderer(this));
+  world->addRenderable(Simulation::simulation->originRenderer);
+
+  dragPlaneMesh = new SceneObject(Mesh::generateDisk(0.003f, 0.5f, 30), "dragPlane");
+  dragPlaneMesh->getMaterial()->setColor(rgba(128, 128, 128, 128));
+  world->getObjectManager()->addObject(dragPlaneMesh, Simulation::simulation->forwardRenderingShader, false);
 
   for(Body* body : bodies)
     body->createGraphics();

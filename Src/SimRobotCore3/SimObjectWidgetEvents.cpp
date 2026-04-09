@@ -9,11 +9,25 @@
 #include <QApplication>
 #include <QPinchGesture>
 
+uint16_t convertModifiers()
+{
+  unsigned long mods = QApplication::keyboardModifiers();
+  uint16_t retmods = 0;
+    
+  if(mods & Qt::ShiftModifier)   retmods |= GUM_KEYBOARD_MOD_SHIFT;
+  if(mods & Qt::ControlModifier) retmods |= GUM_KEYBOARD_MOD_CONTROL;
+  if(mods & Qt::AltModifier)     retmods |= GUM_KEYBOARD_MOD_ALT;
+  if(mods & Qt::MetaModifier)    retmods |= GUM_KEYBOARD_MOD_SUPER;
+  if(mods & Qt::KeypadModifier)  retmods |= GUM_KEYBOARD_MOD_NUM_LOCK;
+  
+  return retmods;
+}
+
 void SimObjectWidget::mouseMoveEvent(QMouseEvent* event)
 {
   QOpenGLWidget::mouseMoveEvent(event);
   bindFramebuffer();
-  oMouse.handleEvent(Gum::Event(Gum::Event::EventData(ivec2(event->position().x(), event->position().y())), GUM_EVENT_MOUSE_MOVED));
+  oMouse.handleEvent(Gum::Event(Gum::Event::EventData(ivec2(event->position().x()*this->devicePixelRatio(), event->position().y()*this->devicePixelRatio())), GUM_EVENT_MOUSE_MOVED, 0, convertModifiers()));
   event->accept();
 }
 
@@ -22,7 +36,7 @@ void SimObjectWidget::mousePressEvent(QMouseEvent* event)
   QOpenGLWidget::mousePressEvent(event);
   bindFramebuffer();
 
-  int btn = GUM_MOUSE_BUTTON_NONE;
+  uint16_t btn = GUM_MOUSE_BUTTON_NONE;
   switch(event->button())
   {
       case Qt::LeftButton:    btn = GUM_MOUSE_BUTTON_LEFT;     break;
@@ -33,9 +47,9 @@ void SimObjectWidget::mousePressEvent(QMouseEvent* event)
       default:                btn = GUM_MOUSE_BUTTON_NONE;     break;
   }
 
-  oMouse.setPosition(ivec2(event->position().x(), event->position().y()));
+  oMouse.setPosition(ivec2(event->position().x()*this->devicePixelRatio(), event->position().y()*this->devicePixelRatio()));
   oMouse.resetDelta();
-  oMouse.handleEvent(Gum::Event(Gum::Event::EventData(btn), GUM_EVENT_MOUSE_PRESSED));
+  oMouse.handleEvent(Gum::Event(Gum::Event::EventData(btn), GUM_EVENT_MOUSE_PRESSED, 0, convertModifiers()));
   event->accept();
 }
 
@@ -44,7 +58,7 @@ void SimObjectWidget::mouseReleaseEvent(QMouseEvent* event)
   QOpenGLWidget::mouseReleaseEvent(event);
   bindFramebuffer();
 
-  int btn = GUM_MOUSE_BUTTON_NONE;
+  uint16_t btn = GUM_MOUSE_BUTTON_NONE;
   switch(event->button())
   {
       case Qt::LeftButton:    btn = GUM_MOUSE_BUTTON_LEFT;
@@ -55,7 +69,7 @@ void SimObjectWidget::mouseReleaseEvent(QMouseEvent* event)
       default:                btn = GUM_MOUSE_BUTTON_NONE;
   }
 
-  oMouse.handleEvent(Gum::Event(Gum::Event::EventData(btn), GUM_EVENT_MOUSE_RELEASED));
+  oMouse.handleEvent(Gum::Event(Gum::Event::EventData(btn), GUM_EVENT_MOUSE_RELEASED, 0, convertModifiers()));
   event->accept();
 }
 
@@ -64,7 +78,7 @@ void SimObjectWidget::mouseDoubleClickEvent(QMouseEvent* event)
   QOpenGLWidget::mouseDoubleClickEvent(event);
   bindFramebuffer();
 
-  int btn = GUM_MOUSE_BUTTON_NONE;
+  uint16_t btn = GUM_MOUSE_BUTTON_NONE;
   switch(event->button())
   {
       case Qt::LeftButton:    btn = GUM_MOUSE_BUTTON_LEFT;     break;
@@ -75,108 +89,35 @@ void SimObjectWidget::mouseDoubleClickEvent(QMouseEvent* event)
       default:                btn = GUM_MOUSE_BUTTON_NONE;     break;
   }
 
-  Gum::Event gevent(Gum::Event::EventData(btn), GUM_EVENT_MOUSE_PRESSED_DOUBLE);
-  oMouse.handleEvent(gevent);
+  oMouse.handleEvent(Gum::Event(Gum::Event::EventData(btn), GUM_EVENT_MOUSE_PRESSED_DOUBLE, 0, convertModifiers()));
+  event->accept();
+}
 
+void SimObjectWidget::wheelEvent(QWheelEvent* event)
+{
+  bindFramebuffer();
+  oMouse.handleEvent(Gum::Event(Gum::Event::EventData(vec2(event->angleDelta().x() / 120.0f, event->angleDelta().y() / 120.0f)), GUM_EVENT_MOUSE_SCROLL, 0, convertModifiers()));
   event->accept();
 
+  QOpenGLWidget::wheelEvent(event);
 }
 
 void SimObjectWidget::keyPressEvent(QKeyEvent* event)
 {
-  if(event->modifiers() != 0)
-  {
-    QOpenGLWidget::keyPressEvent(event);
-    return;
-  }
-
-  switch(event->key())
-  {
-    case Qt::Key_PageUp:
-    case Qt::Key_Plus:
-      event->accept();
-      objectRenderer.zoom(-100.f, -1.f, -1.f);
-      update();
-      break;
-
-    case Qt::Key_PageDown:
-    case Qt::Key_Minus:
-      event->accept();
-      objectRenderer.zoom(100.f, -1.f, -1.f);
-      update();
-      break;
-
-    case Qt::Key_W:
-    case Qt::Key_A:
-    case Qt::Key_S:
-    case Qt::Key_D:
-      event->accept();
-      switch(event->key())
-      {
-        case Qt::Key_W:
-          wKey = true;
-          break;
-        case Qt::Key_A:
-          aKey = true;
-          break;
-        case Qt::Key_S:
-          sKey = true;
-          break;
-        case Qt::Key_D:
-          dKey = true;
-          break;
-      }
-      objectRenderer.setCameraMove(aKey, dKey, wKey, sKey);
-      update();
-      break;
-
-    default:
-      QOpenGLWidget::keyPressEvent(event);
-      break;
-  }
+  bindFramebuffer();
+  oKeyboard.handleEvent(Gum::Event(Gum::Event::EventData(static_cast<unsigned int>(event->key())), GUM_EVENT_KEYBOARD_PRESSED, 0, convertModifiers()));
+  event->accept();
+  
+  QOpenGLWidget::keyPressEvent(event);
 }
 
 void SimObjectWidget::keyReleaseEvent(QKeyEvent* event)
 {
-  if(event->modifiers() != 0)
-  {
-    QOpenGLWidget::keyReleaseEvent(event);
-    return;
-  }
-
-  switch(event->key())
-  {
-    case Qt::Key_W:
-    case Qt::Key_A:
-    case Qt::Key_S:
-    case Qt::Key_D:
-      event->accept();
-      update();
-      if(!event->isAutoRepeat())
-      {
-        switch(event->key())
-        {
-          case Qt::Key_W:
-            wKey = false;
-            break;
-          case Qt::Key_A:
-            aKey = false;
-            break;
-          case Qt::Key_S:
-            sKey = false;
-            break;
-          case Qt::Key_D:
-            dKey = false;
-            break;
-        }
-        objectRenderer.setCameraMove(aKey, dKey, wKey, sKey);
-      }
-      break;
-
-    default:
-      QOpenGLWidget::keyReleaseEvent(event);
-      break;
-  }
+  bindFramebuffer();
+  oKeyboard.handleEvent(Gum::Event(Gum::Event::EventData(static_cast<unsigned int>(event->key())), GUM_EVENT_KEYBOARD_RELEASED, 0, convertModifiers()));
+  event->accept();
+  
+  QOpenGLWidget::keyReleaseEvent(event);
 }
 
 bool SimObjectWidget::event(QEvent* event)
@@ -192,19 +133,10 @@ bool SimObjectWidget::event(QEvent* event)
       float change = static_cast<float>(pinch->scaleFactor() > pinch->lastScaleFactor()
                                         ? -pinch->scaleFactor() / pinch->lastScaleFactor()
                                         : pinch->lastScaleFactor() / pinch->scaleFactor());
-      objectRenderer.zoom(change * 100.f, -1, -1);
-      update();
+      camera->increaseZoom(camera->getZoomSpeed() * change);
+      updateZoomInNextFrame = camera->updateZoom();
       return true;
     }
   }
   return QOpenGLWidget::event(event);
-}
-
-void SimObjectWidget::wheelEvent(QWheelEvent* event)
-{
-  bindFramebuffer();
-  oMouse.handleEvent(Gum::Event(Gum::Event::EventData(vec2(event->angleDelta().x() / 120.0f, event->angleDelta().y() / 120.0f)), GUM_EVENT_MOUSE_SCROLL));
-  event->accept();
-
-  QOpenGLWidget::wheelEvent(event);
 }

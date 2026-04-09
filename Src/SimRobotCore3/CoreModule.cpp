@@ -10,6 +10,11 @@
 #include <QDir>
 #include <QLabel>
 
+#include <System/Output.h>
+#include <Engine/3D/Object/ObjectManager.h>
+#include <gum-engine.h>
+#include <Graphics/Graphics.h>
+
 extern "C" DLL_EXPORT SimRobot::Module* createModule(SimRobot::Application& simRobot)
 {
   return new CoreModule(simRobot);
@@ -31,6 +36,21 @@ CoreModule::CoreModule(SimRobot::Application& application) :
   appearanceIcon.setIsMask(true);
   CoreModule::application = &application;
   CoreModule::module = this;
+
+  Gum::Output::init();
+  ObjectManager::MODEL_ASSETS_PATH = Gum::File("/home/gumse/Projects/gumengine/gum-engine/examples/assets/objects/", Gum::Filesystem::DIRECTORY);;
+
+  Gum::Graphics::init();
+  Gum::Graphics::loadDefaults();
+  Gum::Graphics::printInfo();
+  
+  Gum::Engine::init();
+  Lightning::initShader();
+}
+
+CoreModule::~CoreModule()
+{
+  Gum::Engine::cleanup();
 }
 
 bool CoreModule::compile()

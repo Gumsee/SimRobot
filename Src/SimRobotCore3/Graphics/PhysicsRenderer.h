@@ -6,11 +6,12 @@ class PhysicsRenderer : public Renderable
 {
 private:
     const PhysicalObject* physicalObject;
-    inline static bool renderphysics = false;
+    SimRobotCore3::Renderer::ShadeMode shademode = SimRobotCore3::Renderer::ShadeMode::noShading;
 
 public:
     PhysicsRenderer(const PhysicalObject* physicalobject);
 
     void render() override;
-    static void enable(const bool& enabled);
+    void setShadeMode(SimRobotCore3::Renderer::ShadeMode shademode);
+    SimRobotCore3::Renderer::ShadeMode getShadeMode();
 };

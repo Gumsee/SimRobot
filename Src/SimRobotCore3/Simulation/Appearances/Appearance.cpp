@@ -23,20 +23,18 @@ void Appearance::createGraphics()
   setName(this->name);
   pMesh = createMesh();
 
-  calcTransformationMatrix();
-  
   if(pMesh != nullptr)
   {
     load();
-    Object3DInstance *instance = addInstance();
-    instance->setMatrix(worldTransformation.getMatrix());
-    applyTransformationMatrix(instance);
+    addInstance();
 
     if(!renderForward)
       Simulation::simulation->scene->world->getObjectManager()->addObject(this);
     else
       Simulation::simulation->scene->world->getObjectManager()->addObject(this, Simulation::simulation->forwardRenderingShader, false);
   }
+
+  calcTransformationMatrix();
 
   GraphicalObject::createGraphics();
 }
@@ -55,10 +53,15 @@ void Appearance::addParent(Element& element)
 void Appearance::updateAppearances()
 {
   calcTransformationMatrix();
+  GraphicalObject::updateAppearances();
+}
+
+void Appearance::onTransformUpdate()
+{
   if(pMesh != nullptr)
   {
     Object3DInstance *instance = getInstance();
-    instance->setMatrix(worldTransformation.getMatrix());
+    instance->setMatrix(getMatrix());
     applyTransformationMatrix(instance);
   }
 }

@@ -6,7 +6,6 @@
 
 #include "Sensor.h"
 #include "CoreModule.h"
-#include "Graphics/bGraphicsContext.h"
 #include "SensorWidget.h"
 #include "Simulation/Simulation.h"
 #include <mujoco/mujoco.h>

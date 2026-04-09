@@ -28,7 +28,7 @@ void SingleDistanceSensor::createPhysicsInternal()
   ray->getVertexArrayObject()->setPrimitiveType(VertexArrayObject::PrimitiveTypes::LINE_STRIP);
   ray->getVertexArrayObject()->setVertexCount(2);
   Object3DInstance* instance = ray->addInstance();
-  instance->setMatrix(worldTransformation.getMatrix());
+  instance->setMatrix(getMatrix());
   ray->applyTransformationMatrix(instance);
 
   color = rgba(128.5f, 0.0f, 0.0f, 255.0f);
@@ -51,7 +51,7 @@ void SingleDistanceSensor::addParent(Element& element)
 
 void SingleDistanceSensor::DistanceSensor::updateValue()
 {
-  vec3 eulerrot = fquat::toEuler(physicalObject->worldTransformation.getRotation());
+  vec3 eulerrot = fquat::toEuler(physicalObject->getRotation());
   vec3 direction(
     Gum::Maths::cosdeg(eulerrot.z)*Gum::Maths::cosdeg(eulerrot.y),
     Gum::Maths::sindeg(eulerrot.z)*Gum::Maths::cosdeg(eulerrot.y),
@@ -59,7 +59,7 @@ void SingleDistanceSensor::DistanceSensor::updateValue()
   );
 
   mjtNum origin[3], dir[3];
-  mju_f2n(origin, physicalObject->worldTransformation.getPosition().data(), 3);
+  mju_f2n(origin, physicalObject->getPosition().data(), 3);
   mju_f2n(dir, direction.data(), 3);
 
   const float dist = static_cast<float>(mj_ray(Simulation::simulation->model, Simulation::simulation->data, origin, dir, nullptr, 1, -1, nullptr));
@@ -79,7 +79,7 @@ bool SingleDistanceSensor::DistanceSensor::getMinAndMax(float& min, float& max) 
 
 void SingleDistanceSensor::drawPhysics() const
 {
-  Simulation::simulation->forwardRenderingShader->loadUniform("color", color.getGLColor());
+  Simulation::simulation->forwardRenderingShader->loadUniform("color", color);
   ray->render();
   Sensor::drawPhysics();
 }
@@ -88,7 +88,7 @@ void SingleDistanceSensor::drawPhysics() const
 void SingleDistanceSensor::updateTransformation()
 {
   calcTransformationMatrix();
-  ray->getInstance()->setMatrix(worldTransformation.getMatrix());
+  ray->getInstance()->setMatrix(getMatrix());
   ray->applyTransformationMatrix(ray->getInstance());
 
   ::PhysicalObject::updateTransformation();

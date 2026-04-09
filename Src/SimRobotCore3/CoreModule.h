@@ -10,6 +10,7 @@
 #include "Simulation/Simulation.h"
 #include <SimRobot.h>
 #include <QIcon>
+#include <Desktop/Window.h>
 
 class SimObject;
 
@@ -37,6 +38,7 @@ public:
    * @param application The interface to the SimRobot application that loaded the module
    */
   CoreModule(SimRobot::Application& application);
+  ~CoreModule();
 
 private:
   /**

@@ -1,7 +1,4 @@
 #include <Desktop/Window.h>
-#include <Desktop/Display.h>
-#include <System/Output.h>
-#include <System/MemoryManagement.h>
 #include <QMainWindow>
 
 static QMainWindow* toNativeWindow(void* ptr) { return (QMainWindow*)ptr; }
@@ -10,64 +7,10 @@ namespace Gum
 {
     void Window::initNativeWindow()
     {
-        /*GLFWwindow* sharedContext = nullptr; //Set to main context to share
-        if(pContextWindow != nullptr)
-            sharedContext = toNativeWindow(pContextWindow->getNativeWindow());
-
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-        glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
-
-        pNativeWindowHandle = glfwCreateWindow(v2Size.x, v2Size.y, sTitle.c_str(), NULL, sharedContext);
-
-
-        glfwSetWindowUserPointer(toNativeWindow(pNativeWindowHandle), this);
-
-
-        glfwSetWindowSizeCallback(toNativeWindow(pNativeWindowHandle), [](GLFWwindow* window, int x, int y) {
-            Gum::Window* win = (Gum::Window*)glfwGetWindowUserPointer(window);
-            Event evnt;
-            evnt.type = GUM_EVENT_WINDOW_RESIZE;
-            evnt.data.windowsize = ivec2(x, y);
-
-            win->handleEvent(evnt);
-        });
-
-        glfwSetWindowPosCallback(toNativeWindow(pNativeWindowHandle), [](GLFWwindow* window, int x, int y) {
-            Gum::Window* win = (Gum::Window*)glfwGetWindowUserPointer(window);
-            Event evnt;
-            evnt.type = GUM_EVENT_WINDOW_REPOSITION;
-            evnt.data.windowpos = ivec2(x, y);
-
-            if(win->pParentWindow != nullptr)
-                evnt.data.windowpos -= win->pParentWindow->getPosition();
-
-
-            win->handleEvent(evnt);
-        });
-
-        glfwSetWindowCloseCallback(toNativeWindow(pNativeWindowHandle), [](GLFWwindow* window) {
-            Gum::Window* win = (Gum::Window*)glfwGetWindowUserPointer(window);
-            Event evnt;
-            evnt.type = GUM_EVENT_WINDOW_CLOSE;
-
-            win->handleEvent(evnt);
-        });
-
-        glfwSetWindowFocusCallback(toNativeWindow(pNativeWindowHandle), [](GLFWwindow* window, int i) {
-            Gum::Window* win = (Gum::Window*)glfwGetWindowUserPointer(window);
-            Event evnt;
-            evnt.type = i == 1 ? GUM_EVENT_FOCUS_IN : GUM_EVENT_FOCUS_OUT;
-
-            win->handleEvent(evnt);
-        });*/
     }   
     
     void Window::destroyNativeWindow()
     {
-        //glfwDestroyWindow(toNativeWindow(pNativeWindowHandle));
     }
     
     void Window::makeResizable(bool isresizable)

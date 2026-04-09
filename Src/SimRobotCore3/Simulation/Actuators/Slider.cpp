@@ -28,7 +28,7 @@ void Slider::createPhysicsInternal()
   axis->create();
 
   if(axis->deflection && axis->deflection->offset != 0.f)
-    worldTransformation.setPosition(vec3(axis->x, axis->y, axis->z) * axis->deflection->offset);
+    setPosition(vec3(axis->x, axis->y, axis->z) * axis->deflection->offset);
 
   // find bodies to connect
   [[maybe_unused]] Body* parentBody = dynamic_cast<Body*>(parent);
@@ -45,9 +45,9 @@ void Slider::createPhysicsInternal()
   mjs_setName(joint->element, mujocoName.c_str());
   joint->type = mjJNT_SLIDE;
 
-  vec3 positionInChild = Gum::Maths::inverseTransformationMatrix(childBody->worldTransformation.getMatrix()) * vec4(worldTransformation.getPosition(), 1.0f);
+  vec3 positionInChild = Gum::Maths::inverseTransformationMatrix(childBody->getMatrix()) * vec4(getPosition(), 1.0f);
   mju_f2n(joint->pos, positionInChild.data(), 3);
-  vec3 axisInChild = Gum::Maths::inverseTransformationMatrix(childBody->worldTransformation.getMatrix()) * Gum::Maths::rotateMatrix(worldTransformation.getRotation()) * vec4(axis->x, axis->y, axis->z, 0.0f);
+  vec3 axisInChild = Gum::Maths::inverseTransformationMatrix(childBody->getMatrix()) * Gum::Maths::rotateMatrix(getRotation()) * vec4(axis->x, axis->y, axis->z, 0.0f);
   mju_f2n(joint->axis, axisInChild.data(), 3);
 
   if(axis->deflection)

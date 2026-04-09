@@ -92,29 +92,29 @@ namespace IO
     }
 
 
-    void Mouse::hide(const bool& doHide) 			                
+    void Mouse::hide([[maybe_unused]] const bool& doHide) 			                
     { 
         //glfwSetInputMode(toNativeWindow(pContextWindow->getNativeWindow()), GLFW_CURSOR, doHide ? GLFW_CURSOR_HIDDEN : GLFW_CURSOR_NORMAL);
     }
 
-    void Mouse::trap(const bool& doTrap) 			                
+    void Mouse::trap([[maybe_unused]] const bool& doTrap) 			                
     { 
         //glfwSetInputMode(toNativeWindow(pContextWindow->getNativeWindow()), GLFW_CURSOR, doTrap ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
     }
     
     void Mouse::setPosition(const ivec2& pos) 
     { 
-        this->v2PreviousPosition = v2Position; 
-        //glfwSetCursorPos(toNativeWindow(pContextWindow->getNativeWindow()), pos.x, pos.y);
+        this->v2PreviousPosition = v2Position;
         v2Position = pos; 
+        v2PositionDelta = v2Position - v2PreviousPosition;
     }
 
-    void Mouse::setGlobalPosition(const ivec2& pos) 
+    void Mouse::setGlobalPosition([[maybe_unused]] const ivec2& pos) 
     { 
         //Warp
     }
 
-    void Mouse::setCursor(uint8_t shape)
+    void Mouse::setCursor([[maybe_unused]] uint8_t shape)
     {
         /*if(cursors[shape].cursor == nullptr)
             cursors[shape].cursor = glfwCreateStandardCursor(cursors[shape].glfw);

@@ -71,8 +71,8 @@ void Body::createPhysicsInternal()
   // set position
   Transformable3D transformInParentBody;
   transformInParentBody.setMatrix(parentBody != nullptr 
-    ? Gum::Maths::inverseTransformationMatrix(parentBody->worldTransformation.getMatrix()) * worldTransformation.getMatrix() 
-    : worldTransformation.getMatrix()
+    ? Gum::Maths::inverseTransformationMatrix(parentBody->getMatrix()) * getMatrix() 
+    : getMatrix()
   );
   mju_f2n(body->pos, transformInParentBody.getPosition().data(), 3);
   mju_f2n(body->quat, transformInParentBody.getRotation().data(), 4);
@@ -157,9 +157,10 @@ void Body::createIDs()
 void Body::updateTransformation()
 {
   // get pose from MuJoCo
-  mju_n2f(worldTransformation.getPosition().data(), Simulation::simulation->data->xpos + id * 3, 3);
-  mju_n2f(worldTransformation.getRotation().data(), Simulation::simulation->data->xquat + id * 4, 4);
-  worldTransformation.updateMatrix();
+  //mju_n2f(getPosition().data(), Simulation::simulation->data->xpos + id * 3, 3);
+  mju_n2f(vPosition.data(), Simulation::simulation->data->xpos + id * 3, 3);
+  mju_n2f(qRotation.data(), Simulation::simulation->data->xquat + id * 4, 4);
+  updateMatrix(false);
 
   SimObject::updateTransformation();
   GraphicalObject::updateAppearances();
@@ -192,7 +193,7 @@ void Body::visitPhysicalControllerDrawings(const std::function<void(::PhysicalOb
     accept(*child);
 }
 
-void Body::move(const Vector3f& offset)
+void Body::onTransformUpdate()
 {
   if(rootBody != this)
     return;
@@ -201,59 +202,32 @@ void Body::move(const Vector3f& offset)
   const int jointIndex = Simulation::simulation->model->body_jntadr[id];
   ASSERT(Simulation::simulation->model->jnt_type[jointIndex] == mjJNT_FREE);
   const int poseIndex = Simulation::simulation->model->jnt_qposadr[jointIndex];
-  Simulation::simulation->data->qpos[poseIndex] = pos[0] + offset.x();
-  Simulation::simulation->data->qpos[poseIndex + 1] = pos[1] + offset.y();
-  Simulation::simulation->data->qpos[poseIndex + 2] = pos[2] + offset.z();
+  mju_f2n(Simulation::simulation->data->qpos + poseIndex, vPosition.data(), 3);
+  mju_f2n(Simulation::simulation->data->qpos + poseIndex + 3, qRotation.data(), 4);
 
   // Unfortunately it seems that forward kinematics have to be done for the entire model again.
   mj_kinematics(Simulation::simulation->model, Simulation::simulation->data);
 
-  //TODO update children transforms
+  SimObject::updateTransformation();
+  GraphicalObject::updateAppearances();
+  for(Body* child : bodyChildren)
+    child->updateAppearances();
 }
 
-void Body::rotate(const RotationMatrix& rotation, const Vector3f& point)
+const float* Body::getPositionF() const
 {
-  if(rootBody != this)
-    return;
-  Pose3f comPose;
-  mju_n2f(comPose.translation.data(), Simulation::simulation->data->xpos + id * 3, 3);
-  mju_n2f(comPose.rotation.data(), Simulation::simulation->data->xmat + id * 9, 9);
-  comPose.rotation.transposeInPlace();
-
-  comPose.translation = rotation * (comPose.translation - point) + point;
-  comPose.rotation = rotation * comPose.rotation;
-
-  ASSERT(Simulation::simulation->model->body_jntnum[id] == 1);
-  const int jointIndex = Simulation::simulation->model->body_jntadr[id];
-  ASSERT(Simulation::simulation->model->jnt_type[jointIndex] == mjJNT_FREE);
-  const int poseIndex = Simulation::simulation->model->jnt_qposadr[jointIndex];
-  mju_f2n(Simulation::simulation->data->qpos + poseIndex, comPose.translation.data(), 3);
-  mjtNum buf[9];
-  mju_f2n(buf, comPose.rotation.data(), 9);
-  mju_mat2Quat(Simulation::simulation->data->qpos + poseIndex + 3, buf);
-  mju_negQuat(Simulation::simulation->data->qpos + poseIndex + 3, Simulation::simulation->data->qpos + poseIndex + 3);
-
-  // Unfortunately it seems that forward kinematics have to be done for the entire model again.
-  mj_kinematics(Simulation::simulation->model, Simulation::simulation->data);
-
-  //TODO update children transforms
-  updateTransformation();
-}
-
-const float* Body::getPosition() const
-{
-  vec3 pos = const_cast<Body*>(this)->worldTransformation.getPosition();
+  vec3 pos = const_cast<Body*>(this)->getPosition();
   mju_n2f(pos.data(), Simulation::simulation->data->xpos + id * 3, 3);
   return pos.data();
 }
 
 bool Body::getPose(float* pos, float (*rot)[3]) const
 {
-  pos[0] = const_cast<Transformable3D*>(&worldTransformation)->getPosition().x;
-  pos[1] = const_cast<Transformable3D*>(&worldTransformation)->getPosition().y;
-  pos[2] = const_cast<Transformable3D*>(&worldTransformation)->getPosition().z;
+  pos[0] = const_cast<Body*>(this)->getPosition().x;
+  pos[1] = const_cast<Body*>(this)->getPosition().y;
+  pos[2] = const_cast<Body*>(this)->getPosition().z;
 
-  mat4 rotMatrix = Gum::Maths::rotateMatrix(const_cast<Transformable3D*>(&worldTransformation)->getRotation());
+  mat4 rotMatrix = Gum::Maths::rotateMatrix(const_cast<Body*>(this)->getRotation());
   rot[0][0] = rotMatrix[0][0];
   rot[0][1] = rotMatrix[1][0];
   rot[0][2] = rotMatrix[2][0];
@@ -271,7 +245,7 @@ const float* Body::getVelocity() const
   if(rootBody != this)
     return nullptr;
   // This is only possible for bodies that are connected to the worldbody via a freejoint.
-  Vector3f& velocity = const_cast<Body*>(this)->velocityInWorld;
+  vec3& velocity = const_cast<Body*>(this)->velocityInWorld;
 
   ASSERT(Simulation::simulation->model->body_jntnum[id] == 1);
   const int jointIndex = Simulation::simulation->model->body_jntadr[id];
@@ -295,43 +269,13 @@ void Body::setVelocity(const float* velocity)
 
 void Body::move(const float* pos)
 {
-  if(rootBody != this)
-    return;
-  ASSERT(Simulation::simulation->model->body_jntnum[id] == 1);
-  const int jointIndex = Simulation::simulation->model->body_jntadr[id];
-  ASSERT(Simulation::simulation->model->jnt_type[jointIndex] == mjJNT_FREE);
-  const int poseIndex = Simulation::simulation->model->jnt_qposadr[jointIndex];
-  mju_f2n(Simulation::simulation->data->qpos + poseIndex, pos, 3);
-
-  // Unfortunately it seems that forward kinematics have to be done for the entire model again.
-  mj_kinematics(Simulation::simulation->model, Simulation::simulation->data);
-
-  //TODO update children transforms
+  increasePosition(vec3(pos[0], pos[1], pos[2]));
 }
 
-void Body::move(const float* pos, const float (*rot)[3])
+void Body::move(const float* pos, const float* rot)
 {
-  if(rootBody != this)
-    return;
-  // Set translation
-  ASSERT(Simulation::simulation->model->body_jntnum[id] == 1);
-  const int jointIndex = Simulation::simulation->model->body_jntadr[id];
-  ASSERT(Simulation::simulation->model->jnt_type[jointIndex] == mjJNT_FREE);
-  const int poseIndex = Simulation::simulation->model->jnt_qposadr[jointIndex];
-  mju_f2n(Simulation::simulation->data->qpos + poseIndex, pos, 3);
-
-  // Set rotation
-  mjtNum buf[9];
-  mju_f2n(buf, rot[0], 3);
-  mju_f2n(buf + 3, rot[1], 3);
-  mju_f2n(buf + 6, rot[2], 3);
-  mju_mat2Quat(Simulation::simulation->data->qpos + poseIndex + 3, buf);
-  mju_negQuat(Simulation::simulation->data->qpos + poseIndex + 3, Simulation::simulation->data->qpos + poseIndex + 3);
-
-  // Unfortunately it seems that forward kinematics have to be done for the entire model again.
-  mj_kinematics(Simulation::simulation->model, Simulation::simulation->data);
-
-  //TODO update children transforms
+  increasePosition(vec3(pos[0], pos[1], pos[2]));
+  increaseRotation(vec3(rot[0], rot[1], rot[2]));
 }
 
 void Body::resetDynamics()

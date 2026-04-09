@@ -738,7 +738,7 @@ bool Parser::getFloatAndUnit(const char* key, bool required, float& value, char*
 
 int Parser::getInteger(const char* key, bool required, int defaultValue, bool nonZeroPositive)
 {
-  int value;
+  int value = 0;
   if(!getIntegerRaw(key, required, value))
     return defaultValue;
   if(nonZeroPositive && value <= 0)
@@ -751,7 +751,7 @@ int Parser::getInteger(const char* key, bool required, int defaultValue, bool no
 
 std::uint16_t Parser::getUInt16(const char* key, bool required, std::uint16_t defaultValue)
 {
-  int value;
+  int value = 0;
   if(!getIntegerRaw(key, required, value))
     return defaultValue;
   if(value < 0 || value >= std::numeric_limits<std::uint16_t>::max())

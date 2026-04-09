@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include "Graphics/bGraphicsContext.h"
 #include "Simulation/Sensors/Sensor.h"
 #include "Tools/Math/Eigen.h"
 #include "Tools/Math/Pose3f.h"
@@ -73,7 +72,4 @@ private:
   void drawPhysics() const override;
 
   Object3D* pyramid = nullptr; /**< The pyramid mesh for the sensor drawing. */
-  bGraphicsContext::Surface* surface = nullptr; /**< The surface for the sensor drawing. */
-
-  std::vector<bGraphicsContext::Surface*>& surfaces; /**< The special surfaces for each body. */
 };

@@ -7,7 +7,6 @@
 #pragma once
 
 #include "SimRobotCore3.h"
-#include "Graphics/bGraphicsContext.h"
 #include "Simulation/PhysicalObject.h"
 #include <mujoco/mjspec.h>
 #include <mujoco/mujoco.h>
@@ -60,21 +59,10 @@ public:
   void createPhysicsInternal() override;
   void createIDs() override;
 
-  /**
-   * Creates the geometry and adds it to a body at the given offset
-   * @param body The body to which to attach the geometry
-   * @param offset Offset of the geometry's frame relative to the body's frame.
-   * @param collisionGroup The collision group to which the geometry belongs. Geometries within a group don't collide
-   * @param immaterial Whether the geometry collides or just tests for collision
-   */
-  void createGeometry(mjsBody* body, int collisionGroup, bool immaterial = false) {}
-
   void updateTransformation() override;
   void drawPhysics() const override;
 
   static void checkCollisions();
-
-  bGraphicsContext::Surface* surface = nullptr; /**< The surface of this geometry drawing */
 
 protected:
   /**

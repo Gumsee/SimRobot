@@ -42,23 +42,11 @@ public:
   void createIDs() override;
 
   void updateTransformation() override;
-
-  /**
-   * Moves the object and its children relative to its current position
-   * @param offset The distance to move
-   */
-  void move(const Vector3f& offset);
-
-  /**
-   * Rotate the object and its children around a point
-   * @param rotation The rotation offset
-   * @param point The point to turn around
-   */
-  void rotate(const RotationMatrix& rotation, const Vector3f& point);
+  void onTransformUpdate() override;
 
 private:
-  Vector3f centerOfMass = Vector3f::Zero(); /**< The position of the center of mass relative to the pose of the body */
-  Vector3f velocityInWorld; /**< A buffer used by \c getVelocity */
+  vec3 centerOfMass; /**< The position of the center of mass relative to the pose of the body */
+  vec3 velocityInWorld; /**< A buffer used by \c getVelocity */
 
 
   std::list<Body*> bodyChildren; /**< List of first-degree child bodies that are connected to this body over a joint */
@@ -104,12 +92,12 @@ private:
   bool registerDrawing(SimRobotCore3::Controller3DDrawing& drawing) override {return ::PhysicalObject::registerDrawing(drawing);}
   bool unregisterDrawing(SimRobotCore3::Controller3DDrawing& drawing) override {return ::PhysicalObject::unregisterDrawing(drawing);}
   SimRobotCore3::Body* getParentBody() override {return parentBody;}
-  const float* getPosition() const override;
+  const float* getPositionF() const override;
   const float* getVelocity() const override;
   void setVelocity(const float* velocity) override;
   bool getPose(float* position, float (*rotation)[3]) const override;
   void move(const float* pos) override;
-  void move(const float* pos, const float (*rot)[3]) override;
+  void move(const float* pos, const float* rot) override;
   void resetDynamics() override;
   SimRobotCore3::Body* getRootBody() override {return rootBody;}
   void enablePhysics(bool enable) override;

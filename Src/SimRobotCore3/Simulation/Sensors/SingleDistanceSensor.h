@@ -5,8 +5,6 @@
  */
 
 #pragma once
-
-#include "Graphics/bGraphicsContext.h"
 #include "Simulation/Sensors/Sensor.h"
 #include "Tools/Math/Pose3f.h"
 
@@ -67,5 +65,4 @@ private:
   void updateTransformation() override;
 
   Object3D* ray = nullptr; /**< The ray mesh for the sensor drawing. */
-  bGraphicsContext::Surface* surface = nullptr; /**< The surface for the sensor drawing. */
 };

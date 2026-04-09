@@ -1,31 +1,61 @@
 #add_definitions(-DGUM_ENGINE_NO_SHADOWMAP)
 add_definitions(-DGUM_PRIMITIVES_MESH_UP_Z)
 
+if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+    add_definitions(-DGUM_OS_LINUX)
+    add_definitions(-DGUM_OS_UNIX)
+    set(GUM_OS_LINUX true)
+    set(GUM_OS_UNIX true)
 
-add_library(gum-maths SHARED IMPORTED)
-set_target_properties(gum-maths PROPERTIES IMPORTED_LOCATION "${SIMROBOT_PREFIX}/Build/Linux/gum-maths/libGumMaths.a")
+elseif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+    add_definitions(-DGUM_OS_WINDOWS)
+    add_definitions(-DGUM_OS_DOSBASED)
+    set(GUM_OS_WINDOWS true)
+    set(GUM_OS_DOSBASED true)
 
-add_library(gum-system SHARED IMPORTED)
-set_target_properties(gum-system PROPERTIES IMPORTED_LOCATION "${SIMROBOT_PREFIX}/Build/Linux/gum-system/libGumSystem.a")
+elseif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    add_definitions(-DGUM_OS_MACOS)
+    add_definitions(-DGUM_OS_UNIX)
+    set(GUM_OS_MACOS true)
+    set(GUM_OS_UNIX true)
 
-add_library(gum-essentials SHARED IMPORTED)
-set_target_properties(gum-essentials PROPERTIES IMPORTED_LOCATION "${SIMROBOT_PREFIX}/Build/Linux/gum-essentials/libGumEssentials.a")
+elseif(${CMAKE_SYSTEM_NAME} MATCHES "Android")
+    add_definitions(-DGUM_OS_ANDROID)
+    add_definitions(-DGUM_OS_UNIX)
+    set(GUM_OS_ANDROID true)
+    set(GUM_OS_UNIX true)
 
-add_library(gum-primitives SHARED IMPORTED)
-set_target_properties(gum-primitives PROPERTIES IMPORTED_LOCATION "${SIMROBOT_PREFIX}/Build/Linux/gum-primitives/libGumPrimitives.a")
+elseif(${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
+    add_definitions(-DGUM_OS_BSD)
+    add_definitions(-DGUM_OS_UNIX)
+    set(GUM_OS_BSD true)
+    set(GUM_OS_UNIX true)
+endif()
 
-add_library(gum-codecs SHARED IMPORTED)
-set_target_properties(gum-codecs PROPERTIES IMPORTED_LOCATION "${SIMROBOT_PREFIX}/Build/Linux/gum-codecs/libGumCodecs.a")
+#set(CMAKE_CXX_COMPILER g++)
 
-add_library(gum-graphics SHARED IMPORTED)
-set_target_properties(gum-graphics PROPERTIES IMPORTED_LOCATION "${SIMROBOT_PREFIX}/Build/Linux/gum-graphics/libGumGraphics.a")
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -fPIC -ggdb -fno-omit-frame-pointer") #-O3
+set (CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS} -O0 -fPIC -ggdb -fno-omit-frame-pointer") #-O3
+add_link_options(-fPIC -fuse-ld=mold)
 
-add_library(gum-opengl SHARED IMPORTED)
-set_target_properties(gum-opengl PROPERTIES IMPORTED_LOCATION "${SIMROBOT_PREFIX}/Build/Linux/gum-opengl/libGumOpenGL.a")
+set(DISABLE_PACKAGE_CONFIGURATION "ON")
+set(GUMGLFW_FOUND "YES")
+macro(add_gumlibrary projname varname)
+  set(CMAKE_PROJECT_NAME ${projname})
+  set(PROJECT_NAME ${projname})
+  include("${SIMROBOT_PREFIX}/Util/${projname}/src/CMakeLists.txt")
+  set(${varname}_FOUND "YES")
+  set(${varname}_INCLUDE_DIRS "${SIMROBOT_PREFIX}/Util/${varname}/src/")
+endmacro()
 
-add_library(gum-desktop SHARED IMPORTED)
-set_target_properties(gum-desktop PROPERTIES IMPORTED_LOCATION "${SIMROBOT_PREFIX}/Build/Linux/gum-desktop/libGumDesktop.a")
-
+add_gumlibrary(gum-maths GUMMATHS)
+add_gumlibrary(gum-system GUMSYSTEM)
+add_gumlibrary(gum-essentials GUMESSENTIALS)
+add_gumlibrary(gum-primitives GUMPRIMITIVES)
+add_gumlibrary(gum-codecs GUMCODECS)
+add_gumlibrary(gum-desktop GUMDESKTOP)
+add_gumlibrary(gum-graphics GUMGRAPHICS)
+add_gumlibrary(gum-opengl GUMOPENGL)
 
 if(APPLE)
   add_definitions(-DGUM_OS_MACOS)
@@ -35,7 +65,6 @@ else()
   add_definitions(-DGUM_OS_LINUX)
 endif()
 
-add_link_options(-fPIC)
 
 set(GUM_ENGINE_SRC 
     ${SIMROBOT_PREFIX}/Util/gum-engine/src/gum-engine.cpp
@@ -112,13 +141,21 @@ set(GUM_ENGINE_SRC
     ${SIMROBOT_PREFIX}/Util/gum-qt/src/QTKeybinds.cpp
     ${SIMROBOT_PREFIX}/Util/gum-qt/src/UnixSystem.cpp
 )
-set(CMAKE_CXX_FLAGS "-g")
+#set(CMAKE_CXX_FLAGS "-g")
 #set(CMAKE_BUILD_TYPE RelWithDebInfo)
 add_library(gum-engine SHARED ${GUM_ENGINE_SRC})
 target_link_libraries(gum-engine PRIVATE 
-  Qt6::Core Qt6::Gui Qt6::OpenGL Qt6::OpenGLWidgets Qt6::Widgets 
-  gum-primitives gum-graphics gum-opengl gum-codecs gum-desktop gum-maths gum-system gum-essentials
+  Qt6::Core Qt6::Gui Qt6::OpenGL Qt6::OpenGLWidgets Qt6::Widgets OpenGL GLU minizip GLEW 
+  $<LINK_GROUP:RESCAN,gum-opengl,gum-graphics> 
+  gum-essentials 
+  gum-codecs 
+  gum-primitives 
+  gum-desktop 
+  gum-system 
+  gum-maths
 )
+
+
 set_property(TARGET gum-engine PROPERTY LIBRARY_OUTPUT_DIRECTORY "${SIMROBOT_LIBRARY_DIR}")
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/)
@@ -137,3 +174,5 @@ include_directories(${SIMROBOT_PREFIX}/Util/gum-codecs/external/)
 include_directories(${SIMROBOT_PREFIX}/Util/gum-desktop/src/)
 include_directories(${SIMROBOT_PREFIX}/Util/gum-desktop/external/tinyfd/)
 include_directories(${SIMROBOT_PREFIX}/Util/gum-engine/src/)
+
+set(CMAKE_CXX_COMPILER clang++)

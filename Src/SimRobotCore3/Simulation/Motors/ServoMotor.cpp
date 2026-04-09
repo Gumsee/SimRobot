@@ -54,6 +54,7 @@ void ServoMotor::create(Joint* joint)
 
 void ServoMotor::act()
 {
+  ASSERT(target);
   if(!isInitialized)
   {
     ASSERT(Simulation::simulation->model->jnt_type[joint->id] == mjJNT_HINGE ||

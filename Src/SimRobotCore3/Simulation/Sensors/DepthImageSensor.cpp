@@ -96,7 +96,7 @@ void DepthImageSensor::createPhysicsInternal()
   float aspect = std::tan(sensor.renderAngleX * 0.5f) / std::tan(angleY * 0.5f);
   OpenGLTools::computePerspective(angleY, aspect, zNear, max, sensor.projection);
 
-  Mesh* mesh = new Mesh("DepthImageSensor"); //needs TODO, custom name for each sensor
+  Mesh* mesh = Mesh::getMesh("DepthImageSensor"); //needs TODO, custom name for each sensor
   
   vec3 ml;
   if(projection == perspectiveProjection)

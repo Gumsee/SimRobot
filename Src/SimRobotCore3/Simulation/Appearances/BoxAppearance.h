@@ -5,8 +5,6 @@
  */
 
 #pragma once
-
-#include "Graphics/bGraphicsContext.h"
 #include "Simulation/Appearances/Appearance.h"
 
 /**

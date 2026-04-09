@@ -29,10 +29,6 @@ SimObject::SimObject(const std::string& name)
   loadedObjects[mujocoName] = this;
 }
 
-SimObject::~SimObject()
-{
-}
-
 std::string SimObject::findAvailableName(std::string name, const std::string& defaultvalue)
 {
   return name.empty() ? defaultvalue : name;
@@ -43,15 +39,6 @@ void SimObject::addParent(Element& parent)
   this->parent = dynamic_cast<SimObject*>(&parent);
   if(this->parent)
     this->parent->children.push_back(this);
-}
-
-std::string getLevel(int level)
-{
-  std::string ret = "";
-  for(unsigned int i = 0; i < level; i++)
-    ret += "  ";
-
-  return ret;
 }
 
 void SimObject::registerObjects(int level)
@@ -75,7 +62,7 @@ void SimObject::registerObjects(int level)
       simObject->fullName = fullName + "." + simObject->name.c_str();
 
     //std::cout << getLevel(level) << simObject->mujocoName << " " << simObject->fullName.toStdString() << std::endl;
-    std::cout << getLevel(level) << simObject->mujocoName << " " << simObject->worldTransformation.getRotation().toString() << std::endl;
+    //std::cout << getLevel(level) << simObject->mujocoName << " " << simObject->getRotation().toString() << std::endl;
     CoreModule::application->registerObject(*CoreModule::module, dynamic_cast<SimRobot::Object&>(*simObject), dynamic_cast<SimRobot::Object*>(this));
     simObject->registerObjects(level + 1);
   }
@@ -94,8 +81,8 @@ const QIcon* SimObject::getIcon() const
 
 void SimObject::calcTransformationMatrix()
 {
-  worldTransformation.setMatrix(parent != nullptr
-    ? parent->worldTransformation.getMatrix() * this->relativeTransformation.getMatrix()
+  setMatrix(parent != nullptr
+    ? parent->getMatrix() * this->relativeTransformation.getMatrix()
     : this->relativeTransformation.getMatrix()
   );
 }

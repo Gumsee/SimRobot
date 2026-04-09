@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include "Graphics/bGraphicsContext.h"
+#include "Graphics/OriginRenderer.h"
 #include "Simulation/Appearances/ComplexAppearance.h"
 #include <mujoco/mjdata.h>
 #include <mujoco/mjmodel.h>
@@ -37,23 +37,11 @@ public:
   mjsBody* worldBody = nullptr; /**< The world (root) body in the model specification. Only valid during \c createPhysics. */
   mjModel* model = nullptr; /**< The MuJoCo model that is compiled from the model specification. Only valid after \c createPhysics. */
   mjData* data = nullptr; /**< The MuJoCo simulation state. Only valid after \c createPhysics. */
-
-  bGraphicsContext graphicsContext; /**< The object that does graphics. */
-  Object3D* xAxisMesh = nullptr; /**< The mesh for the x axis in object renderers. */
-  Object3D* yAxisMesh = nullptr; /**< The mesh for the y axis in object renderers. */
-  Object3D* zAxisMesh = nullptr; /**< The mesh for the z axis in object renderers. */
-  Object3D* dragPlaneMesh = nullptr; /**< The mesh for the drag plane in object renderers. */
+  OriginRenderer* originRenderer;
   Object3D* bodyComSphereMesh = nullptr; /**< The mesh for the physical CoM drawing of bodies. */
-  bGraphicsContext::Surface* xAxisSurface = nullptr; /**< The surface for the x axis in object renderers. */
-  bGraphicsContext::Surface* yAxisSurface = nullptr; /**< The surface for the y axis in object renderers. */
-  bGraphicsContext::Surface* zAxisSurface = nullptr; /**< The surface for the z axis in object renderers. */
-  bGraphicsContext::Surface* dragPlaneSurface = nullptr; /**< The surface for the drag plane in object renderers. */
-  bGraphicsContext::Surface* bodyComSphereSurface = nullptr; /**< The surface for the physical CoM drawing of bodies. */
-  bGraphicsContext::ModelMatrix* originModelMatrix = nullptr; /**< The model matrix for the origin in object renderers. */
-  bGraphicsContext::ModelMatrix* dragPlaneModelMatrix = nullptr; /**< The model matrix for the drag plane in object renderers. */
+  //bGraphicsContext::ModelMatrix* dragPlaneModelMatrix = nullptr; /**< The model matrix for the drag plane in object renderers. */
   Pose3f originPose; /**< Pose of the origin (assuming that renderers are sequential. */
   Pose3f dragPlanePose; /**< Pose of the drag plane (assuming it is not possible to drag simultaneously in multiple renderers). */
-  std::vector<bGraphicsContext::Surface*> bodySurfaces; /**< The special surfaces for each body, used by \c ObjectSegmentedImageSensor. */
   ShaderProgram* forwardRenderingShader;
 
   unsigned int currentFrameRate = 0U; /**< The current frame rate of the simulation */

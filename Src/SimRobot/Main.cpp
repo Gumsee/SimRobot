@@ -15,11 +15,7 @@
 #endif
 
 #include "MainWindow.h"
-#include <System/Output.h>
-#include <Engine/3D/Object/ObjectManager.h>
-#include <gum-engine.h>
 #include <Desktop/Window.h>
-#include <Graphics/Graphics.h>
 
 #ifdef MACOS
 #include <QFileOpenEvent>
@@ -57,9 +53,6 @@ protected:
 
 int main(int argc, char* argv[])
 {
-    Gum::Output::init();
-    ObjectManager::MODEL_ASSETS_PATH = Gum::File("/home/gumse/Projects/gumengine/gum-engine/examples/assets/objects/", Gum::Filesystem::DIRECTORY);;
-
     //Gum::MaterialManager::MATERIAL_ASSETS_PATH = Examples::assetPath + Gum::File("/materials/", Gum::Filesystem::DIRECTORY);
 #ifdef WINDOWS
   _CrtSetDbgFlag(_CRTDBG_LEAK_CHECK_DF | _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG));
@@ -82,15 +75,8 @@ int main(int argc, char* argv[])
     &mainWindow
   );
   Gum::IO::Mouse* winmouse = gumWindow->getMouse();
-
-
-  Gum::Graphics::init();
-  Gum::Graphics::loadDefaults();
-  Gum::Graphics::printInfo();
+  Gum::IO::Keyboard* winkeyboard = gumWindow->getKeyboard();
   gumWindow->getContext()->printInfo();
-  
-  Gum::Engine::init();
-  Lightning::initShader();
 
 #ifdef WINDOWS
   app.setStyle("fusion");
@@ -124,9 +110,9 @@ int main(int argc, char* argv[])
 
   int ret = app.exec();
   
-  Gum::_delete(winmouse);
-  Gum::_delete(gumWindow);
-  Gum::Engine::cleanup();
+  delete winmouse;
+  delete winkeyboard;
+  delete gumWindow;
 
   return ret;
 }
