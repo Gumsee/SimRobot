@@ -33,13 +33,16 @@ SimObjectWidget::SimObjectWidget(SimObject& simObject) : QOpenGLWidget(),
   simObject(simObject), object(dynamic_cast<SimRobot::Object&>(simObject)), oMouse(nullptr), oKeyboard(nullptr),
   defaultCameraPos(1.5f, 0.0f, 0.0f)
 {
+  Gum::Window::CurrentlyBoundWindow->overrideMouseIO(&oMouse);
+  Gum::Window::CurrentlyBoundWindow->overrideKeyboardIO(&oKeyboard);
+
   //setMouseTracking(true);
   setFocusPolicy(Qt::StrongFocus);
   grabGesture(Qt::PinchGesture);
 
   isSceneWidget = object.getKind() == SimRobotCore3::Kind::scene;
 
-  pGLContext = new GraphicsContext(this->context(), Gum::Window::CurrentlyBoundWindow->getContext()->getNativeHandle(), nullptr, Gum::DefaultContextConfig);
+  //pGLContext = new GraphicsContext(this->context(), Gum::Window::CurrentlyBoundWindow->getContext()->getNativeHandle(), nullptr, Gum::DefaultContextConfig);
 
   camera = new Camera3D(ivec2(0,0), nullptr);
   camera->setWorldUpDirection(vec3(0,0,1));
@@ -73,12 +76,14 @@ SimObjectWidget::SimObjectWidget(SimObject& simObject) : QOpenGLWidget(),
   setDragMode(DragAndDropMode(settings->value("DragMode", int(dragMode)).toInt()));
   renderFlags = settings->value("RenderFlags", renderFlags).toInt();
   camera->setFOV(settings->value("Fov", 40.0f).toFloat());
-  camera->setPosition(Tools::StringToVec<float, 3>(settings->value("cameraPos").toString().toStdString(), defaultCameraPos));
+  camera->setPosition(Tools::StringToVec<float, 3>(settings->value("cameraPos").toString().toStdString(), defaultCameraPos) * vec3(1.0f,1.0f,0.0f));
+  camera->thirdPersonMotionUpdate();
   settings->endGroup();
+
 
   Simulation::simulation->originRenderer->enable(renderFlags & SimRobotCore3::Renderer::showCoordinateSystem);
 
-  oKeyboard.onKeyPress([this](int key, int mods) {
+  oKeyboard.onKeyPress([this](int key, [[maybe_unused]] int mods) {
     if(key == GUM_KEY_PAGE_UP || key == GUM_KEY_PLUS)
     {
       camera->increaseZoom(camera->getZoomSpeed() * -1.0f);
@@ -196,7 +201,7 @@ SimObjectWidget::SimObjectWidget(SimObject& simObject) : QOpenGLWidget(),
         else
         {
           const vec3 offset = currentPos - dragStartPos;
-          clickedBody->increasePosition(offset);
+          clickedBody->increasePosition(offset * vec3(1,1,0));
           if(dragMode == adoptDynamics)
           {
             const unsigned int now = System::getTime();
@@ -298,8 +303,8 @@ void recursivelyAddObjects(World3D* world, const SimRobot::Object* object)
 void SimObjectWidget::initializeGL()
 { 
   Gum::Window::CurrentlyBoundWindow->getContext()->bind();
-  Gum::Graphics::init();
-  Gum::Graphics::loadDefaults();
+  //Gum::Graphics::init();
+  //Gum::Graphics::loadDefaults();
 
   renderCanvas = new Canvas(ivec2(width(), height()));
 
@@ -344,14 +349,10 @@ void SimObjectWidget::initializeGL()
   renderer->setExposure(1.0f);
   renderer->renderSky(isSceneWidget);
 
-  
-  if(pShader == nullptr)
-  {
-    pShader = new ShaderProgram("CanvasShader", true);
-    pShader->addShader(Gum::PostProcessing::VertexShader);
-    pShader->addShader(Gum::PostProcessing::FragmentShader);
-    pShader->build();
-  }
+  pShader = ShaderProgram::requestShaderProgram("CanvasShader", true);
+  pShader->addShader(Gum::PostProcessing::VertexShader);
+  pShader->addShader(Gum::PostProcessing::FragmentShader);
+  pShader->build();
 
   if(Simulation::simulation->scene->drawingManager)
   {

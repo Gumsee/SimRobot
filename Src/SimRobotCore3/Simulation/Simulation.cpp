@@ -110,7 +110,7 @@ bool Simulation::loadFile(const std::string& filename, std::list<std::string>& e
   Body::registeredBodies.resize(model->nbody);
   scene->createIDs();
 
-  forwardRenderingShader = new ShaderProgram("ForwardRenderingShader", false);
+  forwardRenderingShader = ShaderProgram::requestShaderProgram("ForwardRenderingShader", false);
   forwardRenderingShader->addShader(new Shader(ForwardRenderingVertexShader, Shader::TYPES::VERTEX_SHADER));
   forwardRenderingShader->addShader(new Shader(ForwardRenderingFragmentShader, Shader::TYPES::FRAGMENT_SHADER));
   forwardRenderingShader->build({{"vertexPosition", 0}, {"TextureCoords", 1}, {"Normals", 2}, {"TransMatrix", 3}});

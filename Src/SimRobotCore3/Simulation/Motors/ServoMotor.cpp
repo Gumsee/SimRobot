@@ -79,14 +79,14 @@ void ServoMotor::act()
 
   target[index] = { this->setpoint, static_cast<float>(Simulation::simulation->simulatedTime + delay) };
 
-  unsigned searchIndex = index;
+  unsigned int searchIndex = index;
   while(true)
   {
     if(Simulation::simulation->simulatedTime >= target[searchIndex].executionTimestamp &&
        target[searchIndex].executionTimestamp > lastExecutedSetpoint.executionTimestamp)
       lastExecutedSetpoint = target[searchIndex];
     searchIndex++;
-    if(searchIndex > targetSize)
+    if(searchIndex >= targetSize)
       searchIndex = 0;
     if(searchIndex == index)
       break;

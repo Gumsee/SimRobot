@@ -98,16 +98,12 @@ void CameraSensor::Sensor::updateValue()
 
   //// setup camera position
   camera->camera3d->setPosition(physicalObject->getPosition());
-  vec3 eulerrot = fquat::toEuler(physicalObject->getRotation());
-  float p = eulerrot.x * GUM_PI_F / 180.0f;
-  float y = eulerrot.z * GUM_PI_F / 180.0f;
-  vec3 direction(
-    cos(y)*cos(p),
-    sin(y)*cos(p),
-    -sin(p)
-  );
+
+  vec3 direction = Gum::Maths::rotateMatrix(physicalObject->getRotation()) * vec4(1,0,0,1);
+  direction.z *= -1.0f;
+  direction.y *= -1.0f;
   //std::cout << direction.toString() << std::endl;
-  camera->camera3d->lookAt(direction);
+  camera->camera3d->lookAt(physicalObject->getPosition() + direction);
   camera->camera3d->update();
 
   //// setup camera position

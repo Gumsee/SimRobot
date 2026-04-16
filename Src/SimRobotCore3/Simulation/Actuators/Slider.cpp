@@ -36,7 +36,8 @@ void Slider::createPhysicsInternal()
   ASSERT(!children.empty());
   Body* childBody = dynamic_cast<Body*>(children.front());
   ASSERT(childBody);
-  ASSERT(childBody->body);
+  //CHANGED
+  //ASSERT(childBody->body);
 
   childBody->parentBody = parentBody;
   childBody->createPhysics();
