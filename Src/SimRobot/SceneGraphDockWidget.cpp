@@ -233,6 +233,10 @@ bool SceneGraphDockWidget::setActive(const SimRobot::Object* object, bool active
   RegisteredObject* item = registeredObjectsByObject.value(object);
   if(!item)
     return false;
+
+  treeWidget->expandItem(item);
+  treeWidget->scrollToItem(item);
+  
   item->setSelected(active);
   return true;
 }

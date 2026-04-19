@@ -86,6 +86,8 @@ bool Simulation::loadFile(const std::string& filename, std::list<std::string>& e
 
   worldBody = mjs_findBody(spec, "world");
 
+  cameraBoundaries.pos = vec3(std::numeric_limits<float>::max());
+  cameraBoundaries.size = vec3(std::numeric_limits<float>::lowest());
   scene->createPhysics();
 
   worldBody = nullptr;

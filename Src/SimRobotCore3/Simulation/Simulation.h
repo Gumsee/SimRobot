@@ -43,6 +43,7 @@ public:
   Pose3f originPose; /**< Pose of the origin (assuming that renderers are sequential. */
   Pose3f dragPlanePose; /**< Pose of the drag plane (assuming it is not possible to drag simultaneously in multiple renderers). */
   ShaderProgram* forwardRenderingShader;
+  bbox3 cameraBoundaries;
 
   unsigned int currentFrameRate = 0U; /**< The current frame rate of the simulation */
   unsigned int collisions = 0U;

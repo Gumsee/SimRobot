@@ -364,6 +364,13 @@ bool MainWindow::selectObject(const SimRobot::Object& object)
   return true;
 }
 
+bool MainWindow::activateObject(const SimRobot::Object& object)
+{
+  return sceneGraphDockWidget 
+    ? (sceneGraphDockWidget->setActive(&object, true) && sceneGraphDockWidget->setOpened(&object, true))
+    : false;
+}
+
 void MainWindow::showWarning(const QString& title, const QString& message)
 {
   QMessageBox::warning(this, title, message);

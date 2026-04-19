@@ -149,6 +149,7 @@ namespace SimRobot
     virtual bool openObject(const Object& object) = 0;
     virtual bool closeObject(const Object& object) = 0;
     virtual bool selectObject(const Object& object) = 0;
+    virtual bool activateObject(const Object& object) = 0;
     virtual void showWarning(const QString& title, const QString& message) = 0;
     virtual void setStatusMessage(const QString& message) = 0;
     virtual const QString& getFilePath() const = 0;

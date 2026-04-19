@@ -88,6 +88,12 @@ void Geometry::createPhysicsInternal()
     if(immaterial)
       geom->gap = std::numeric_limits<decltype(geom->gap)>::max();
   }
+
+  for(unsigned int i = 0; i < 3; i++)
+  {
+    if     (Simulation::simulation->cameraBoundaries.pos[i]  > vPosition[i] - outerRadius * 0.5f) Simulation::simulation->cameraBoundaries.pos[i]  = vPosition[i] - outerRadius * 0.5f;
+    else if(Simulation::simulation->cameraBoundaries.size[i] < vPosition[i] + outerRadius * 0.5f) Simulation::simulation->cameraBoundaries.size[i] = vPosition[i] + outerRadius * 0.5f;
+  }
 }
 
 void Geometry::createIDs()

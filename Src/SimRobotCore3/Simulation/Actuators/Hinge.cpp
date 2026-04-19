@@ -57,6 +57,7 @@ void Hinge::createPhysicsInternal()
   //vec3 positionInChild = childBody->relativeTransformation.getPosition();
   vec3 positionInChild = Gum::Maths::inverseTransformationMatrix(childBody->getMatrix()) * vec4(getPosition(), 1.0f);
   vec3 axisInChild = mat3::transpose(mat3(childBody->getMatrix())) * mat3(getMatrix()) * (vec3)*axis;
+  //vec3 axisInChild = mat3::transpose(mat3(childBody->getMatrix())) * mat3(getMatrix()) * vec3(axis->x, axis->z, axis->y);
   //vec3 axisInChild = Gum::Maths::rotateMatrix(childBody->relativeTransformation.getRotation()) * vec4(*axis, 1.0f);
 
   mju_f2n(joint->pos, positionInChild.data(), 3);
@@ -69,7 +70,7 @@ void Hinge::createPhysicsInternal()
     joint->limited = mjLIMITED_TRUE;
     joint->range[0] = axis->deflection->min;
     joint->range[1] = axis->deflection->max;
-    //joint->ref = axis->deflection->offset; //CHANGED
+    joint->ref = axis->deflection->offset; //CHANGED
   }
 
   // create motor

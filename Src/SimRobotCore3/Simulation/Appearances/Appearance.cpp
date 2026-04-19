@@ -26,7 +26,8 @@ void Appearance::createGraphics()
   if(pMesh != nullptr)
   {
     load();
-    addInstance();
+    Object3DInstance* instance = addInstance();
+    instance->setUserPtr(parent);
 
     if(!renderForward)
       Simulation::simulation->scene->world->getObjectManager()->addObject(this);

@@ -50,6 +50,7 @@ SimObjectWidget::SimObjectWidget(SimObject& simObject) : QOpenGLWidget(),
   camera->setOffset(5.0f);
   camera->setZoomSpeed(0.3f);
   camera->makeActive();
+  camera->setPositionBoundaries(Simulation::simulation->cameraBoundaries);
 
   if(isSceneWidget)
   {
@@ -103,9 +104,11 @@ SimObjectWidget::SimObjectWidget(SimObject& simObject) : QOpenGLWidget(),
       if(mods & GUM_KEYBOARD_MOD_ALT)
       {
         Object3DInstance* instance = pWorld->getObjectManager()->getInstanceByID(renderer->getIDUnderMouse());
-        if(instance != nullptr)
+        if(instance != nullptr && instance->getUserPtr() != nullptr)
         {
-          std::cout << instance->getID() << " "  << instance->getPosition().toString() << std::endl;
+          SimObject* clickedobj = (SimObject*)instance->getUserPtr();
+          SimRobot::Object* castobj = dynamic_cast<SimRobot::Object*>(clickedobj);
+          CoreModule::application->activateObject(*castobj);
         }
       }
       else
@@ -794,17 +797,29 @@ Body* SimObjectWidget::selectObject(vec3 startpos, vec3 raydir)
   if(!isSceneWidget)
     return nullptr;
 
-  int geometryIndex = -1;
-  mjtNum origin[3], dir[3];
-  mju_f2n(origin, startpos.data(), 3);
-  mju_f2n(dir, raydir.data(), 3);
-  const mjtNum dist = mj_ray(Simulation::simulation->model, Simulation::simulation->data, origin, dir, nullptr, 0, -1, &geometryIndex);
-  if(dist < static_cast<mjtNum>(0))
-    return nullptr;
-  ASSERT(geometryIndex >= 0);
-  ASSERT(geometryIndex < Simulation::simulation->model->ngeom);
-  const int bodyIndex = Simulation::simulation->model->geom_bodyid[geometryIndex];
-  ASSERT(bodyIndex > 0); // 0 is the world body, we excluded that by setting flg_static=0 in the call to mj_ray.
-  ASSERT(bodyIndex < Simulation::simulation->model->nbody);
-  return Body::registeredBodies[bodyIndex]->rootBody;
+  //int geometryIndex = -1;
+  //mjtNum origin[3], dir[3];
+  //mju_f2n(origin, startpos.data(), 3);
+  //mju_f2n(dir, raydir.data(), 3);
+  //const mjtNum dist = mj_ray(Simulation::simulation->model, Simulation::simulation->data, origin, dir, nullptr, 0, -1, &geometryIndex);
+  //if(dist < static_cast<mjtNum>(0))
+  //  return nullptr;
+  //ASSERT(geometryIndex >= 0);
+  //ASSERT(geometryIndex < Simulation::simulation->model->ngeom);
+  //const int bodyIndex = Simulation::simulation->model->geom_bodyid[geometryIndex];
+  //ASSERT(bodyIndex > 0); // 0 is the world body, we excluded that by setting flg_static=0 in the call to mj_ray.
+  //ASSERT(bodyIndex < Simulation::simulation->model->nbody);
+  //return Body::registeredBodies[bodyIndex]->rootBody;
+
+
+  Object3DInstance* instance = pWorld->getObjectManager()->getInstanceByID(renderer->getIDUnderMouse());
+  if(instance != nullptr && instance->getUserPtr() != nullptr)
+  {
+    SimObject* clickedobj = (SimObject*)instance->getUserPtr();
+    Body* castbody = dynamic_cast<Body*>(clickedobj);
+    if(castbody)
+      return castbody->rootBody;
+  }
+
+  return nullptr;
 }
