@@ -5,7 +5,13 @@
 
 cd "$(dirname "$(which "$0")")"
 
-CMAKE=./cmake
+substitude () {
+  TMPFILE=$(mktemp)
+  echo "$@" > $TMPFILE 2> $TMPFILE
+  echo "$TMPFILE"
+}
+
+CMAKE="$(which cmake)"
 PROJECTDIR=../../Build/macOS
 PROJECTPATH=SimRobot.xcodeproj
 PROJECTSRC=$PROJECTDIR/SimRobot.xcodeproj
@@ -14,29 +20,27 @@ TEMPPATH=/tmp/generate.tmp
 TEMPPATH2=/tmp/generate2.tmp
 
 # Create a symbolic link to cmake.
-if [ ! -e "$CMAKE" ]; then
+test -n "$CMAKE" || {
   echo -n "Searching for CMake... "
-  if [ -e "$(which cmake)" ]; then
-    ln -sf "$(which cmake)" "$CMAKE"
-  else
-    while read file; do
-      if [ -f "$file/Contents/bin/cmake" ]; then
-        ln -sf "$file/Contents/bin/cmake" "$CMAKE"
-      fi
-    done <<<"$(/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister -dump \
-    | grep "^[ 	]*path:" \
-    | grep "CMake" \
-    | sed -e "s%[ 	]*path: *%%" -e "s% (.*%%")"
-  fi
+  
+  CMAKE_LIST_FILE=$(substitude "$(/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister -dump | grep "^[ 	]*path:" | grep "CMake" | sed -e "s%[ 	]*path: *%%" -e "s% (.*%%")")
+
+  while read FILE ; do
+    test -f "$FILE/Contents/bin/cmake" && {
+      CMAKE="$FILE/Contents/bin/cmake"
+      break
+    }
+  done < "$CMAKE_LIST_FILE"
+  rm $CMAKE_LIST_FILE
 
   # Could the link be created?
-  if [ -e "$CMAKE" ]; then
+  if test -n "$CMAKE" ; then
     echo "Found."
   else
     echo "Not found."
     exit 1
   fi
-fi
+}
 
 # Determine current version of macOS SDK.
 SDKVERSION="$(grep "MinimalDisplayName" "$(xcrun --show-sdk-path)/SDKSettings.json" \

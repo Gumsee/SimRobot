@@ -32,12 +32,11 @@ elseif(${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
     set(GUM_OS_UNIX true)
 endif()
 
-#set(CMAKE_CXX_COMPILER g++)
-
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -fPIC -ggdb -fno-omit-frame-pointer") #-O3
 set (CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS} -O0 -fPIC -ggdb -fno-omit-frame-pointer") #-O3
-add_link_options(-fPIC -fuse-ld=mold)
+add_link_options(-fPIC)# -fuse-ld=mold)
 
+set(CMAKE_INSTALL_LIBDIR "/usr/local/lib")
 set(DISABLE_PACKAGE_CONFIGURATION "ON")
 set(GUMGLFW_FOUND "YES")
 macro(add_gumlibrary projname varname)
@@ -48,6 +47,8 @@ macro(add_gumlibrary projname varname)
   set(${varname}_INCLUDE_DIRS "${SIMROBOT_PREFIX}/Util/${varname}/src/")
 endmacro()
 
+find_package(OpenGL)
+include("${SIMROBOT_PREFIX}/Util/gum-opengl/external/glew/build/cmake/CMakeLists.txt")
 add_gumlibrary(gum-maths GUMMATHS)
 add_gumlibrary(gum-system GUMSYSTEM)
 add_gumlibrary(gum-essentials GUMESSENTIALS)
@@ -144,35 +145,48 @@ set(GUM_ENGINE_SRC
 #set(CMAKE_CXX_FLAGS "-g")
 #set(CMAKE_BUILD_TYPE RelWithDebInfo)
 add_library(gum-engine SHARED ${GUM_ENGINE_SRC})
-target_link_libraries(gum-engine PRIVATE 
-  Qt6::Core Qt6::Gui Qt6::OpenGL Qt6::OpenGLWidgets Qt6::Widgets OpenGL GLU minizip GLEW 
-  $<LINK_GROUP:RESCAN,gum-opengl,gum-graphics> 
-  gum-essentials 
-  gum-codecs 
-  gum-primitives 
-  gum-desktop 
-  gum-system 
-  gum-maths
-)
+if(APPLE)
+  target_link_libraries(gum-engine PRIVATE 
+    Qt6::Core Qt6::Gui Qt6::OpenGL Qt6::OpenGLWidgets Qt6::Widgets
+    gum-opengl
+    gum-graphics
+    gum-essentials 
+    gum-codecs 
+    gum-primitives 
+    gum-desktop 
+    gum-system 
+    gum-maths
+  )
+else()
+  target_link_libraries(gum-engine PRIVATE 
+    Qt6::Core Qt6::Gui Qt6::OpenGL Qt6::OpenGLWidgets Qt6::Widgets OpenGL GLU minizip GLEW 
+    $<LINK_GROUP:RESCAN,gum-opengl,gum-graphics> 
+    gum-essentials 
+    gum-codecs 
+    gum-primitives 
+    gum-desktop 
+    gum-system 
+    gum-maths
+  )
+endif()
 
 
 set_property(TARGET gum-engine PROPERTY LIBRARY_OUTPUT_DIRECTORY "${SIMROBOT_LIBRARY_DIR}")
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/)
 
-include_directories(${SIMROBOT_PREFIX}/Util/gum-graphics/src/)
-include_directories(${SIMROBOT_PREFIX}/Util/gum-primitives/src/)
-include_directories(${SIMROBOT_PREFIX}/Util/gum-maths/src/)
-include_directories(${SIMROBOT_PREFIX}/Util/gum-essentials/src/)
-include_directories(${SIMROBOT_PREFIX}/Util/gum-system/src/)
-include_directories(${SIMROBOT_PREFIX}/Util/gum-codecs/src/)
-include_directories(${SIMROBOT_PREFIX}/Util/gum-codecs/external/assimp/include)
-include_directories(${SIMROBOT_PREFIX}/Util/gum-codecs/external/assimp/code)
-include_directories(${SIMROBOT_PREFIX}/Util/gum-codecs/external/libxml2/include)
-include_directories(${SIMROBOT_PREFIX}/Util/gum-codecs/external/zlib/)
-include_directories(${SIMROBOT_PREFIX}/Util/gum-codecs/external/)
-include_directories(${SIMROBOT_PREFIX}/Util/gum-desktop/src/)
-include_directories(${SIMROBOT_PREFIX}/Util/gum-desktop/external/tinyfd/)
-include_directories(${SIMROBOT_PREFIX}/Util/gum-engine/src/)
+include_directories(SYSTEM ${SIMROBOT_PREFIX}/Util/gum-graphics/src/)
+include_directories(SYSTEM ${SIMROBOT_PREFIX}/Util/gum-primitives/src/)
+include_directories(SYSTEM ${SIMROBOT_PREFIX}/Util/gum-maths/src/)
+include_directories(SYSTEM ${SIMROBOT_PREFIX}/Util/gum-essentials/src/)
+include_directories(SYSTEM ${SIMROBOT_PREFIX}/Util/gum-system/src/)
+include_directories(SYSTEM ${SIMROBOT_PREFIX}/Util/gum-codecs/src/)
+include_directories(SYSTEM ${SIMROBOT_PREFIX}/Util/gum-codecs/external/assimp/include)
+include_directories(SYSTEM ${SIMROBOT_PREFIX}/Util/gum-codecs/external/assimp/code)
+include_directories(SYSTEM ${SIMROBOT_PREFIX}/Util/gum-codecs/external/libxml2/include)
+include_directories(SYSTEM ${SIMROBOT_PREFIX}/Util/gum-codecs/external/zlib/)
+include_directories(SYSTEM ${SIMROBOT_PREFIX}/Util/gum-codecs/external/)
+include_directories(SYSTEM ${SIMROBOT_PREFIX}/Util/gum-desktop/src/)
+include_directories(SYSTEM ${SIMROBOT_PREFIX}/Util/gum-desktop/external/tinyfd/)
+include_directories(SYSTEM ${SIMROBOT_PREFIX}/Util/gum-engine/src/)
 
-set(CMAKE_CXX_COMPILER clang++)
