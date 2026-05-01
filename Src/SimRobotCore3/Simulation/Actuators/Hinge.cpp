@@ -70,7 +70,7 @@ void Hinge::createPhysicsInternal()
     joint->limited = mjLIMITED_TRUE;
     joint->range[0] = axis->deflection->min;
     joint->range[1] = axis->deflection->max;
-    joint->ref = axis->deflection->offset; //CHANGED
+    //joint->ref = axis->deflection->offset; //CHANGED
   }
 
   // create motor

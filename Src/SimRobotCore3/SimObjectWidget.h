@@ -42,7 +42,6 @@ public:
 private:
   SimObject& simObject;
   const SimRobot::Object& object; /**< The object that should be displayed */
-  GraphicsContext* pGLContext;
   Framebuffer* pContextFramebuffer = nullptr;
   Canvas* renderCanvas = nullptr;
   Camera3D* camera = nullptr;

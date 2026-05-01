@@ -24,6 +24,7 @@
 #include <Engine/Material/MaterialManager.h>
 #include <gum-maths.h>
 #include <QSurface>
+#include <QOpenGLContext>
 #include <Graphics/Graphics.h>
 #include <Engine/3D/Lightning/ShadowMapping/ShadowMapping.h>
 #include <mujoco/mujoco.h>
@@ -41,8 +42,6 @@ SimObjectWidget::SimObjectWidget(SimObject& simObject) : QOpenGLWidget(),
   grabGesture(Qt::PinchGesture);
 
   isSceneWidget = object.getKind() == SimRobotCore3::Kind::scene;
-
-  //pGLContext = new GraphicsContext(this->context(), Gum::Window::CurrentlyBoundWindow->getContext()->getNativeHandle(), nullptr, Gum::DefaultContextConfig);
 
   camera = new Camera3D(ivec2(0,0), nullptr);
   camera->setWorldUpDirection(vec3(0,0,1));
@@ -72,7 +71,8 @@ SimObjectWidget::SimObjectWidget(SimObject& simObject) : QOpenGLWidget(),
   settings->beginGroup(object.getFullName());
   appearanceShadeMode = ShadeMode(settings->value("SurfaceShadeMode", int(appearanceShadeMode)).toInt());
   controllerdrawingsShadeMode = ShadeMode(settings->value("DrawingsShadeMode", int(controllerdrawingsShadeMode)).toInt());
-  physicsRenderer->setShadeMode(ShadeMode(settings->value("PhysicsShadeMode", int(physicsRenderer->getShadeMode())).toInt()));
+  if(physicsRenderer)
+    physicsRenderer->setShadeMode(ShadeMode(settings->value("PhysicsShadeMode", int(physicsRenderer->getShadeMode())).toInt()));
   setDragPlane(Tools::StringToVec<float, 3>(settings->value("DragPlane").toString().toStdString(), vec3(0,0,1)));
   setDragMode(DragAndDropMode(settings->value("DragMode", int(dragMode)).toInt()));
   renderFlags = settings->value("RenderFlags", renderFlags).toInt();
@@ -306,8 +306,7 @@ void recursivelyAddObjects(World3D* world, const SimRobot::Object* object)
 void SimObjectWidget::initializeGL()
 { 
   Gum::Window::CurrentlyBoundWindow->getContext()->bind();
-  //Gum::Graphics::init();
-  //Gum::Graphics::loadDefaults();
+  std::cout << "init context " << Gum::Window::CurrentlyBoundWindow->getContext()->getNativeHandle() << std::endl;
 
   renderCanvas = new Canvas(ivec2(width(), height()));
 
@@ -337,6 +336,8 @@ void SimObjectWidget::initializeGL()
       case SimRobotCore3::Kind::appearance:
         pWorld->getObjectManager()->selfManageObjects(true);
         recursivelyAddObjects(pWorld, &object);
+        camera->setPosition(simObject.getPosition());
+        camera->thirdPersonMotionUpdate();
         break;
 
       default:
@@ -368,6 +369,7 @@ void SimObjectWidget::paintGL()
 {
   if(appearanceShadeMode == SimRobotCore3::Renderer::ShadeMode::noShading)
     return;
+
   Gum::Window::CurrentlyBoundWindow->getContext()->bind();
   bindFramebuffer();
 
@@ -476,6 +478,8 @@ void SimObjectWidget::resizeGL(int width, int height)
 
   renderer->updateFramebufferSize();
   camera->updateProjection(renderCanvas->getSize());
+
+  std::cout << "resizing " << renderCanvas->getSize().toString() << std::endl;
 }
 
 void SimObjectWidget::update()
