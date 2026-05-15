@@ -7,6 +7,8 @@
 #include <QApplication>
 #include <QLocale>
 #include <QSurfaceFormat>
+#include <QOpenGLContext>
+#include <QOffscreenSurface>
 
 #ifdef WINDOWS
 #include <crtdbg.h>
@@ -16,6 +18,8 @@
 
 #include "MainWindow.h"
 #include <Desktop/Window.h>
+#include <gum-engine.h>
+#include <QTContext.h>
 
 #ifdef MACOS
 #include <QFileOpenEvent>
@@ -70,13 +74,57 @@ int main(int argc, char* argv[])
   MainWindow mainWindow(argc, argv);
   Gum::Window* gumWindow = new Gum::Window(
     "SimRobot", ivec2(1920, 1080), 
-    GUM_WINDOW_DEFAULTS, 
-    nullptr, Gum::DefaultContextConfig, nullptr, 
+    GUM_WINDOW_DEFAULTS | GUM_WINDOW_NO_CONTEXT,
+    nullptr, Gum::DefaultContextConfig, nullptr,
     &mainWindow
   );
   Gum::IO::Mouse* winmouse = gumWindow->getMouse();
   Gum::IO::Keyboard* winkeyboard = gumWindow->getKeyboard();
-  gumWindow->getContext()->printInfo();
+
+
+  QSurfaceFormat format;
+  format.setVersion(4, 1);
+  format.setProfile(QSurfaceFormat::CoreProfile);
+  format.setSamples(Gum::DefaultContextConfig.numSamples);
+  format.setStencilBufferSize(Gum::DefaultContextConfig.stencilBits);
+  format.setDepthBufferSize(Gum::DefaultContextConfig.depthBits);
+  format.setRedBufferSize(Gum::DefaultContextConfig.rgbaBits.r);
+  format.setGreenBufferSize(Gum::DefaultContextConfig.rgbaBits.g);
+  format.setBlueBufferSize(Gum::DefaultContextConfig.rgbaBits.b);
+  format.setAlphaBufferSize(Gum::DefaultContextConfig.rgbaBits.a);
+  format.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
+  format.setRenderableType(QSurfaceFormat::OpenGL);
+  QSurfaceFormat::setDefaultFormat(format);
+
+
+
+  #if QT_VERSION < QT_VERSION_CHECK(6, 4, 0)
+    // Workaround: For OpenGL to be used in windows, support must be registered before the window is created.
+    // The following function is declared as a constructor in QtOpenGL (i.e. executed at library loading time),
+    // but since the SimRobot application doesn't reference QtOpenGL it isn't sufficient to link QtOpenGL
+    // due to lazy loading. Therefore, we call this function here (probably resulting in the function being
+    // called twice, but this is handled by the function).
+    qt_registerDefaultPlatformBackingStoreOpenGLSupport();
+  #endif
+
+
+  QOffscreenSurface* offscreenSurface = new QOffscreenSurface();
+  offscreenSurface->create();
+  offscreenSurface->setFormat(format);
+  
+
+  QOpenGLContext* qoffscreenContext = new QOpenGLContext();
+  qoffscreenContext->setShareContext(QOpenGLContext::globalShareContext());
+  if(!qoffscreenContext->create())
+      Gum::Output::error("Failed to create OpenGL Context");
+
+  QTContextData contextData;
+  contextData.bindFunc = [qoffscreenContext, offscreenSurface](){ qoffscreenContext->makeCurrent(offscreenSurface); };
+  contextData.unbindFunc = [qoffscreenContext](){ qoffscreenContext->doneCurrent(); };
+  GraphicsContext* offscreenContext = new GraphicsContext(qoffscreenContext, nullptr, &contextData, Gum::DefaultContextConfig);
+  offscreenContext->bind();
+
+  offscreenContext->printInfo();
 
 #ifdef WINDOWS
   app.setStyle("fusion");
@@ -113,6 +161,8 @@ int main(int argc, char* argv[])
   delete winmouse;
   delete winkeyboard;
   delete gumWindow;
+
+  Gum::Engine::cleanup();
 
   return ret;
 }

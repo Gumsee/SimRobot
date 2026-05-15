@@ -16,6 +16,7 @@
 #include <unordered_map>
 #include <Engine/3D/World3D.h>
 #include "Graphics/PhysicsRenderer.h"
+#include "Graphics/ControllerRenderer.h"
 
 class Body;
 class SimLight;
@@ -35,12 +36,12 @@ public:
   int contactMode = 0; /**< The default contact mode for contacts between bodies. TODO unused */
   bool detectBodyCollisions; /**< Whether to detect collision between different bodies. TODO unused */
 
-  SimRobotCore3::Controller3DDrawingManager* drawingManager = nullptr; /**< The manager for 3D controller drawings */
   std::list<Body*> bodies; /**< List of bodies without a parent body */
   std::list<Actuator::Port*> actuators; /**< List of actuators that need to do something in every simulation step */
   std::list<SimLight*> lights; /**< List of scene lights */
   World3D *world;
   PhysicsRenderer* physicsRenderer = nullptr;
+  ControllerRenderer* controllerRenderer = nullptr;
   SceneObject* dragPlaneMesh = nullptr; /**< The mesh for the drag plane in object renderers. */
 
   /** Default constructor */

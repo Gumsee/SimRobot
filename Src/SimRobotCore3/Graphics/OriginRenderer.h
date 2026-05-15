@@ -12,8 +12,8 @@ private:
   bool enabled;
 
 public:
-    OriginRenderer();
+  OriginRenderer();
 
-    void render() override;
-    void enable(bool enabled);
+  void render() override;
+  void enable(bool enabled);
 };

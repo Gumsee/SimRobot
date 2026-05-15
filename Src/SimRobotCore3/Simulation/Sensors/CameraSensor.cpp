@@ -61,6 +61,8 @@ void CameraSensor::createPhysicsInternal()
   instance->setMatrix(getMatrix());
   pyramid->applyTransformationMatrix(instance);
 
+  renderer->setWorld(Simulation::simulation->scene->world);
+
   //TODO
   //ASSERT(!surface);
   //static const float color[] = {0.f, 0.f, 0.5f, 1.f};
@@ -115,10 +117,9 @@ void CameraSensor::Sensor::updateValue()
   //OpenGLTools::convertTransformation(pose.invert(), transformation);
 
   // draw all objects
-  Gum::Window::CurrentlyBoundWindow->getContext()->bind();
+  GraphicsContext::MainContext->bind();
   camera->camera3d->makeActive();
   SimRobotCore3::Renderer::ShadeMode currPhysicsShadeMode = Simulation::simulation->scene->physicsRenderer->getShadeMode();
-  camera->renderer->setWorld(Simulation::simulation->scene->world);
   Simulation::simulation->scene->physicsRenderer->setShadeMode(SimRobotCore3::Renderer::ShadeMode::noShading);
   camera->renderer->render();
   Simulation::simulation->scene->physicsRenderer->setShadeMode(currPhysicsShadeMode);

@@ -15,7 +15,9 @@
 #include <Engine/3D/Renderer3D.h>
 #include <Engine/3D/World3D.h>
 #include "Graphics/PhysicsRenderer.h"
+#include "Graphics/ControllerRenderer.h"
 #include "Simulation/Body.h"
+#include <QTContext.h>
 
 
 class SimObject;
@@ -39,10 +41,14 @@ public:
   /** Destructor */
   ~SimObjectWidget();
 
+  static inline bool RENDERING_IN_WIDGET = false;
+
 private:
   SimObject& simObject;
   const SimRobot::Object& object; /**< The object that should be displayed */
   Framebuffer* pContextFramebuffer = nullptr;
+  QTContextData contextData;
+  GraphicsContext* pContext;
   Canvas* renderCanvas = nullptr;
   Camera3D* camera = nullptr;
   Renderer3D* renderer = nullptr;
@@ -51,7 +57,6 @@ private:
   Gum::IO::Keyboard oKeyboard;
   PhysicsRenderer* physicsRenderer = nullptr;
   ShadeMode appearanceShadeMode = ShadeMode::smoothShading;
-  ShadeMode controllerdrawingsShadeMode = ShadeMode::smoothShading;
   unsigned int dragStartTime = 0;
   bool dragRotate = false;
   vec3 dragPlane = vec3(0,0,1);

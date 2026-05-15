@@ -2,6 +2,7 @@
 #include "Simulation/Simulation.h"
 #include <Engine/Rendering/Camera.h>
 #include <Graphics/Graphics.h>
+#include "SimObjectWidget.h"
 
 OriginRenderer::OriginRenderer()
 {
@@ -24,7 +25,7 @@ OriginRenderer::OriginRenderer()
 
 void OriginRenderer::render()
 {
-  if(!enabled)
+  if(!SimObjectWidget::RENDERING_IN_WIDGET || !enabled)
     return;
 
   Gum::Graphics::disableFeature(Gum::Graphics::Features::DEPTH_TESTING);

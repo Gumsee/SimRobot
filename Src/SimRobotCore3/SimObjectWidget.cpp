@@ -70,14 +70,17 @@ SimObjectWidget::SimObjectWidget(SimObject& simObject) : QOpenGLWidget(),
   QSettings* settings = &CoreModule::application->getLayoutSettings();
   settings->beginGroup(object.getFullName());
   appearanceShadeMode = ShadeMode(settings->value("SurfaceShadeMode", int(appearanceShadeMode)).toInt());
-  controllerdrawingsShadeMode = ShadeMode(settings->value("DrawingsShadeMode", int(controllerdrawingsShadeMode)).toInt());
+  if(Simulation::simulation->scene->controllerRenderer)
+    Simulation::simulation->scene->controllerRenderer->setShadeMode(ShadeMode(settings->value("DrawingsShadeMode", int(Simulation::simulation->scene->controllerRenderer->getShadeMode())).toInt()));
   if(physicsRenderer)
     physicsRenderer->setShadeMode(ShadeMode(settings->value("PhysicsShadeMode", int(physicsRenderer->getShadeMode())).toInt()));
   setDragPlane(Tools::StringToVec<float, 3>(settings->value("DragPlane").toString().toStdString(), vec3(0,0,1)));
   setDragMode(DragAndDropMode(settings->value("DragMode", int(dragMode)).toInt()));
   renderFlags = settings->value("RenderFlags", renderFlags).toInt();
   camera->setFOV(settings->value("Fov", 40.0f).toFloat());
-  camera->setPosition(Tools::StringToVec<float, 3>(settings->value("cameraPos").toString().toStdString(), defaultCameraPos) * vec3(1.0f,1.0f,0.0f));
+  //camera->setPosition(Tools::StringToVec<float, 3>(settings->value("cameraPos").toString().toStdString(), defaultCameraPos) * vec3(1.0f,1.0f,0.0f));
+  camera->setPosition(defaultCameraPos);
+  camera->lookAt(defaultCameraPos + vec3(1,0,0));
   camera->thirdPersonMotionUpdate();
   settings->endGroup();
 
@@ -260,15 +263,14 @@ SimObjectWidget::SimObjectWidget(SimObject& simObject) : QOpenGLWidget(),
 }
 
 SimObjectWidget::~SimObjectWidget()
-{
-  Gum::Window::CurrentlyBoundWindow->getContext()->bind();
-  
+{  
   // save layout settings
   QSettings* settings = &CoreModule::application->getLayoutSettings();
   settings->beginGroup(object.getFullName());
   settings->setValue("SurfaceShadeMode", int(appearanceShadeMode));
   settings->setValue("PhysicsShadeMode", int(physicsRenderer->getShadeMode()));
-  settings->setValue("DrawingsShadeMode", int(controllerdrawingsShadeMode));
+  if(Simulation::simulation->scene->controllerRenderer)
+    settings->setValue("DrawingsShadeMode", int(Simulation::simulation->scene->controllerRenderer->getShadeMode()));
   settings->setValue("DragPlane", dragPlane.toString("","",", ").c_str());
   settings->setValue("DragMode", int(dragMode));
   settings->setValue("RenderFlags", renderFlags);
@@ -281,14 +283,6 @@ SimObjectWidget::~SimObjectWidget()
   Gum::_delete(renderCanvas);
   Gum::_delete(camera);
   Gum::_delete(renderer);
-
-
-  if(registeredAtManager)
-  {
-    ASSERT(Simulation::simulation->scene->drawingManager);
-    Simulation::simulation->scene->drawingManager->unregisterContext();
-    registeredAtManager = false;
-  }
 }
 
 void recursivelyAddObjects(World3D* world, const SimRobot::Object* object)
@@ -305,8 +299,7 @@ void recursivelyAddObjects(World3D* world, const SimRobot::Object* object)
 
 void SimObjectWidget::initializeGL()
 { 
-  Gum::Window::CurrentlyBoundWindow->getContext()->bind();
-  std::cout << "init context " << Gum::Window::CurrentlyBoundWindow->getContext()->getNativeHandle() << std::endl;
+  GraphicsContext::MainContext->bind();
 
   renderCanvas = new Canvas(ivec2(width(), height()));
 
@@ -318,10 +311,6 @@ void SimObjectWidget::initializeGL()
   {
     pWorld = Simulation::simulation->scene->world;
     physicsRenderer = Simulation::simulation->scene->physicsRenderer;
-    //Object3D* testobj = new Object3D(Mesh::generateCube(vec3(1,1,1)), "");
-    //Object3DInstance *instance = testobj->addInstance();
-    //instance->setPosition(vec3(0,3,0));
-    //pWorld->getObjectManager()->addObject(testobj);
   }
   else
   {
@@ -347,6 +336,7 @@ void SimObjectWidget::initializeGL()
   }
   
 
+  Settings::setSetting(Settings::SHADOW_SIZE, 6000);
   renderer = new Renderer3D(renderCanvas);
   if(pWorld != nullptr)
     renderer->setWorld(pWorld);
@@ -357,12 +347,6 @@ void SimObjectWidget::initializeGL()
   pShader->addShader(Gum::PostProcessing::VertexShader);
   pShader->addShader(Gum::PostProcessing::FragmentShader);
   pShader->build();
-
-  if(Simulation::simulation->scene->drawingManager)
-  {
-    Simulation::simulation->scene->drawingManager->registerContext();
-    registeredAtManager = true;
-  }
 }
 
 void SimObjectWidget::paintGL()
@@ -370,8 +354,14 @@ void SimObjectWidget::paintGL()
   if(appearanceShadeMode == SimRobotCore3::Renderer::ShadeMode::noShading)
     return;
 
-  Gum::Window::CurrentlyBoundWindow->getContext()->bind();
+  RENDERING_IN_WIDGET = true;
+
+  GraphicsContext::MainContext->bind();
   bindFramebuffer();
+
+
+  if(Simulation::simulation->scene->controllerRenderer)
+    Simulation::simulation->scene->controllerRenderer->setSimObject(&simObject);
 
   if(updateZoomInNextFrame)
     updateZoomInNextFrame = camera->updateZoom();
@@ -405,66 +395,7 @@ void SimObjectWidget::paintGL()
 
   renderer->renderIDs();
 
-  // draw controller drawings
-  if(Simulation::simulation->scene->drawingManager != nullptr)
-  {
-    // If the manager registered later, it must be done now.
-    if(!registeredAtManager)
-    {
-      Simulation::simulation->scene->drawingManager->registerContext();
-      registeredAtManager = true;
-    }
-
-    Gum::Graphics::renderWireframe(controllerdrawingsShadeMode == wireframeShading);
-
-    //glEnable(GL_BLEND);
-    //glBlendFunc(GL_CONSTANT_ALPHA, GL_ONE_MINUS_CONSTANT_ALPHA);
-    //glBlendColor(1.0f, 1.0f, 1.0f, 1.0f);
-
-    Simulation::simulation->scene->drawingManager->beforeFrame();
-
-    PhysicalObject* physicalObject = dynamic_cast<PhysicalObject*>(&simObject);
-    GraphicalObject* graphicalObject = dynamic_cast<GraphicalObject*>(&simObject);
-
-    if(physicalObject)
-      physicalObject->beforeControllerDrawings(&camera->getProjectionMatrix()[0][0], &camera->getViewMatrix()[0][0]);
-    if(graphicalObject)
-      graphicalObject->beforeControllerDrawings(&camera->getProjectionMatrix()[0][0], &camera->getViewMatrix()[0][0]);
-
-    Simulation::simulation->scene->drawingManager->uploadData();
-
-    if(renderFlags & enableDrawingsTransparentOcclusion)
-    {
-      Simulation::simulation->scene->drawingManager->beforeDraw();
-
-      if(physicalObject)
-        physicalObject->drawControllerDrawings();
-      if(graphicalObject)
-        graphicalObject->drawControllerDrawings();
-    }
-
-    if((renderFlags & enableDrawingsTransparentOcclusion) || !(renderFlags & enableDrawingsOcclusion))
-      pContextFramebuffer->clear(Framebuffer::ClearFlags::DEPTH);
-
-    if(renderFlags & enableDrawingsTransparentOcclusion)
-      glBlendColor(0.5f, 0.5f, 0.5f, 0.5f);
-
-    Simulation::simulation->scene->drawingManager->beforeDraw();
-
-    if(physicalObject)
-      physicalObject->drawControllerDrawings();
-    if(graphicalObject)
-      graphicalObject->drawControllerDrawings();
-
-    if(physicalObject)
-      physicalObject->afterControllerDrawings();
-    if(graphicalObject)
-      graphicalObject->afterControllerDrawings();
-
-    Simulation::simulation->scene->drawingManager->afterFrame();
-
-    Gum::Graphics::renderWireframe(false);
-  }
+  RENDERING_IN_WIDGET = false;
 }
 
 void SimObjectWidget::resizeGL(int width, int height)
@@ -478,8 +409,6 @@ void SimObjectWidget::resizeGL(int width, int height)
 
   renderer->updateFramebufferSize();
   camera->updateProjection(renderCanvas->getSize());
-
-  std::cout << "resizing " << renderCanvas->getSize().toString() << std::endl;
 }
 
 void SimObjectWidget::update()
@@ -651,8 +580,8 @@ QMenu* SimObjectWidget::createUserMenu() const
       auto* action = subMenu->addAction(tr(label));
       actionGroup->addAction(action);
       action->setCheckable(true);
-      action->setChecked(controllerdrawingsShadeMode == shading);
-      connect(action, &QAction::triggered, this, [this, shading]{ const_cast<SimObjectWidget*>(this)->controllerdrawingsShadeMode = shading; });
+      action->setChecked(Simulation::simulation->scene->controllerRenderer->getShadeMode() == shading);
+      connect(action, &QAction::triggered, this, [this, shading]{ Simulation::simulation->scene->controllerRenderer->setShadeMode(shading); });
     };
     addShadingAction("&Off", SimRobotCore3::Renderer::noShading);
     addShadingAction("&Wire Frame", SimRobotCore3::Renderer::wireframeShading);

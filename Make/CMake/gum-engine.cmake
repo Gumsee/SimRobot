@@ -1,5 +1,6 @@
 #add_definitions(-DGUM_ENGINE_NO_SHADOWMAP)
 add_definitions(-DGUM_PRIMITIVES_MESH_UP_Z)
+add_definitions(-DGUM_SHADOWMAP_WITH_TRANSPARENT_TEXTURES)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     add_definitions(-DGUM_OS_LINUX)
@@ -48,7 +49,6 @@ macro(add_gumlibrary projname varname)
 endmacro()
 
 find_package(OpenGL)
-include("${SIMROBOT_PREFIX}/Util/gum-opengl/external/glew/build/cmake/CMakeLists.txt")
 add_gumlibrary(gum-maths GUMMATHS)
 add_gumlibrary(gum-system GUMSYSTEM)
 add_gumlibrary(gum-essentials GUMESSENTIALS)
@@ -189,4 +189,5 @@ include_directories(SYSTEM ${SIMROBOT_PREFIX}/Util/gum-codecs/external/)
 include_directories(SYSTEM ${SIMROBOT_PREFIX}/Util/gum-desktop/src/)
 include_directories(SYSTEM ${SIMROBOT_PREFIX}/Util/gum-desktop/external/tinyfd/)
 include_directories(SYSTEM ${SIMROBOT_PREFIX}/Util/gum-engine/src/)
+include_directories(SYSTEM ${SIMROBOT_PREFIX}/Util/gum-qt/src/)
 

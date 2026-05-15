@@ -12,6 +12,7 @@
 
 #include <System/Output.h>
 #include <Engine/3D/Object/ObjectManager.h>
+#include <Engine/3D/Lightning/ShadowMapping/ShadowMapping.h>
 #include <gum-engine.h>
 #include <Graphics/Graphics.h>
 
@@ -37,6 +38,10 @@ CoreModule::CoreModule(SimRobot::Application& application) :
   CoreModule::application = &application;
   CoreModule::module = this;
 
+  UniqueID::reset();
+  ShadowMapping::FORCE_SIMPLE_SHADOWMAP = true;
+  GraphicsContext::MainContext->bind();
+
   Gum::Output::init();
   ObjectManager::MODEL_ASSETS_PATH = Gum::File("/home/gumse/Projects/gumengine/gum-engine/examples/assets/objects/", Gum::Filesystem::DIRECTORY);;
 
@@ -50,7 +55,7 @@ CoreModule::CoreModule(SimRobot::Application& application) :
 
 CoreModule::~CoreModule()
 {
-  Gum::Engine::cleanup();
+  //Gum::Engine::cleanup();
 }
 
 bool CoreModule::compile()

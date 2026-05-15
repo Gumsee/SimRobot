@@ -7,7 +7,6 @@
 
 #include "SimObject.h"
 #include "CoreModule.h"
-#include "SimObjectRenderer.h"
 #include "SimObjectWidget.h"
 #ifdef __GNUC__
 #include <cctype>

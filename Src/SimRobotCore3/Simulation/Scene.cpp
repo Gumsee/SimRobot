@@ -16,6 +16,7 @@
 Scene::Scene(const std::string& name)
   : ::PhysicalObject(mjOBJ_UNKNOWN, findAvailableName(name, "Scene"))
 {
+  world = new World3D();
 }
 
 void Scene::updateTransformations()
@@ -42,7 +43,6 @@ void Scene::createGraphics()
 //
   calcTransformationMatrix();
 
-  world = new World3D();
   //world->getObjectManager()->getSkybox()->renderSky(true);
   world->addRenderable(physicsRenderer = new PhysicsRenderer(this));
   world->addRenderable(Simulation::simulation->originRenderer);
@@ -107,8 +107,8 @@ unsigned int Scene::getFrameRate() const
 
 bool Scene::registerDrawingManager(SimRobotCore3::Controller3DDrawingManager& manager)
 {
-  if(drawingManager)
+  if(controllerRenderer)
     return false;
-  drawingManager = &manager;
+  world->addRenderable(controllerRenderer = new ControllerRenderer(&manager));
   return true;
 }
