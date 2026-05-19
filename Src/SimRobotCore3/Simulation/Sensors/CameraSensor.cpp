@@ -118,6 +118,7 @@ void CameraSensor::Sensor::updateValue()
 
   // draw all objects
   GraphicsContext::MainContext->bind();
+  Framebuffer::WindowFramebuffer = camera->renderer->getFramebuffer();
   camera->camera3d->makeActive();
   SimRobotCore3::Renderer::ShadeMode currPhysicsShadeMode = Simulation::simulation->scene->physicsRenderer->getShadeMode();
   Simulation::simulation->scene->physicsRenderer->setShadeMode(SimRobotCore3::Renderer::ShadeMode::noShading);

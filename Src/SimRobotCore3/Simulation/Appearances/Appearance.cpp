@@ -10,7 +10,6 @@
 #include <cstring>
 #include <Engine/3D/Renderer3D.h>
 #include <Engine/3D/World3D.h>
-#include <Engine/Material/MaterialManager.h>
 #include "Simulation/Scene.h"
 
 Appearance::Appearance(const std::string& name)

@@ -43,7 +43,6 @@ CoreModule::CoreModule(SimRobot::Application& application) :
   GraphicsContext::MainContext->bind();
 
   Gum::Output::init();
-  ObjectManager::MODEL_ASSETS_PATH = Gum::File("/home/gumse/Projects/gumengine/gum-engine/examples/assets/objects/", Gum::Filesystem::DIRECTORY);;
 
   Gum::Graphics::init();
   Gum::Graphics::loadDefaults();

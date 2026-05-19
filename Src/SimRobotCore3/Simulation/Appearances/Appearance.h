@@ -21,7 +21,10 @@ class Appearance : public SimObject, public GraphicalObject, public SimRobotCore
 public:
   Appearance(const std::string& name);
 
-  class Material        : public ElementCore3, public ::Material { public:
+  class Material : public ElementCore3, public ::Material 
+  {
+    public:
+    Material(std::string name) : ::Material(name) {}
     void addParent(Element& element) override {
       Appearance* appearance = dynamic_cast<Appearance*>(&element);
       ASSERT(appearance);

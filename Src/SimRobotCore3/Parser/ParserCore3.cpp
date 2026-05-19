@@ -231,6 +231,7 @@ Element* ParserCore3::pointLightElement()
     getLength("y", false, light->getPosition().y, false),
     getLength("z", false, light->getPosition().z, false)
   ));
+  light->setStrength(getFloat("intensity", false, 1.0f));
   //light->constantAttenuation = getFloatPositive("constantAttenuation", false, light->constantAttenuation);
   //light->linearAttenuation = getFloatPositive("linearAttenuation", false, light->linearAttenuation);
   //light->quadraticAttenuation = getFloatPositive("quadraticAttenuation", false, light->quadraticAttenuation);
@@ -682,6 +683,7 @@ Element* ParserCore3::servoMotorElement()
   servoMotor->controller.i = getFloat("i", false, 0.f);
   servoMotor->controller.d = getFloat("d", false, 0.f);
   servoMotor->delay = getFloatPositive("delay", false, 0.f);
+  servoMotor->velocityLowPassFactor = getFloatMinMax("velocityLowPassFactor", false, 1.f, 0.f, 1.f);
 
   axis->motor = servoMotor;
   return nullptr;
@@ -708,18 +710,19 @@ Element* ParserCore3::velocityMotorElement()
 }
 
 Element* ParserCore3::surfaceElement()
-{
-  Appearance::Material* material = new Appearance::Material();
-  
-  color diffuseColor, ambientColor, specularColor, emissionColor;
-  getColor("diffuseColor", true, diffuseColor);
-  getColor("ambientColor", false, ambientColor);
-  getColor("specularColor", false, specularColor);
-  getColor("emissionColor", false, emissionColor);
-  material->setColor(rgba::min(rgba(diffuseColor) + rgba(ambientColor) + rgba(specularColor), rgba(255)));
+{  
+  color albedo;
+  getColor("albedo", true, albedo);
+  std::string textureFile = getString("texture", false);
+  float roughness = getFloat("roughness", false, 0.0f);
+  float metallic = getFloat("metallic", false, 0.0f);
 
-  material->setSpecularity(getFloatMinMax("shininess", false, material->getSpecularity(), 0.f, 128.f) / 255.0f);
-  std::string textureFile = getString("diffuseTexture", false);
+  std::string name = albedo.toString() + std::to_string(roughness) + std::to_string(metallic) + textureFile;
+
+  Appearance::Material* material = new Appearance::Material(name);
+  material->setColor(albedo);
+  material->setRoughness(roughness);
+  material->setSpecularity(metallic);
   if(!textureFile.empty())
     material->setTexture(Texture::autoLoad(textureFile), 0);
   

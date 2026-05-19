@@ -45,7 +45,8 @@ macro(add_gumlibrary projname varname)
   set(PROJECT_NAME ${projname})
   include("${SIMROBOT_PREFIX}/Util/${projname}/src/CMakeLists.txt")
   set(${varname}_FOUND "YES")
-  set(${varname}_INCLUDE_DIRS "${SIMROBOT_PREFIX}/Util/${varname}/src/")
+  set(${varname}_INCLUDE_DIRS "${SIMROBOT_PREFIX}/Util/${projname}/src/")
+  include_directories(SYSTEM "${SIMROBOT_PREFIX}/Util/${projname}/src/")
 endmacro()
 
 find_package(OpenGL)
@@ -57,6 +58,11 @@ add_gumlibrary(gum-codecs GUMCODECS)
 add_gumlibrary(gum-desktop GUMDESKTOP)
 add_gumlibrary(gum-graphics GUMGRAPHICS)
 add_gumlibrary(gum-opengl GUMOPENGL)
+
+include_directories(SYSTEM "${SIMROBOT_PREFIX}/Util/gum-desktop/external/tinyfd")
+include_directories(SYSTEM "${SIMROBOT_PREFIX}/Util/gum-codecs/external")
+include_directories(SYSTEM "${SIMROBOT_PREFIX}/Util/gum-engine/src")
+include_directories(SYSTEM "${SIMROBOT_PREFIX}/Util/gum-qt/src")
 
 if(APPLE)
   add_definitions(-DGUM_OS_MACOS)
@@ -120,7 +126,6 @@ set(GUM_ENGINE_SRC
     ${SIMROBOT_PREFIX}/Util/gum-engine/src/Engine/2D/Layer/Layer.cpp
     ${SIMROBOT_PREFIX}/Util/gum-engine/src/Engine/2D/Layer/TileMap.cpp
     ${SIMROBOT_PREFIX}/Util/gum-engine/src/Engine/2D/Renderer2D.cpp
-    ${SIMROBOT_PREFIX}/Util/gum-engine/src/Engine/Material/MaterialManager.cpp
     ${SIMROBOT_PREFIX}/Util/gum-engine/src/Engine/Physics/Physics.cpp
     ${SIMROBOT_PREFIX}/Util/gum-engine/src/Engine/Particle/Particle.cpp
     ${SIMROBOT_PREFIX}/Util/gum-engine/src/Engine/Particle/ShaderInitializer.cpp
@@ -174,20 +179,3 @@ endif()
 set_property(TARGET gum-engine PROPERTY LIBRARY_OUTPUT_DIRECTORY "${SIMROBOT_LIBRARY_DIR}")
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/)
-
-include_directories(SYSTEM ${SIMROBOT_PREFIX}/Util/gum-graphics/src/)
-include_directories(SYSTEM ${SIMROBOT_PREFIX}/Util/gum-primitives/src/)
-include_directories(SYSTEM ${SIMROBOT_PREFIX}/Util/gum-maths/src/)
-include_directories(SYSTEM ${SIMROBOT_PREFIX}/Util/gum-essentials/src/)
-include_directories(SYSTEM ${SIMROBOT_PREFIX}/Util/gum-system/src/)
-include_directories(SYSTEM ${SIMROBOT_PREFIX}/Util/gum-codecs/src/)
-include_directories(SYSTEM ${SIMROBOT_PREFIX}/Util/gum-codecs/external/assimp/include)
-include_directories(SYSTEM ${SIMROBOT_PREFIX}/Util/gum-codecs/external/assimp/code)
-include_directories(SYSTEM ${SIMROBOT_PREFIX}/Util/gum-codecs/external/libxml2/include)
-include_directories(SYSTEM ${SIMROBOT_PREFIX}/Util/gum-codecs/external/zlib/)
-include_directories(SYSTEM ${SIMROBOT_PREFIX}/Util/gum-codecs/external/)
-include_directories(SYSTEM ${SIMROBOT_PREFIX}/Util/gum-desktop/src/)
-include_directories(SYSTEM ${SIMROBOT_PREFIX}/Util/gum-desktop/external/tinyfd/)
-include_directories(SYSTEM ${SIMROBOT_PREFIX}/Util/gum-engine/src/)
-include_directories(SYSTEM ${SIMROBOT_PREFIX}/Util/gum-qt/src/)
-

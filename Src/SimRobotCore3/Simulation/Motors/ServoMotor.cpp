@@ -98,7 +98,8 @@ void ServoMotor::act()
 
   float setpoint = lastExecutedSetpoint.setPoint;
   float currentPos = static_cast<float>(Simulation::simulation->data->qpos[Simulation::simulation->model->jnt_qposadr[joint->id]]);
-  const float currentVel = static_cast<float>(Simulation::simulation->data->qvel[Simulation::simulation->model->jnt_dofadr[joint->id]]);
+  currentVel = static_cast<float>(Simulation::simulation->data->qvel[Simulation::simulation->model->jnt_dofadr[joint->id]]) * velocityLowPassFactor
+                           + currentVel * (1.f - velocityLowPassFactor);
 
   if(Simulation::simulation->model->jnt_type[joint->id] == mjJNT_HINGE)
   {

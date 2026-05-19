@@ -21,7 +21,6 @@
 
 #include <gum-engine.h>
 #include <Engine/PostProcessing/PostProcessing.h>
-#include <Engine/Material/MaterialManager.h>
 #include <gum-maths.h>
 #include <QSurface>
 #include <QOpenGLContext>
