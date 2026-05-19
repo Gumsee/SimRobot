@@ -42,8 +42,6 @@ CoreModule::CoreModule(SimRobot::Application& application) :
   ShadowMapping::FORCE_SIMPLE_SHADOWMAP = true;
   GraphicsContext::MainContext->bind();
 
-  Gum::Output::init();
-
   Gum::Graphics::init();
   Gum::Graphics::loadDefaults();
   Gum::Graphics::printInfo();
