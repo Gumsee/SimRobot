@@ -54,12 +54,12 @@ void Gyroscope::addParent(Element& element)
   Sensor::addParent(element);
 }
 
-void Gyroscope::registerObjects(int level)
+void Gyroscope::registerObjects()
 {
   sensor.fullName = fullName + ".angularVelocities";
   CoreModule::application->registerObject(*CoreModule::module, sensor, this);
 
-  Sensor::registerObjects(level);
+  Sensor::registerObjects();
 }
 
 void Gyroscope::GyroscopeSensor::updateValue()

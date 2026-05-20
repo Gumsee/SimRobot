@@ -9,17 +9,17 @@
 #include "SimRobotCore3.h"
 #include "Simulation/SimObject.h"
 #include <list>
-#include <Engine/3D/Object/SceneObject.h>
+#include <Graphics/SimObject3D.h>
 #include <Desktop/GraphicsContext.h>
 
 /**
  * @class GraphicalObject
  * Abstract class for scene graph objects with graphical representation or subordinate graphical representation
  */
-class GraphicalObject : public SceneObject
+class GraphicalObject : public SimObject3D
 {
 public:
-  GraphicalObject() : SceneObject("") {}
+  GraphicalObject() : SimObject3D("") {}
   std::list<GraphicalObject*> graphicalDrawings; /**< List of subordinate graphical scene graph objects */
 
   /**

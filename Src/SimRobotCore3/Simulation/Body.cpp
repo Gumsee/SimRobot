@@ -197,7 +197,6 @@ void Body::onTransformUpdate()
 {
   if(rootBody != this)
     return;
-  const mjtNum* pos = Simulation::simulation->data->xpos + id * 3;
   ASSERT(Simulation::simulation->model->body_jntnum[id] == 1);
   const int jointIndex = Simulation::simulation->model->body_jntadr[id];
   ASSERT(Simulation::simulation->model->jnt_type[jointIndex] == mjJNT_FREE);

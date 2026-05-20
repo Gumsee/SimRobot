@@ -199,7 +199,7 @@ bool ServoMotor::VelocitySensor::getMinAndMax(float& min, float& max) const
   return true;
 }
 
-void ServoMotor::registerObjects(int level)
+void ServoMotor::registerObjects()
 {
   if(Simulation::simulation->model->jnt_type[joint->id] == mjJNT_HINGE)
   {

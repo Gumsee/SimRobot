@@ -12,6 +12,7 @@
 #include "Simulation/Simulation.h"
 #include <iostream>
 #include <Engine/3D/Renderer3D.h>
+#include <Graphics/SimLight.h>
 
 Scene::Scene(const std::string& name)
   : ::PhysicalObject(mjOBJ_UNKNOWN, findAvailableName(name, "Scene"))
@@ -33,22 +34,25 @@ void Scene::updateActuators()
 
 void Scene::createGraphics()
 {
-  // The model matrix is needed for controller drawings.
-  // Physical object and graphical object share it because it really is just at the origin.
-  //TODO
-  //const float color[4] = {0.2f, 0.2f, 0.2f, 1.f};
-  //graphicsContext.setGlobalAmbientLight(color);
-  //for(Light* light : lights)
-  //  graphicsContext.addLight(light);
-//
+  for(SimLight* light : lights)
+  {
+    if(dynamic_cast<SimPointLight*>(light))
+      world->getLightManager()->addPointLight(dynamic_cast<SimPointLight*>(light));
+    else if(dynamic_cast<SimSpotLight*>(light))
+      world->getLightManager()->addSpotLight(dynamic_cast<SimSpotLight*>(light));
+    else if(dynamic_cast<SimDirLight*>(light))
+      world->getLightManager()->getSun()->setDirection(*dynamic_cast<SimDirLight*>(light)->getDirection());
+  }
+
   calcTransformationMatrix();
 
   //world->getObjectManager()->getSkybox()->renderSky(true);
   world->addRenderable(physicsRenderer = new PhysicsRenderer(this));
   world->addRenderable(Simulation::simulation->originRenderer);
 
-  dragPlaneMesh = new SceneObject(Mesh::generateDisk(0.003f, 0.5f, 30), "dragPlane");
+  dragPlaneMesh = new SimObject3D(Mesh::generateDisk(0.003f, 0.5f, 30), "dragPlane");
   dragPlaneMesh->getMaterial()->setColor(rgba(128, 128, 128, 128));
+  dragPlaneMesh->omitShadow(true);
   world->getObjectManager()->addObject(dragPlaneMesh, Simulation::simulation->forwardRenderingShader, false);
 
   for(Body* body : bodies)
@@ -58,7 +62,6 @@ void Scene::createGraphics()
 
 void Scene::updateAppearances()
 {
-  //std::cout << "Drawing scene with " << bodies.size() << " children" << std::endl;
   for(Body* body : bodies)
     body->updateAppearances();
   GraphicalObject::updateAppearances();

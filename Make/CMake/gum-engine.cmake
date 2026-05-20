@@ -1,6 +1,11 @@
 #add_definitions(-DGUM_ENGINE_NO_SHADOWMAP)
 add_definitions(-DGUM_PRIMITIVES_MESH_UP_Z)
 add_definitions(-DGUM_SHADOWMAP_WITH_TRANSPARENT_TEXTURES)
+if(${CMAKE_BUILD_TYPE} MATCHES "Debug" OR ${CMAKE_BUILD_TYPE} MATCHES "Develop")
+  add_definitions(-DCHECK_GL_ERRORS)
+endif()
+
+message("Buildtype ")
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     add_definitions(-DGUM_OS_LINUX)

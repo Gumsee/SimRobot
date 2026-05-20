@@ -7,6 +7,7 @@
 #pragma once
 
 #include "Graphics/OriginRenderer.h"
+#include "Graphics/SimObject3D.h"
 #include "Simulation/Appearances/ComplexAppearance.h"
 #include <mujoco/mjdata.h>
 #include <mujoco/mjmodel.h>
@@ -38,8 +39,7 @@ public:
   mjModel* model = nullptr; /**< The MuJoCo model that is compiled from the model specification. Only valid after \c createPhysics. */
   mjData* data = nullptr; /**< The MuJoCo simulation state. Only valid after \c createPhysics. */
   OriginRenderer* originRenderer;
-  Object3D* bodyComSphereMesh = nullptr; /**< The mesh for the physical CoM drawing of bodies. */
-  //bGraphicsContext::ModelMatrix* dragPlaneModelMatrix = nullptr; /**< The model matrix for the drag plane in object renderers. */
+  SimObject3D* bodyComSphereMesh = nullptr; /**< The mesh for the physical CoM drawing of bodies. */
   Pose3f originPose; /**< Pose of the origin (assuming that renderers are sequential. */
   Pose3f dragPlanePose; /**< Pose of the drag plane (assuming it is not possible to drag simultaneously in multiple renderers). */
   ShaderProgram* forwardRenderingShader;

@@ -10,6 +10,7 @@
 #include "Tools/Math/Eigen.h"
 #include "Tools/Math/Pose3f.h"
 #include <Engine/3D/Renderer3D.h>
+#include <Graphics/SimObject3D.h>
 
 /**
  * @class CameraSensor
@@ -40,13 +41,13 @@ private:
     unsigned char* imageBuffer; /**< A buffer for rendered image data */
     unsigned int imageBufferSize;
     Transformable3D offset; /**< Offset of the camera relative to the body it mounted on */
+    vec3 rot;
 
     /** Update the sensor value. Is called when required. */
     void updateValue() override;
 
     //API
     bool getMinAndMax(float& min, float& max) const override {min = 0; max = 0xff; return true;}
-    bool renderCameraImages(SimRobotCore3::SensorPort** cameras, unsigned int count) override;
   } sensor;
 
   /** Destructor */
@@ -55,14 +56,8 @@ private:
   /** Initializes the camera after all attributes have been set */
   void createPhysicsInternal() override;
 
-  /**
-   * Registers an element as parent
-   * @param element The element to register
-   */
-  void addParent(Element& element) override;
-
   /** Registers this object with children, actuators and sensors at SimRobot's GUI */
-  void registerObjects(int level) override;
+  void registerObjects() override;
 
   /**
    * Submits draw calls for physical primitives of the object (including children) in the given graphics context
@@ -71,5 +66,5 @@ private:
 
   void updateTransformation() override;
 
-  Object3D* pyramid = nullptr; /**< The pyramid mesh for the sensor drawing. */
+  SimObject3D* pyramid = nullptr; /**< The pyramid mesh for the sensor drawing. */
 };

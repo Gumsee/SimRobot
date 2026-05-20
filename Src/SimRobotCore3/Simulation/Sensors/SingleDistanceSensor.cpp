@@ -34,12 +34,12 @@ void SingleDistanceSensor::createPhysicsInternal()
   color = rgba(128.5f, 0.0f, 0.0f, 255.0f);
 }
 
-void SingleDistanceSensor::registerObjects(int level)
+void SingleDistanceSensor::registerObjects()
 {
   sensor.fullName = fullName + ".distance";
   CoreModule::application->registerObject(*CoreModule::module, sensor, this);
 
-  Sensor::registerObjects(level);
+  Sensor::registerObjects();
 }
 
 void SingleDistanceSensor::addParent(Element& element)

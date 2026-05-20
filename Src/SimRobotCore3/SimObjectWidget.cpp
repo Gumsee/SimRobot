@@ -115,7 +115,7 @@ SimObjectWidget::SimObjectWidget(SimObject& simObject) : QOpenGLWidget(),
       }
       else
       {
-        clickedBody = selectObject(camera->getPosition(), camera->calcScreenRayDirection(oMouse.getPosition()));
+        clickedBody = selectObject();
         if(clickedBody != nullptr)
         {
           dragRotate = mods & GUM_KEYBOARD_MOD_SHIFT;
@@ -206,7 +206,7 @@ SimObjectWidget::SimObjectWidget(SimObject& simObject) : QOpenGLWidget(),
         else
         {
           const vec3 offset = currentPos - dragStartPos;
-          clickedBody->increasePosition(offset * vec3(1,1,0));
+          clickedBody->increasePosition(offset * (vec3(1,1,1) - dragPlane));
           if(dragMode == adoptDynamics)
           {
             const unsigned int now = System::getTime();
@@ -580,7 +580,7 @@ QMenu* SimObjectWidget::createUserMenu() const
       actionGroup->addAction(action);
       action->setCheckable(true);
       action->setChecked(Simulation::simulation->scene->controllerRenderer->getShadeMode() == shading);
-      connect(action, &QAction::triggered, this, [this, shading]{ Simulation::simulation->scene->controllerRenderer->setShadeMode(shading); });
+      connect(action, &QAction::triggered, this, [shading]{ Simulation::simulation->scene->controllerRenderer->setShadeMode(shading); });
     };
     addShadingAction("&Off", SimRobotCore3::Renderer::noShading);
     addShadingAction("&Wire Frame", SimRobotCore3::Renderer::wireframeShading);
@@ -724,25 +724,10 @@ void SimObjectWidget::toggleRenderFlag(int flag)
   else                   renderFlags |= flag;
 }
 
-Body* SimObjectWidget::selectObject(vec3 startpos, vec3 raydir)
+Body* SimObjectWidget::selectObject()
 {
   if(!isSceneWidget)
     return nullptr;
-
-  //int geometryIndex = -1;
-  //mjtNum origin[3], dir[3];
-  //mju_f2n(origin, startpos.data(), 3);
-  //mju_f2n(dir, raydir.data(), 3);
-  //const mjtNum dist = mj_ray(Simulation::simulation->model, Simulation::simulation->data, origin, dir, nullptr, 0, -1, &geometryIndex);
-  //if(dist < static_cast<mjtNum>(0))
-  //  return nullptr;
-  //ASSERT(geometryIndex >= 0);
-  //ASSERT(geometryIndex < Simulation::simulation->model->ngeom);
-  //const int bodyIndex = Simulation::simulation->model->geom_bodyid[geometryIndex];
-  //ASSERT(bodyIndex > 0); // 0 is the world body, we excluded that by setting flg_static=0 in the call to mj_ray.
-  //ASSERT(bodyIndex < Simulation::simulation->model->nbody);
-  //return Body::registeredBodies[bodyIndex]->rootBody;
-
 
   Object3DInstance* instance = pWorld->getObjectManager()->getInstanceByID(renderer->getIDUnderMouse());
   if(instance != nullptr && instance->getUserPtr() != nullptr)

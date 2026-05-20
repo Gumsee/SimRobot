@@ -17,6 +17,7 @@
 #include <Engine/3D/World3D.h>
 #include "Graphics/PhysicsRenderer.h"
 #include "Graphics/ControllerRenderer.h"
+#include <Graphics/SimObject3D.h>
 
 class Body;
 class SimLight;
@@ -42,7 +43,7 @@ public:
   World3D *world;
   PhysicsRenderer* physicsRenderer = nullptr;
   ControllerRenderer* controllerRenderer = nullptr;
-  SceneObject* dragPlaneMesh = nullptr; /**< The mesh for the drag plane in object renderers. */
+  SimObject3D* dragPlaneMesh = nullptr; /**< The mesh for the drag plane in object renderers. */
 
   /** Default constructor */
   Scene(const std::string& name);

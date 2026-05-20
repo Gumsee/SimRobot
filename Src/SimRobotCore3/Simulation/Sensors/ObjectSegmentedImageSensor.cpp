@@ -88,12 +88,12 @@ void ObjectSegmentedImageSensor::addParent(Element& element)
   Sensor::addParent(element);
 }
 
-void ObjectSegmentedImageSensor::registerObjects(int level)
+void ObjectSegmentedImageSensor::registerObjects()
 {
   sensor.fullName = fullName + ".image";
   CoreModule::application->registerObject(*CoreModule::module, sensor, this);
 
-  Sensor::registerObjects(level);
+  Sensor::registerObjects();
 }
 
 void ObjectSegmentedImageSensor::ObjectSegmentedImageSensorPort::updateValue()
@@ -143,8 +143,8 @@ void ObjectSegmentedImageSensor::ObjectSegmentedImageSensorPort::updateValue()
   // data.byteArray = imageBuffer;
 }
 
-bool ObjectSegmentedImageSensor::ObjectSegmentedImageSensorPort::renderCameraImages(SimRobotCore3::SensorPort** cameras, unsigned int count)
-{
+//bool ObjectSegmentedImageSensor::ObjectSegmentedImageSensorPort::renderCameraImages(SimRobotCore3::SensorPort** cameras, unsigned int count)
+//{
   //TODO
   // if(lastSimulationStep == Simulation::simulation->simulationStep)
   //   return true;
@@ -218,8 +218,8 @@ bool ObjectSegmentedImageSensor::ObjectSegmentedImageSensorPort::renderCameraIma
 
   // // read frame buffer
   // graphicsContext.finishImageRendering(imageBuffer, imageWidth, currentHorizontalPos);
-  return true;
-}
+  //return true;
+//}
 
 void ObjectSegmentedImageSensor::drawPhysics() const
 {

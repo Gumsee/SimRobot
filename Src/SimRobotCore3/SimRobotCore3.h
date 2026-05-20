@@ -444,13 +444,6 @@ namespace SimRobotCore3
      * @return The name
      */
     virtual const QString& getUnit() const = 0;
-
-    /**
-     * Pre-renders the images of multiple camera sensors of the same type at once which improves the performance of camera image rendering.
-     * @param cameras An array of camera sensors
-     * @param count The amount of camera sensors in the array
-     */
-    virtual bool renderCameraImages(SensorPort** cameras, unsigned int count) = 0;
   };
 
   /**

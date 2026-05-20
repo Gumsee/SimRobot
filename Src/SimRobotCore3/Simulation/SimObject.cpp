@@ -40,7 +40,7 @@ void SimObject::addParent(Element& parent)
     this->parent->children.push_back(this);
 }
 
-void SimObject::registerObjects(int level)
+void SimObject::registerObjects()
 {
   for(SimObject* simObject : children)
   {
@@ -60,10 +60,8 @@ void SimObject::registerObjects(int level)
     else
       simObject->fullName = fullName + "." + simObject->name.c_str();
 
-    //std::cout << getLevel(level) << simObject->mujocoName << " " << simObject->fullName.toStdString() << std::endl;
-    //std::cout << getLevel(level) << simObject->mujocoName << " " << simObject->getRotation().toString() << std::endl;
     CoreModule::application->registerObject(*CoreModule::module, dynamic_cast<SimRobot::Object&>(*simObject), dynamic_cast<SimRobot::Object*>(this));
-    simObject->registerObjects(level + 1);
+    simObject->registerObjects();
   }
 }
 

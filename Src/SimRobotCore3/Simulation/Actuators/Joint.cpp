@@ -54,14 +54,14 @@ void Joint::createIDs()
 
   ::PhysicalObject::createIDs();
 }
-void Joint::registerObjects(int level)
+void Joint::registerObjects()
 {
   // add sensors and actuators
   if(axis->motor)
-    axis->motor->registerObjects(level);
+    axis->motor->registerObjects();
 
   // add children
-  ::PhysicalObject::registerObjects(level);
+  ::PhysicalObject::registerObjects();
 }
 
 void Joint::updateTransformation()

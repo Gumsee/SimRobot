@@ -9,6 +9,7 @@
 #include "Parser/Parser.h"
 #include <string>
 #include <vector>
+#include <Maths/color.h>
 
 class Element;
 
@@ -89,7 +90,6 @@ private:
   Element* sliderElement();
   Element* axisElement();
   Element* deflectionElement();
-  Element* PT2MotorElement();
   Element* servoMotorElement();
   Element* velocityMotorElement();
   Element* dirLightElement();

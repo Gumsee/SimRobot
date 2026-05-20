@@ -52,7 +52,6 @@ public:
     const QString& getUnit() const override {return unit;}
     SensorType getSensorType() const override {return sensorType;}
     Data getValue() override;
-    bool renderCameraImages(SimRobotCore3::SensorPort**, unsigned int) override {return false;}
   };
 
 private:

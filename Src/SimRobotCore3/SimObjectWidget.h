@@ -90,7 +90,7 @@ private:
   bool event(QEvent* event) override;
   void wheelEvent(QWheelEvent* event) override;
   void bindFramebuffer();
-  Body* selectObject(vec3 startpos, vec3 raydir);
+  Body* selectObject();
   QSize sizeHint() const override {return QSize(320, 240);}
 
 private slots:

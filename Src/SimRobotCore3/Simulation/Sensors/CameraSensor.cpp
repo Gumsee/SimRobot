@@ -12,6 +12,7 @@
 #include "Tools/OpenGLTools.h"
 #include <cmath>
 #include <Desktop/Window.h>
+#include <Graphics/Graphics.h>
 
 CameraSensor::CameraSensor(const std::string& name, const ivec2& imageSize, const vec2& angle)
   : ::Sensor(findAvailableName(name, "CameraSensor")),
@@ -28,6 +29,8 @@ CameraSensor::CameraSensor(const std::string& name, const ivec2& imageSize, cons
   sensor.physicalObject = this;
 
   canvas = new Canvas(this->imageSize);
+  Settings::setSetting(Settings::SHADOW_SIZE, 6000);
+  Settings::setSetting(Settings::SHADOW_DISTANCE_FACTOR, 0.5f);
   renderer = new Renderer3D(canvas);
   renderer->setExposure(1.0f);
 
@@ -55,33 +58,22 @@ void CameraSensor::createPhysicsInternal()
   sensor.offset = relativeTransformation;
 
   ASSERT(!pyramid);
-  pyramid = new Object3D(Mesh::generatePyramid(vec2(std::tan(openingAngle.x * 0.5f) * 2.f, std::tan(openingAngle.y * 0.5f) * 2.f), 1.f), "CameraSensor");
+  pyramid = new SimObject3D(Mesh::generatePyramid(vec2(std::tan(openingAngle.x * 0.5f) * 2.f, std::tan(openingAngle.y * 0.5f) * 2.f), 1.f), "CameraSensor");
   pyramid->getVertexArrayObject()->setPrimitiveType(VertexArrayObject::PrimitiveTypes::LINES);
+  pyramid->getMaterial()->setColor(rgba(0.0f, 0.0f, 128.0f, 255.0f));
   Object3DInstance *instance = pyramid->addInstance();
   instance->setMatrix(getMatrix());
   pyramid->applyTransformationMatrix(instance);
 
   renderer->setWorld(Simulation::simulation->scene->world);
-
-  //TODO
-  //ASSERT(!surface);
-  //static const float color[] = {0.f, 0.f, 0.5f, 1.f};
-  //surface = graphicsContext.requestSurface(color, color);
 }
 
-void CameraSensor::addParent(Element& element)
-{
-  //sensor.physicalObject = dynamic_cast< ::PhysicalObject*>(&element);
-  //ASSERT(sensor.physicalObject);
-  ::Sensor::addParent(element);
-}
-
-void CameraSensor::registerObjects(int level)
+void CameraSensor::registerObjects()
 {
   sensor.fullName = fullName + ".image";
   CoreModule::application->registerObject(*CoreModule::module, sensor, this);
 
-  ::Sensor::registerObjects(level);
+  ::Sensor::registerObjects();
 }
 
 void CameraSensor::Sensor::updateValue()
@@ -97,29 +89,20 @@ void CameraSensor::Sensor::updateValue()
     imageBuffer = new unsigned char[imageSize];
     imageBufferSize = imageSize;
   }
-
-  //// setup camera position
-  camera->camera3d->setPosition(physicalObject->getPosition());
-
-  vec3 direction = Gum::Maths::rotateMatrix(physicalObject->getRotation()) * vec4(1,0,0,1);
-  direction.z *= -1.0f;
-  direction.y *= -1.0f;
-  //std::cout << direction.toString() << std::endl;
-  camera->camera3d->lookAt(physicalObject->getPosition() + direction);
-  camera->camera3d->update();
-
-  //// setup camera position
-  //Pose3f pose = sensor->physicalObject->poseInWorld;
-  //pose.conc(sensor->offset);
-  //static const RotationMatrix cameraRotation = (Matrix3f() << Vector3f(0.f, -1.f, 0.f), Vector3f(0.f, 0.f, 1.f), Vector3f(-1.f, 0.f, 0.f)).finished();
-  //pose.rotate(cameraRotation);
-  //Matrix4f transformation;
-  //OpenGLTools::convertTransformation(pose.invert(), transformation);
+  mat4 fixedOffset(
+    0.0f, -0.0f, -1.0f, 0.0f, 
+    -1.0f, 0.0f, -0.0f, 0.0f, 
+    0.0f, 1.0f, -0.0f, 0.0f, 
+    0.0f, 0.0f, 0.0f, 1.0f
+  );
+  
+  camera->renderer->makeActive();
+  camera->camera3d->makeActive();
+  camera->camera3d->overrideViewMatrix(Gum::Maths::inverseTransformationMatrix(physicalObject->getMatrix() * fixedOffset * offset.getMatrix()));
 
   // draw all objects
   GraphicsContext::MainContext->bind();
   Framebuffer::WindowFramebuffer = camera->renderer->getFramebuffer();
-  camera->camera3d->makeActive();
   SimRobotCore3::Renderer::ShadeMode currPhysicsShadeMode = Simulation::simulation->scene->physicsRenderer->getShadeMode();
   Simulation::simulation->scene->physicsRenderer->setShadeMode(SimRobotCore3::Renderer::ShadeMode::noShading);
   camera->renderer->render();
@@ -129,11 +112,6 @@ void CameraSensor::Sensor::updateValue()
   camera->renderer->getHighDynamicRange()->getFramebuffer()->readPixelData(imageBuffer, ivec2(0,0), ivec2(imageWidth, imageHeight), Gum::Graphics::Pixelformat::RGB);
   data.byteArray = imageBuffer;
   lastSimulationStep = Simulation::simulation->simulationStep;
-}
-
-bool CameraSensor::Sensor::renderCameraImages(SimRobotCore3::SensorPort** cameras, unsigned int count)
-{
-  return true;
 }
 
 void CameraSensor::drawPhysics() const

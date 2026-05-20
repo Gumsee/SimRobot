@@ -81,7 +81,7 @@ private:
   void addParent(Element& element) override;
 
   /** Registers this object with children, actuators and sensors at SimRobot's GUI. */
-  void registerObjects(int level) override;
+  void registerObjects() override;
 
   /**
    * Submits draw calls for physical primitives of the object (including children) in the given graphics context

@@ -55,12 +55,12 @@ void Accelerometer::addParent(Element& element)
   Sensor::addParent(element);
 }
 
-void Accelerometer::registerObjects(int level)
+void Accelerometer::registerObjects()
 {
   sensor.fullName = fullName + ".acceleration";
   CoreModule::application->registerObject(*CoreModule::module, sensor, this);
 
-  Sensor::registerObjects(level);
+  Sensor::registerObjects();
 }
 
 void Accelerometer::AccelerometerSensor::updateValue()

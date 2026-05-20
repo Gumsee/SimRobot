@@ -51,12 +51,11 @@ private:
     const QString& getUnit() const override {return input->unit;}
     SensorType getSensorType() const override {return SensorType::floatSensor;}
     Data getValue() override {return input->data;}
-    bool renderCameraImages(SimRobotCore3::SensorPort**, unsigned int) override {return false;}
     bool getMinAndMax(float& min, float& max) const override {return input->getMinAndMax(min, max);}
   } outputPort;
 
   /** Registers this object with children, actuators and sensors at SimRobot's GUI */
-  void registerObjects(int level) override;
+  void registerObjects() override;
 
   // API
   const QString& getFullName() const override {return SimObject::getFullName();}

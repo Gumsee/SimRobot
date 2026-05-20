@@ -18,6 +18,7 @@
 #include <cmath>
 #include <iostream>
 #include <Desktop/Window.h>
+#include <System/MainThreadExecutionQueue.h>
 #include "Graphics/ForwardRenderingShader.h"
 
 Simulation* Simulation::simulation = nullptr;
@@ -121,10 +122,8 @@ bool Simulation::loadFile(const std::string& filename, std::list<std::string>& e
   originRenderer = new OriginRenderer();
   scene->createGraphics();
 
-  bodyComSphereMesh = new Object3D(Mesh::generateSphere(0.003f, 10, 10), "bodyComSphereMesh");
-  //TODO
-  //static const float bodyComSphereColor[] = {0.8f, 0.f, 0.f, 1.f};
-  //bodyComSphereSurface = graphicsContext.requestSurface(bodyComSphereColor, bodyComSphereColor);
+  bodyComSphereMesh = new SimObject3D(Mesh::generateSphere(0.003f, 10, 10), "bodyComSphereMesh");
+  bodyComSphereMesh->getMaterial()->setColor(rgba(204.0f, 0.0f, 0.0f, 255.0f));
 
   return true;
 }
@@ -134,6 +133,8 @@ void Simulation::doSimulationStep()
   ++simulationStep;
   simulatedTime += scene->stepLength;
 
+  MainThreadExecutionQueue::execute();
+  
   mj_step1(model, data);
   scene->updateActuators();
   mj_step2(model, data);

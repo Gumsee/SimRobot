@@ -189,12 +189,12 @@ void DepthImageSensor::addParent(Element& element)
   Sensor::addParent(element);
 }
 
-void DepthImageSensor::registerObjects(int level)
+void DepthImageSensor::registerObjects()
 {
   sensor.fullName = fullName + ".image";
   CoreModule::application->registerObject(*CoreModule::module, sensor, this);
 
-  Sensor::registerObjects(level);
+  Sensor::registerObjects();
 }
 
 void DepthImageSensor::DistanceSensor::updateValue()

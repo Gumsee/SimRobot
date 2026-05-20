@@ -48,7 +48,6 @@ private:
 
     //API
     bool getMinAndMax(float& min, float& max) const override {min = 0; max = 0xff; return true;}
-    bool renderCameraImages(SimRobotCore3::SensorPort** cameras, unsigned int count) override;
   } sensor;
 
   /** Destructor */
@@ -64,7 +63,7 @@ private:
   void addParent(Element& element) override;
 
   /** Registers this object with children, actuators and sensors at SimRobot's GUI */
-  void registerObjects(int level) override;
+  void registerObjects() override;
 
   /**
    * Submits draw calls for physical primitives of the object (including children) in the given graphics context

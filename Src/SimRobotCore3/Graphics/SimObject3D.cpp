@@ -7,12 +7,12 @@
 
 SimObject3D::SimObject3D(Mesh *mesh, std::string name) : Object3D(mesh, name)
 {
-  pMaterial = Material::getDefaultMaterial();
+  material = Material::getDefaultMaterial();
 }
 
 SimObject3D::SimObject3D(std::string name) : Object3D(false)
 {
-  pMaterial = Material::getDefaultMaterial();
+  material = Material::getDefaultMaterial();
   this->sName = name;
 }
 
@@ -25,28 +25,30 @@ void SimObject3D::render()
 {
   if(pShader != Simulation::simulation->forwardRenderingShader)
   {
-    ShaderProgram::getCurrentlyBoundShader()->loadUniform("reflectivity", pMaterial->getReflectivity());
-    ShaderProgram::getCurrentlyBoundShader()->loadUniform("refractivity", pMaterial->getRefractivity());
-    ShaderProgram::getCurrentlyBoundShader()->loadUniform("specularity", pMaterial->getSpecularity());
-    ShaderProgram::getCurrentlyBoundShader()->loadUniform("roughness", pMaterial->getRoughness());
-    ShaderProgram::getCurrentlyBoundShader()->loadUniform("TextureMultiplier", pMaterial->getTextureMultiplier());
+    ShaderProgram::getCurrentlyBoundShader()->loadUniform("reflectivity", material->getReflectivity());
+    ShaderProgram::getCurrentlyBoundShader()->loadUniform("refractivity", material->getRefractivity());
+    ShaderProgram::getCurrentlyBoundShader()->loadUniform("specularity", material->getSpecularity());
+    ShaderProgram::getCurrentlyBoundShader()->loadUniform("roughness", material->getRoughness());
+    ShaderProgram::getCurrentlyBoundShader()->loadUniform("TextureMultiplier", material->getTextureMultiplier());
     ShaderProgram::getCurrentlyBoundShader()->loadUniform("viewPos", Camera::getActiveCamera()->getPosition());
   }
 
-  ShaderProgram::getCurrentlyBoundShader()->loadUniform("color", pMaterial->getColor());
-  ShaderProgram::getCurrentlyBoundShader()->loadUniform("hasTexture", pMaterial->hasTexture());
+  ShaderProgram::getCurrentlyBoundShader()->loadUniform("color", material->getColor());
+  ShaderProgram::getCurrentlyBoundShader()->loadUniform("hasTexture", material->hasTexture());
 
-  pMaterial->bindTextures();
+  material->bindTextures();
   renderMesh();
-  pMaterial->unbindTextures();
+  material->unbindTextures();
 }
 
 void SimObject3D::renderForShadowmap()
 {
+  if(shadowOmitted)
+    return;
   #ifdef GUM_SHADOWMAP_WITH_TRANSPARENT_TEXTURES
-  if(pMaterial->hasTexture() && pMaterial->getTexture(0)->hasTransparency())
+  if(material->hasTexture() && material->getTexture(0)->hasTransparency())
   {
-    pMaterial->getTexture(0)->bind();
+    material->getTexture(0)->bind();
     ShaderProgram::getCurrentlyBoundShader()->loadUniform("withTexture", true);
   }
   #endif
@@ -58,10 +60,15 @@ void SimObject3D::renderForShadowmap()
 
 void SimObject3D::setMaterial(Material* material) 
 { 
-  this->pMaterial = material;
+  this->material = material;
+}
+
+void SimObject3D::omitShadow(bool omit)
+{
+  shadowOmitted = omit;
 }
 
 Material* SimObject3D::getMaterial()
 { 
-  return this->pMaterial; 
+  return this->material; 
 }

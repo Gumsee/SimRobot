@@ -49,12 +49,12 @@ void CollisionSensor::registerCollisionCallback(std::list<::PhysicalObject*>& ge
   }
 }
 
-void CollisionSensor::registerObjects(int level)
+void CollisionSensor::registerObjects()
 {
   sensor.fullName = fullName + ".contact";
   CoreModule::application->registerObject(*CoreModule::module, sensor, this);
 
-  Sensor::registerObjects(level);
+  Sensor::registerObjects();
 }
 
 void CollisionSensor::CollisionSensorPort::updateValue()

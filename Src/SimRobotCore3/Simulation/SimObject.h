@@ -35,7 +35,7 @@ public:
   ~SimObject() {}
 
   /** Registers this object with children, actuators and sensors at SimRobot's GUI */
-  virtual void registerObjects(int level = 0);
+  virtual void registerObjects();
 
   void calcTransformationMatrix();
 

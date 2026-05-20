@@ -8,11 +8,13 @@ ControllerRenderer::ControllerRenderer(SimRobotCore3::Controller3DDrawingManager
   : drawingManager(drawingmanager)
 {
   ASSERT(drawingManager);
+  GraphicsContext::MainContext->bind();
   drawingManager->registerContext();
 }
 
 ControllerRenderer::~ControllerRenderer()
 {
+  GraphicsContext::MainContext->bind();
   drawingManager->unregisterContext();
 }
 
@@ -21,6 +23,7 @@ void ControllerRenderer::render()
   if(!SimObjectWidget::RENDERING_IN_WIDGET || shadeMode == SimRobotCore3::Renderer::ShadeMode::noShading)
     return;
 
+  GraphicsContext::MainContext->bind();
   Gum::Graphics::renderWireframe(shadeMode == SimRobotCore3::Renderer::ShadeMode::wireframeShading);
 
   //glEnable(GL_BLEND);

@@ -4,8 +4,9 @@
 
 class SimObject3D : public Object3D
 {
-protected:
-  Material* pMaterial;
+private:
+  Material* material;
+  bool shadowOmitted = false;
 
 public:
   SimObject3D(std::string name);
@@ -16,6 +17,7 @@ public:
   void renderForShadowmap() override;
 
   void setMaterial(Material* material);
+  void omitShadow(bool omit);
 
   Material* getMaterial();
 };
