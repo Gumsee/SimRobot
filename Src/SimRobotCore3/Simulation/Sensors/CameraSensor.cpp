@@ -35,7 +35,7 @@ CameraSensor::CameraSensor(const std::string& name, const ivec2& imageSize, cons
   renderer = new Renderer3D(canvas);
   renderer->setExposure(1.0f);
 
-  renderer->addPostProcessingEffect(new MotionBlur(canvas));
+  renderer->addPostProcessingEffect(new MotionBlur(canvas, static_cast<TextureDepth2D*>(renderer->getFramebuffer()->getDepthTextureAttachment())));
 
   camera3d = new Camera3D(canvas->getSize(), nullptr);
   camera3d->setWorldUpDirection(vec3(0,0,1));
