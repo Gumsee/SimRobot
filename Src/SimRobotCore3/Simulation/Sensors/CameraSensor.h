@@ -7,10 +7,8 @@
 #pragma once
 
 #include "Simulation/Sensors/Sensor.h"
-#include "Tools/Math/Eigen.h"
-#include "Tools/Math/Pose3f.h"
+#include "Graphics/SimObject3D.h"
 #include <Engine/3D/Renderer3D.h>
-#include <Graphics/SimObject3D.h>
 
 /**
  * @class CameraSensor

@@ -64,6 +64,7 @@ add_gumlibrary(gum-desktop GUMDESKTOP)
 add_gumlibrary(gum-graphics GUMGRAPHICS)
 add_gumlibrary(gum-opengl GUMOPENGL)
 
+include_directories(SYSTEM "${SIMROBOT_PREFIX}/Util/gum-opengl/external/glad/include/")
 include_directories(SYSTEM "${SIMROBOT_PREFIX}/Util/gum-desktop/external/tinyfd")
 include_directories(SYSTEM "${SIMROBOT_PREFIX}/Util/gum-codecs/external")
 include_directories(SYSTEM "${SIMROBOT_PREFIX}/Util/gum-engine/src")

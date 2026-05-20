@@ -10,9 +10,9 @@
 #include "Simulation/Actuators/Actuator.h"
 #include "Simulation/Body.h"
 #include "Simulation/Simulation.h"
+#include "Graphics/SimLight.h"
 #include <iostream>
 #include <Engine/3D/Renderer3D.h>
-#include <Graphics/SimLight.h>
 
 Scene::Scene(const std::string& name)
   : ::PhysicalObject(mjOBJ_UNKNOWN, findAvailableName(name, "Scene"))

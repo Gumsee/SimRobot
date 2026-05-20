@@ -16,8 +16,6 @@
 #include <mujoco/mujoco.h>
 #include <algorithm>
 #include <cmath>
-#include <iostream>
-#include <Desktop/Window.h>
 #include <System/MainThreadExecutionQueue.h>
 #include "Graphics/ForwardRenderingShader.h"
 

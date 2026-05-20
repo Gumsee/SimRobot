@@ -17,7 +17,7 @@
 #include <Engine/3D/World3D.h>
 #include "Graphics/PhysicsRenderer.h"
 #include "Graphics/ControllerRenderer.h"
-#include <Graphics/SimObject3D.h>
+#include "Graphics/SimObject3D.h"
 
 class Body;
 class SimLight;

@@ -9,7 +9,7 @@
 #include "SimRobotCore3.h"
 #include "Simulation/SimObject.h"
 #include <list>
-#include <Graphics/SimObject3D.h>
+#include "Graphics/SimObject3D.h"
 #include <Desktop/GraphicsContext.h>
 
 /**

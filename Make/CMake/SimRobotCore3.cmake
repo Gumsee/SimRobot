@@ -20,6 +20,7 @@ target_compile_options(SimRobotCore3 PRIVATE $<$<CXX_COMPILER_ID:MSVC>:$<$<NOT:$
 target_link_options(SimRobotCore3 PRIVATE $<$<CXX_COMPILER_ID:MSVC>:$<$<NOT:$<CONFIG:Debug>>:/LTCG>>)
 target_link_libraries(SimRobotCore3 PRIVATE Flags::Default)
 target_link_libraries(SimRobotCore3 PRIVATE gum-primitives)
+target_link_libraries(SimRobotCore3 PRIVATE gum-engine)
 target_precompile_headers(SimRobotCore3 PRIVATE
     "${SIMROBOTCORE3_ROOT_DIR}/CoreModule.h"
     "${SIMROBOTCORE3_ROOT_DIR}/Simulation/SimObject.h")

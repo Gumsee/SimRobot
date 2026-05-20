@@ -22,12 +22,10 @@
 #include <gum-engine.h>
 #include <Engine/PostProcessing/PostProcessing.h>
 #include <gum-maths.h>
-#include <QSurface>
-#include <QOpenGLContext>
 #include <Graphics/Graphics.h>
 #include <Engine/3D/Lightning/ShadowMapping/ShadowMapping.h>
 #include <mujoco/mujoco.h>
-#include <Platform/System.h>
+#include "Platform/System.h"
 
 SimObjectWidget::SimObjectWidget(SimObject& simObject) : QOpenGLWidget(),
   simObject(simObject), object(dynamic_cast<SimRobot::Object&>(simObject)), oMouse(nullptr), oKeyboard(nullptr),

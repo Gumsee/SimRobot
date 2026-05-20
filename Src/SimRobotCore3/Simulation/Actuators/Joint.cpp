@@ -13,7 +13,7 @@
 #include "Simulation/Axis.h"
 #include "Simulation/Motors/Motor.h"
 #include <cmath>
-#include <Simulation/Simulation.h>
+#include "Simulation/Simulation.h"
 
 Joint::Joint(const std::string& name)
   : Actuator(findAvailableName(name, "Joint"))

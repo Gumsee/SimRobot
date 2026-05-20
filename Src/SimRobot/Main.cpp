@@ -61,6 +61,15 @@ int main(int argc, char* argv[])
 #ifdef WINDOWS
   _CrtSetDbgFlag(_CRTDBG_LEAK_CHECK_DF | _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG));
   //_CrtSetBreakAlloc(18969); // Use to track down memory leaks
+
+  #if QT_VERSION < QT_VERSION_CHECK(6, 4, 0)
+    // Workaround: For OpenGL to be used in windows, support must be registered before the window is created.
+    // The following function is declared as a constructor in QtOpenGL (i.e. executed at library loading time),
+    // but since the SimRobot application doesn't reference QtOpenGL it isn't sufficient to link QtOpenGL
+    // due to lazy loading. Therefore, we call this function here (probably resulting in the function being
+    // called twice, but this is handled by the function).
+    qt_registerDefaultPlatformBackingStoreOpenGLSupport();
+  #endif
 #endif
 
   // Handle floating point values as programming languages would.
@@ -95,18 +104,6 @@ int main(int argc, char* argv[])
   format.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
   format.setRenderableType(QSurfaceFormat::OpenGL);
   QSurfaceFormat::setDefaultFormat(format);
-
-
-
-  #if QT_VERSION < QT_VERSION_CHECK(6, 4, 0)
-    // Workaround: For OpenGL to be used in windows, support must be registered before the window is created.
-    // The following function is declared as a constructor in QtOpenGL (i.e. executed at library loading time),
-    // but since the SimRobot application doesn't reference QtOpenGL it isn't sufficient to link QtOpenGL
-    // due to lazy loading. Therefore, we call this function here (probably resulting in the function being
-    // called twice, but this is handled by the function).
-    qt_registerDefaultPlatformBackingStoreOpenGLSupport();
-  #endif
-
 
   QOffscreenSurface* offscreenSurface = new QOffscreenSurface();
   offscreenSurface->create();

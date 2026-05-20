@@ -1,0 +1,18 @@
+#!/bin/sh
+cd "$(dirname "$(which "$0")")"
+
+CONFIG="Develop"
+
+case $1 in
+  Debug|Develop|Release)
+    CONFIG=$1
+    shift
+  ;;
+esac
+
+BUILD_ARGS="$@"
+BUILD_DIR="../../Build/macOS/build/SimRobot.build/$CONFIG"
+APP_DIR="../../Build/macOS/SimRobot/$CONFIG"
+
+/usr/bin/codesign --deep --force --sign - --entitlements "$BUILD_DIR/SimRobot.app.xcent" --timestamp\=none --generate-entitlement-der "$APP_DIR/SimRobot.app"
+/usr/bin/xcodebuild -workspace "SimRobot.xcodeproj/project.xcworkspace" -scheme "$CONFIG" $BUILD_ARGS build
