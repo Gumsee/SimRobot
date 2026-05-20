@@ -577,8 +577,12 @@ QMenu* SimObjectWidget::createUserMenu() const
       auto* action = subMenu->addAction(tr(label));
       actionGroup->addAction(action);
       action->setCheckable(true);
-      action->setChecked(Simulation::simulation->scene->controllerRenderer->getShadeMode() == shading);
-      connect(action, &QAction::triggered, this, [shading]{ Simulation::simulation->scene->controllerRenderer->setShadeMode(shading); });
+      if(Simulation::simulation->scene->controllerRenderer != nullptr)
+        action->setChecked(Simulation::simulation->scene->controllerRenderer->getShadeMode() == shading);
+      connect(action, &QAction::triggered, this, [shading]{ 
+        if(Simulation::simulation->scene->controllerRenderer != nullptr)
+          Simulation::simulation->scene->controllerRenderer->setShadeMode(shading); 
+      });
     };
     addShadingAction("&Off", SimRobotCore3::Renderer::noShading);
     addShadingAction("&Wire Frame", SimRobotCore3::Renderer::wireframeShading);

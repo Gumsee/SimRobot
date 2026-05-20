@@ -116,6 +116,7 @@ set(GUM_ENGINE_SRC
     ${SIMROBOT_PREFIX}/Util/gum-engine/src/Engine/General/Animation.cpp
     ${SIMROBOT_PREFIX}/Util/gum-engine/src/Engine/PostProcessing/PostProcessing.cpp
     ${SIMROBOT_PREFIX}/Util/gum-engine/src/Engine/PostProcessing/Effects/GaussianBlur/GaussianBlur.cpp
+    ${SIMROBOT_PREFIX}/Util/gum-engine/src/Engine/PostProcessing/Effects/MotionBlur/MotionBlur.cpp
     ${SIMROBOT_PREFIX}/Util/gum-engine/src/Engine/PostProcessing/Effects/CombineFramebuffer.cpp
     ${SIMROBOT_PREFIX}/Util/gum-engine/src/Engine/PostProcessing/Effects/BloomEffect/BloomEffect.cpp
     ${SIMROBOT_PREFIX}/Util/gum-engine/src/Engine/PostProcessing/Effects/Difference/Difference.cpp

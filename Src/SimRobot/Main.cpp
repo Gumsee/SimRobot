@@ -19,6 +19,8 @@
 #include "MainWindow.h"
 #include <Desktop/Window.h>
 #include <gum-engine.h>
+#define GUMDESKTOP_FOUND
+#include <Graphics/Graphics.h>
 #include <QTContext.h>
 
 #ifdef MACOS
@@ -90,6 +92,8 @@ int main(int argc, char* argv[])
   Gum::IO::Mouse* winmouse = gumWindow->getMouse();
   Gum::IO::Keyboard* winkeyboard = gumWindow->getKeyboard();
 
+  Gum::Graphics::addFramebufferToWindow(gumWindow);
+
 
   QSurfaceFormat format;
   format.setVersion(4, 1);
@@ -155,8 +159,11 @@ int main(int argc, char* argv[])
 
   int ret = app.exec();
   
-  delete winmouse;
-  delete winkeyboard;
+  if(gumWindow->getMouse() != winmouse)
+  {
+    delete winmouse;
+    delete winkeyboard;
+  }
   delete gumWindow;
 
   Gum::Engine::cleanup();

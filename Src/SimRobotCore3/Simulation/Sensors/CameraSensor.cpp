@@ -13,6 +13,7 @@
 #include <cmath>
 #include <Desktop/Window.h>
 #include <Graphics/Graphics.h>
+#include <Engine/PostProcessing/Effects/MotionBlur/MotionBlur.h>
 
 CameraSensor::CameraSensor(const std::string& name, const ivec2& imageSize, const vec2& angle)
   : ::Sensor(findAvailableName(name, "CameraSensor")),
@@ -33,6 +34,8 @@ CameraSensor::CameraSensor(const std::string& name, const ivec2& imageSize, cons
   Settings::setSetting(Settings::SHADOW_DISTANCE_FACTOR, 0.5f);
   renderer = new Renderer3D(canvas);
   renderer->setExposure(1.0f);
+
+  renderer->addPostProcessingEffect(new MotionBlur(canvas));
 
   camera3d = new Camera3D(canvas->getSize(), nullptr);
   camera3d->setWorldUpDirection(vec3(0,0,1));

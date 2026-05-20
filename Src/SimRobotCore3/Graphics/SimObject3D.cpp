@@ -7,12 +7,12 @@
 
 SimObject3D::SimObject3D(Mesh *mesh, std::string name) : Object3D(mesh, name)
 {
-  material = Material::getDefaultMaterial();
+  material = Material::requestMaterial(name);
 }
 
 SimObject3D::SimObject3D(std::string name) : Object3D(false)
 {
-  material = Material::getDefaultMaterial();
+  material = Material::requestMaterial(name);
   this->sName = name;
 }
 
