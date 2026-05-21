@@ -14,6 +14,8 @@
 #include <Desktop/Window.h>
 #include <Graphics/Graphics.h>
 #include <Engine/PostProcessing/Effects/MotionBlur/MotionBlur.h>
+#include "Graphics/PostProcessing/FilmGrain/FilmGrain.h"
+#include "Graphics/PostProcessing/JpegCompression/JpegCompression.h"
 
 CameraSensor::CameraSensor(const std::string& name, const ivec2& imageSize, const vec2& angle)
   : ::Sensor(findAvailableName(name, "CameraSensor")),
@@ -35,7 +37,9 @@ CameraSensor::CameraSensor(const std::string& name, const ivec2& imageSize, cons
   renderer = new Renderer3D(canvas);
   renderer->setExposure(1.0f);
 
+  renderer->addPostProcessingEffect(new FilmGrain(canvas));
   renderer->addPostProcessingEffect(new MotionBlur(canvas, static_cast<TextureDepth2D*>(renderer->getFramebuffer()->getDepthTextureAttachment())));
+  renderer->addPostProcessingEffect(new JpegCompression(canvas));
 
   camera3d = new Camera3D(canvas->getSize(), nullptr);
   camera3d->setWorldUpDirection(vec3(0,0,1));
